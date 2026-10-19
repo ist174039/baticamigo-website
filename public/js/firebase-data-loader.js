@@ -221,62 +221,48 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // Função para criar e abrir modal de galeria
   function createGalleryModal() {
-    // Verificar se o modal já existe
-    if (document.getElementById("gallery-modal")) {
-      return
+    let modal = document.getElementById("gallery-modal")
+    if (!modal) {
+      modal = document.createElement("div")
+      modal.id = "gallery-modal"
+      modal.className = "gallery-modal"
+      modal.innerHTML = `<div class="modal-content"><button type="button" class="modal-close" aria-label="Fechar galeria"><i class="fas fa-times" aria-hidden="true"></i></button><button type="button" class="modal-prev" aria-label="Fotografia anterior"><i class="fas fa-chevron-left" aria-hidden="true"></i></button><button type="button" class="modal-next" aria-label="Fotografia seguinte"><i class="fas fa-chevron-right" aria-hidden="true"></i></button><div class="modal-media-container"></div><p class="modal-caption"></p></div>`
+      document.body.appendChild(modal)
     }
+    if (modal.dataset.galleryReady === "true") return
 
-    // Criar elementos do modal
-    const modal = document.createElement("div")
-    modal.id = "gallery-modal"
-    modal.className = "gallery-modal"
+    modal.dataset.galleryReady = "true"
+    modal.setAttribute("role", "dialog")
+    modal.setAttribute("aria-modal", "true")
+    modal.setAttribute("aria-label", "Galeria de fotografias")
+    modal.setAttribute("aria-hidden", "true")
+    modal.tabIndex = -1
 
-    modal.innerHTML = `
-      <div class="modal-content">
-        <button class="modal-close"><i class="fas fa-times"></i></button>
-        <button class="modal-prev"><i class="fas fa-chevron-left"></i></button>
-        <button class="modal-next"><i class="fas fa-chevron-right"></i></button>
-        <div class="modal-media-container"></div>
-        <p class="modal-caption"></p>
-      </div>
-    `
-
-    document.body.appendChild(modal)
-
-    // Fechar modal ao clicar no botão ou fora do conteúdo
-    const closeBtn = modal.querySelector(".modal-close")
-    closeBtn.addEventListener("click", () => {
+    const close = () => {
+      if (!modal.classList.contains("active")) return
+      const video = modal.querySelector("video")
+      if (video) { video.pause(); video.currentTime = 0 }
       modal.classList.remove("active")
-      const videoContainer = modal.querySelector("video")
-      if (videoContainer) {
-        videoContainer.pause()
-      }
-    })
-
-    modal.addEventListener("click", (e) => {
-      if (e.target === modal) {
-        modal.classList.remove("active")
-        const videoContainer = modal.querySelector("video")
-        if (videoContainer) {
-          videoContainer.pause()
-        }
-      }
-    })
-
-    // Prevenir que o ESC feche o modal
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape" && modal.classList.contains("active")) {
-        modal.classList.remove("active")
-        const videoContainer = modal.querySelector("video")
-        if (videoContainer) {
-          videoContainer.pause()
-        }
-      }
+      modal.setAttribute("aria-hidden", "true")
+      document.body.classList.remove("gallery-open")
+      const opener = modal._galleryOpener
+      modal._galleryOpener = null
+      if (opener && opener.isConnected) opener.focus({ preventScroll: true })
+    }
+    modal._closeGallery = close
+    modal.querySelector(".modal-close")?.addEventListener("click", close)
+    modal.addEventListener("click", (event) => { if (event.target === modal) close() })
+    document.addEventListener("keydown", (event) => {
+      if (!modal.classList.contains("active")) return
+      if (event.key === "Escape") { event.preventDefault(); close() }
+      if (event.key === "ArrowLeft") modal.querySelector(".modal-prev")?.click()
+      if (event.key === "ArrowRight") modal.querySelector(".modal-next")?.click()
     })
   }
 
   // Função para abrir o modal da galeria
   function openGalleryModal(items, currentIndex) {
+    createGalleryModal()
     const modal = document.getElementById("gallery-modal")
     const mediaContainer = modal.querySelector(".modal-media-container")
     const caption = modal.querySelector(".modal-caption")
@@ -284,6 +270,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     const nextBtn = modal.querySelector(".modal-next")
 
     function showItem(index) {
+      const oldVideo = mediaContainer.querySelector("video")
+      if (oldVideo) { oldVideo.pause(); oldVideo.currentTime = 0 }
       const item = items[index]
       mediaContainer.innerHTML = ""
 
@@ -302,7 +290,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         mediaContainer.appendChild(video)
       }
 
-      caption.textContent = item.legenda
+      caption.textContent = text(item.legenda)
     }
 
     // Exibir item atual
@@ -336,7 +324,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     // Exibir modal
+    modal._galleryOpener = document.activeElement
     modal.classList.add("active")
+    modal.setAttribute("aria-hidden", "false")
+    document.body.classList.add("gallery-open")
+    modal.querySelector(".modal-close")?.focus({ preventScroll: true })
   }
 
   // Função para criar galeria para um item
@@ -348,7 +340,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const gallerySection = document.createElement("div")
     gallerySection.className = "gallery"
 
-    const galleryId = `gallery-${Math.random().toString(36).slice(2, 10)}`
+    const galleryId = `gallery-${crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2, 10)}`
     const galleryTitle = document.createElement("button")
     galleryTitle.type = "button"
     galleryTitle.className = "gallery-title"
@@ -362,20 +354,23 @@ document.addEventListener("DOMContentLoaded", async () => {
     const galleryContent = document.createElement("div")
     galleryContent.className = "gallery-content"
     galleryContent.id = galleryId
+    galleryContent.setAttribute("aria-label", `${text(title) || "Galeria"} — fotografias`)
 
     item.galeria.forEach((media, index) => {
+      const thumbnailUrl = safeUrl(media.tipo === "video" ? media.thumbnail : media.url)
+      if (!thumbnailUrl) return
       const galleryItem = document.createElement("button")
       galleryItem.type = "button"
       galleryItem.className = `gallery-item ${media.tipo === "video" ? "video" : ""}`
       galleryItem.setAttribute("aria-label", `Abrir ${media.tipo === "video" ? "vídeo" : "fotografia"}${media.legenda ? `: ${media.legenda}` : ""}`)
 
       const thumbnail = document.createElement("img")
-      thumbnail.src = safeUrl(media.tipo === "video" ? media.thumbnail : media.url)
+      thumbnail.src = thumbnailUrl
       thumbnail.alt = text(media.legenda)
       thumbnail.loading = "lazy"
+      thumbnail.decoding = "async"
 
       galleryItem.appendChild(thumbnail)
-      if (!thumbnail.src) return
       galleryContent.appendChild(galleryItem)
 
       galleryItem.addEventListener("click", () => {
@@ -384,9 +379,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     })
 
     galleryTitle.addEventListener("click", () => {
-      galleryTitle.classList.toggle("active")
-      galleryContent.classList.toggle("active")
-      galleryTitle.setAttribute("aria-expanded", String(galleryContent.classList.contains("active")))
+      const expanded = galleryTitle.getAttribute("aria-expanded") !== "true"
+      galleryTitle.classList.toggle("active", expanded)
+      galleryContent.classList.toggle("active", expanded)
+      galleryTitle.setAttribute("aria-expanded", String(expanded))
     })
 
     gallerySection.appendChild(galleryTitle)
