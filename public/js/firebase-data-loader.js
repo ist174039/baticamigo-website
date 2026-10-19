@@ -40,6 +40,49 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Referência ao Firestore
   const db = firebase.firestore()
 
+  // Dynamic text is escaped before entering the few static HTML templates
+  // below; URLs are separately constrained to web-safe protocols.
+  function escapeHtml(value) {
+    return String(value ?? "").replace(/[&<>\"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char])
+  }
+  function safeUrl(value) {
+    if (typeof value !== "string") return ""
+    try {
+      const url = new URL(value, window.location.origin)
+      return ["http:", "https:"].includes(url.protocol) ? url.href : ""
+    } catch { return "" }
+  }
+  function text(value) { return typeof value === "string" ? value.trim() : "" }
+  function searchable(record, fields, term) {
+    return fields.some((field) => {
+      const value = record?.[field]
+      const values = Array.isArray(value) ? value : [value]
+      return values.some((entry) => text(entry).toLocaleLowerCase().includes(term))
+    })
+  }
+  function imageElement(url, alt, className) {
+    const safe = safeUrl(url)
+    if (!safe) return null
+    const img = document.createElement("img")
+    img.src = safe
+    img.alt = text(alt)
+    img.loading = "lazy"
+    img.decoding = "async"
+    if (className) img.className = className
+    return img
+  }
+  function pruneEmptyFields(root) {
+    root.querySelectorAll("p, span, a").forEach((node) => {
+      if (!node.textContent.trim() && !node.querySelector("img, video, i")) node.remove()
+    })
+  }
+  function finalizeCard(card) {
+    pruneEmptyFields(card)
+    card.querySelectorAll("img").forEach((img) => {
+      if (!img.getAttribute("src")) img.closest(".member-image, .partner-logo, .event-image, .news-image")?.remove()
+    })
+  }
+
   // Função para formatar data
   function formatDate(timestamp) {
     if (!timestamp) return ""
@@ -51,8 +94,10 @@ document.addEventListener("DOMContentLoaded", async () => {
       timestamp = new Date(timestamp)
     }
 
+    const date = timestamp instanceof Date ? timestamp : new Date(timestamp)
+    if (Number.isNaN(date.getTime())) return ""
     const options = { day: "numeric", month: "long", year: "numeric" }
-    return timestamp.toLocaleDateString(document.documentElement.lang || "pt-BR", options)
+    return date.toLocaleDateString(document.documentElement.lang || "pt-PT", options)
   }
 
   // Função para carregar e exibir membros
@@ -79,15 +124,16 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         memberCard.innerHTML = `
           <div class="member-image">
-            <img src="${member.imagem || "https://firebasestorage.googleapis.com/v0/b/baticamigo-c0384.firebasestorage.app/o/logo.png?alt=media&token=77f706ee-7d07-4465-a37d-e463b03c97b7"}" alt="${member.nome}">
+            <img src="${safeUrl(member.imagem)}" alt="${escapeHtml(member.nome)}">
           </div>
           <div class="member-info">
-            <h3>${member.nome}</h3>
-            <p class="member-position">${member.cargo}</p>
-            <p>${member.descricao}</p>
+            <h3>${escapeHtml(member.nome)}</h3>
+            <p class="member-position">${escapeHtml(member.cargo)}</p>
+            <p>${escapeHtml(member.descricao)}</p>
           </div>
         `
 
+        finalizeCard(memberCard)
         container.appendChild(memberCard)
       })
 
@@ -121,18 +167,20 @@ document.addEventListener("DOMContentLoaded", async () => {
         const partner = doc.data()
         const partnerCard = document.createElement("div")
         partnerCard.className = "partner-card"
+        const website = safeUrl(partner.website)
 
         partnerCard.innerHTML = `
           <div class="partner-logo">
-            <img src="${partner.logo || "https://firebasestorage.googleapis.com/v0/b/baticamigo-c0384.firebasestorage.app/o/logo.png?alt=media&token=77f706ee-7d07-4465-a37d-e463b03c97b7"}" alt="${partner.nome}">
+            <img src="${safeUrl(partner.logo)}" alt="${escapeHtml(partner.nome)}">
           </div>
           <div class="partner-info">
-            <h3>${partner.nome}</h3>
-            <p>${partner.descricao}</p>
-            ${partner.website ? `<a href="${partner.website}" class="partner-website" target="_blank">Website</a>` : ""}
+            <h3>${escapeHtml(partner.nome)}</h3>
+            <p>${escapeHtml(partner.descricao)}</p>
+            ${website ? `<a href="${website}" class="partner-website" target="_blank" rel="noopener noreferrer">Visitar parceiro</a>` : ""}
           </div>
         `
 
+        finalizeCard(partnerCard)
         container.appendChild(partnerCard)
       })
 
@@ -215,13 +263,13 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       if (item.tipo === "imagem") {
         const img = document.createElement("img")
-        img.src = item.url
-        img.alt = item.legenda
+        img.src = safeUrl(item.url)
+        img.alt = text(item.legenda)
         img.className = "modal-image"
         mediaContainer.appendChild(img)
       } else if (item.tipo === "video") {
         const video = document.createElement("video")
-        video.src = item.url
+        video.src = safeUrl(item.url)
         video.controls = true
         video.autoplay = true
         video.className = "modal-video"
@@ -280,7 +328,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     galleryTitle.className = "gallery-title"
     galleryTitle.setAttribute("aria-expanded", "false")
     galleryTitle.setAttribute("aria-controls", galleryId)
-    galleryTitle.innerHTML = `<i class="fas fa-chevron-down" aria-hidden="true"></i> ${title || "Galeria"}`
+    const icon = document.createElement("i")
+    icon.className = "fas fa-chevron-down"
+    icon.setAttribute("aria-hidden", "true")
+    galleryTitle.append(icon, document.createTextNode(` ${text(title) || "Galeria"}`))
 
     const galleryContent = document.createElement("div")
     galleryContent.className = "gallery-content"
@@ -293,11 +344,12 @@ document.addEventListener("DOMContentLoaded", async () => {
       galleryItem.setAttribute("aria-label", `Abrir ${media.tipo === "video" ? "vídeo" : "fotografia"}${media.legenda ? `: ${media.legenda}` : ""}`)
 
       const thumbnail = document.createElement("img")
-      thumbnail.src = media.tipo === "video" ? media.thumbnail : media.url
-      thumbnail.alt = media.legenda || ""
+      thumbnail.src = safeUrl(media.tipo === "video" ? media.thumbnail : media.url)
+      thumbnail.alt = text(media.legenda)
       thumbnail.loading = "lazy"
 
       galleryItem.appendChild(thumbnail)
+      if (!thumbnail.src) return
       galleryContent.appendChild(galleryItem)
 
       galleryItem.addEventListener("click", () => {
@@ -349,23 +401,23 @@ document.addEventListener("DOMContentLoaded", async () => {
 
           const flagsHtml =
             event.flags && event.flags.length
-              ? `<div class="event-flags">${event.flags.map((flag) => `<span class="event-flag">${flag}</span>`).join("")}</div>`
+              ? `<div class="event-flags">${event.flags.map((flag) => `<span class="event-flag">${escapeHtml(flag)}</span>`).join("")}</div>`
               : ""
 
           const partnersHtml =
             event.parceiros && event.parceiros.length
-              ? `<div class="event-partners"><span>Parceiros:</span> ${event.parceiros.join(", ")}</div>`
+              ? `<div class="event-partners"><span>Parceiros:</span> ${escapeHtml(event.parceiros.join(", "))}</div>`
               : ""
 
           eventCard.innerHTML = `
             <div class="event-image">
-              <img src="${event.imagem || "https://firebasestorage.googleapis.com/v0/b/baticamigo-c0384.firebasestorage.app/o/logo.png?alt=media&token=77f706ee-7d07-4465-a37d-e463b03c97b7"}" alt="${event.nome}">
+              <img src="${safeUrl(event.imagem)}" alt="${escapeHtml(event.nome)}">
             </div>
             <div class="event-info">
               <p class="event-date">${formatDate(event.data)}</p>
-              <h3>${event.nome}</h3>
-              <span class="event-type">${event.tipo}</span>
-              <p>${event.descricao}</p>
+              <h3>${escapeHtml(event.nome)}</h3>
+              <span class="event-type">${escapeHtml(event.tipo)}</span>
+              <p>${escapeHtml(event.descricao)}</p>
               ${flagsHtml}
               ${partnersHtml}
             </div>
@@ -377,6 +429,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             createGallery(event, eventInfo, "Ver Fotos e Vídeos")
           }
 
+          finalizeCard(eventCard)
           container.appendChild(eventCard)
         })
       }
@@ -387,14 +440,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         searchInput.addEventListener("input", function () {
           const searchTerm = this.value.toLowerCase()
 
-          const filteredEvents = events.filter(
-            (event) =>
-              event.nome.toLowerCase().includes(searchTerm) ||
-              event.descricao.toLowerCase().includes(searchTerm) ||
-              (event.flags && event.flags.some((flag) => flag.toLowerCase().includes(searchTerm))) ||
-              (event.parceiros && event.parceiros.some((partner) => partner.toLowerCase().includes(searchTerm))) ||
-              event.tipo.toLowerCase().includes(searchTerm),
-          )
+          const filteredEvents = events.filter((event) => searchable(event, ["nome", "descricao", "tipo", "flags", "parceiros"], searchTerm))
 
           renderEvents(filteredEvents)
         })
@@ -442,18 +488,19 @@ document.addEventListener("DOMContentLoaded", async () => {
 
           const sponsorsHtml =
             program.patrocinadores && program.patrocinadores.length
-              ? `<div class="program-sponsors"><span>Patrocinadores:</span> ${program.patrocinadores.join(", ")}</div>`
+              ? `<div class="program-sponsors"><span>Patrocinadores:</span> ${escapeHtml(program.patrocinadores.join(", "))}</div>`
               : ""
 
           programCard.innerHTML = `
             <div class="program-info">
-              <h3>${program.nome}</h3>
-              <p>${program.descricao}</p>
+              <h3>${escapeHtml(program.nome)}</h3>
+              <p>${escapeHtml(program.descricao)}</p>
               <p class="program-dates">Período: ${formatDate(program.data_inicio)} - ${formatDate(program.data_fim)}</p>
               ${sponsorsHtml}
             </div>
           `
 
+          finalizeCard(programCard)
           container.appendChild(programCard)
         })
       }
@@ -464,13 +511,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         searchInput.addEventListener("input", function () {
           const searchTerm = this.value.toLowerCase()
 
-          const filteredPrograms = programs.filter(
-            (program) =>
-              program.nome.toLowerCase().includes(searchTerm) ||
-              program.descricao.toLowerCase().includes(searchTerm) ||
-              (program.patrocinadores &&
-                program.patrocinadores.some((sponsor) => sponsor.toLowerCase().includes(searchTerm))),
-          )
+          const filteredPrograms = programs.filter((program) => searchable(program, ["nome", "descricao", "patrocinadores"], searchTerm))
 
           renderPrograms(filteredPrograms)
         })
@@ -518,20 +559,21 @@ document.addEventListener("DOMContentLoaded", async () => {
 
           const partnersHtml =
             item.parceiros && item.parceiros.length
-              ? `<div class="agenda-partners"><span>Parceiros:</span> ${item.parceiros.join(", ")}</div>`
+              ? `<div class="agenda-partners"><span>Parceiros:</span> ${escapeHtml(item.parceiros.join(", "))}</div>`
               : ""
 
-          const registrationHtml = item.inscricao
-            ? `<div class="agenda-registration"><a href="${item.inscricao}" target="_blank">Inscrever-se</a></div>`
+          const registrationUrl = safeUrl(item.inscricao)
+          const registrationHtml = registrationUrl
+            ? `<div class="agenda-registration"><a href="${registrationUrl}" target="_blank" rel="noopener noreferrer">Inscrever-se</a></div>`
             : ""
 
           agendaCard.innerHTML = `
             <div class="agenda-info">
-              <h3>${item.nome}</h3>
-              <span class="agenda-type">${item.tipo}</span>
-              <p>${item.descricao}</p>
+              <h3>${escapeHtml(item.nome)}</h3>
+              <span class="agenda-type">${escapeHtml(item.tipo)}</span>
+              <p>${escapeHtml(item.descricao)}</p>
               <p class="agenda-dates">Período: ${formatDate(item.data_inicio)} - ${formatDate(item.data_fim)}</p>
-              ${item.flag ? `<span class="agenda-flag">${item.flag}</span>` : ""}
+              ${item.flag ? `<span class="agenda-flag">${escapeHtml(item.flag)}</span>` : ""}
               ${partnersHtml}
               ${registrationHtml}
             </div>
@@ -543,6 +585,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             createGallery(item, agendaInfo, "Ver Fotos e Vídeos")
           }
 
+          finalizeCard(agendaCard)
           container.appendChild(agendaCard)
         })
       }
@@ -553,14 +596,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         searchInput.addEventListener("input", function () {
           const searchTerm = this.value.toLowerCase()
 
-          const filteredAgenda = agendaItems.filter(
-            (item) =>
-              item.nome.toLowerCase().includes(searchTerm) ||
-              item.descricao.toLowerCase().includes(searchTerm) ||
-              item.tipo.toLowerCase().includes(searchTerm) ||
-              (item.flag && item.flag.toLowerCase().includes(searchTerm)) ||
-              (item.parceiros && item.parceiros.some((partner) => partner.toLowerCase().includes(searchTerm))),
-          )
+          const filteredAgenda = agendaItems.filter((item) => searchable(item, ["nome", "descricao", "tipo", "flag", "parceiros"], searchTerm))
 
           renderAgenda(filteredAgenda)
         })
@@ -603,19 +639,21 @@ document.addEventListener("DOMContentLoaded", async () => {
       news.forEach((item) => {
         const newsCard = document.createElement("div")
         newsCard.className = "news-card"
+        const articleUrl = safeUrl(item.link)
 
         newsCard.innerHTML = `
           <div class="news-image">
-            <img src="${item.imagem || "https://firebasestorage.googleapis.com/v0/b/baticamigo-c0384.firebasestorage.app/o/logo.png?alt=media&token=77f706ee-7d07-4465-a37d-e463b03c97b7"}" alt="${item.titulo}">
+            <img src="${safeUrl(item.imagem)}" alt="${escapeHtml(item.titulo)}">
           </div>
           <div class="news-info">
             <p class="news-date">${formatDate(item.data)}</p>
-            <h3>${item.titulo}</h3>
-            <p>${item.descricao}</p>
-            <a href="${item.link || "#noticias"}" class="news-link">Ler mais</a>
+            <h3>${escapeHtml(item.titulo)}</h3>
+            <p>${escapeHtml(item.descricao)}</p>
+            ${articleUrl ? `<a href="${articleUrl}" class="news-link" target="_blank" rel="noopener noreferrer">Ler mais</a>` : ""}
           </div>
         `
 
+        finalizeCard(newsCard)
         container.appendChild(newsCard)
       })
 
