@@ -70,7 +70,7 @@ function ContactSection() {
 }
 
 export default function HomePage() {
-  return <><SiteHeader/><main id="conteudo"><Hero/><About/><Pillars/>
+  return <><SiteHeader/><main id="conteudo"><Hero/><DynamicSection id="noticias" eyebrow="Da associação" title={<>As últimas<br/><em>notícias.</em></>} description="As novidades mais recentes da BaticAmigo." containerId="news-container" className="soft-section"/><About/><Pillars/>
     <DynamicSection id="eventos" eyebrow="Em comunidade" title={<>Acontece<br/><em>por aqui.</em></>} description="Encontros e atividades para viver em conjunto." containerId="events-container" searchId="eventos-search" searchPlaceholder="Pesquisar eventos"/>
     <DynamicSection id="programas" eyebrow="Novos caminhos" title={<>Ideias que<br/><em>ganham vida.</em></>} description="Iniciativas e programas da associação." containerId="programs-container" searchId="programas-search" searchPlaceholder="Pesquisar programas" className="soft-section"/>
     <DynamicSection id="agenda" eyebrow="Marque na agenda" title={<>O próximo encontro<br/><em>é consigo.</em></>} description="Atividades com data marcada." containerId="agenda-container" searchId="agenda-search" searchPlaceholder="Pesquisar agenda"/>
@@ -82,5 +82,5 @@ export default function HomePage() {
       <header className="community-intro"><span className="eyebrow">Juntos fazemos mais</span><h2 id="partners-title">Ligados por<br/><em>parcerias.</em></h2></header>
       <div className="people-panel partner-panel"><header className="panel-heading"><span className="panel-mark">Organizações</span><h3>Os nossos parceiros</h3></header><div className="dynamic-grid partner-grid" id="partners-container" aria-live="polite"><div className="empty-state"><span className="empty-mark">✳</span><p>A carregar lista…</p></div></div></div>
     </section>
-    <DynamicSection id="noticias" eyebrow="Da associação" title={<>Da vida<br/><em>BaticAmigo.</em></>} description="Notícias e registos da associação." containerId="news-container" className="soft-section"/><ContactSection/></main><SiteFooter/><div id="gallery-modal" className="gallery-modal"><div className="modal-content"><button className="modal-close" aria-label="Fechar"><i className="fa-solid fa-xmark"/></button><button className="modal-prev" aria-label="Anterior"><i className="fa-solid fa-chevron-left"/></button><button className="modal-next" aria-label="Seguinte"><i className="fa-solid fa-chevron-right"/></button><div className="modal-media-container"/><p className="modal-caption"/></div></div><CollectionProgressiveReveal/><LegacyFirebaseScripts/></>;
+    <ContactSection/></main><SiteFooter/><div id="gallery-modal" className="gallery-modal"><div className="modal-content"><button className="modal-close" aria-label="Fechar"><i className="fa-solid fa-xmark"/></button><button className="modal-prev" aria-label="Anterior"><i className="fa-solid fa-chevron-left"/></button><button className="modal-next" aria-label="Seguinte"><i className="fa-solid fa-chevron-right"/></button><div className="modal-media-container"/><p className="modal-caption"/></div></div><CollectionProgressiveReveal/><LegacyFirebaseScripts/></>;
 }

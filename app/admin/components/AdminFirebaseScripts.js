@@ -50,9 +50,10 @@ export default function AdminFirebaseScripts({ page }) {
     }
     start().catch((error) => {
       console.error("Erro ao iniciar administração:", error);
-      const errorBox = document.getElementById("login-error");
+      const errorBox = document.getElementById("login-error") || document.getElementById("admin-init-error");
       if (errorBox) {
         errorBox.textContent = "Não foi possível iniciar o acesso administrativo. Atualize a página e tente novamente.";
+        errorBox.hidden = false;
         errorBox.style.display = "block";
       }
     });

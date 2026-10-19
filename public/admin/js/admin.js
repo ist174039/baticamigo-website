@@ -167,35 +167,39 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Função para carregar dados do Firestore
   async function loadData() {
-    try {
-      // Carregar eventos
-      const eventosSnapshot = await db.collection("eventos").get()
-      renderEventos(eventosSnapshot.docs)
+    const collections = [
+      ["eventos", renderEventos],
+      ["programas", renderProgramas],
+      ["agenda", renderAgenda],
+      ["noticias", renderNoticias],
+      ["membros", renderMembros],
+      ["parceiros", renderParceiros],
+    ]
+    const results = await Promise.allSettled(collections.map(([name]) => db.collection(name).get()))
+    const failed = []
 
-      // Carregar programas
-      const programasSnapshot = await db.collection("programas").get()
-      renderProgramas(programasSnapshot.docs)
+    results.forEach((result, index) => {
+      const [name, render] = collections[index]
+      if (result.status === "fulfilled") {
+        render(result.value.docs)
+        return
+      }
+      failed.push(name)
+      console.error(`Erro ao carregar ${name}:`, result.reason)
+    })
 
-      // Carregar agenda
-      const agendaSnapshot = await db.collection("agenda").get()
-      renderAgenda(agendaSnapshot.docs)
-
-      // Carregar notícias
-      const noticiasSnapshot = await db.collection("noticias").get()
-      renderNoticias(noticiasSnapshot.docs)
-
-      // Carregar membros
-      const membrosSnapshot = await db.collection("membros").get()
-      renderMembros(membrosSnapshot.docs)
-
-      // Carregar parceiros
-      const parceirosSnapshot = await db.collection("parceiros").get()
-      renderParceiros(parceirosSnapshot.docs)
-
-    
-    } catch (error) {
-      console.error("Erro ao carregar dados:", error)
-      alert("Erro ao carregar dados. Verifique o console para mais detalhes.")
+    const errorBox = document.getElementById("admin-init-error")
+    if (errorBox) {
+      if (failed.length) {
+        const reason = results.find((result) => result.status === "rejected")?.reason
+        const permissionDenied = reason?.code === "permission-denied"
+        errorBox.textContent = permissionDenied
+          ? `Sem permissão para ler ${failed.join(", ")}. Verifique as regras de acesso do Firestore para a conta autenticada.`
+          : `Não foi possível carregar ${failed.join(", ")}. Tente novamente; as outras listas continuam disponíveis.`
+        errorBox.hidden = false
+      } else {
+        errorBox.hidden = true
+      }
     }
   }
 

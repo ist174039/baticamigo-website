@@ -689,16 +689,23 @@ document.addEventListener("DOMContentLoaded", async () => {
         const articleUrl = safeUrl(item.link)
 
         newsCard.innerHTML = `
-          <div class="news-image">
-            <img src="${safeUrl(item.imagem)}" alt="${escapeHtml(item.titulo)}">
-          </div>
+          <div class="news-image"></div>
           <div class="news-info">
-            <p class="news-date">${formatDate(item.data)}</p>
+            <p class="news-date">${formatDate(item.data || item.data_publicacao || item.dataPublicacao || item.createdAt || item.created_at || item.updatedAt || item.updated_at)}</p>
             <h3>${escapeHtml(item.titulo)}</h3>
             <p>${escapeHtml(item.descricao)}</p>
             ${articleUrl ? `<a href="${articleUrl}" class="news-link" target="_blank" rel="noopener noreferrer">Ler mais</a>` : ""}
           </div>
         `
+
+        const media = newsCard.querySelector(".news-image")
+        const image = imageElement(item.imagem, item.titulo)
+        if (image) {
+          image.addEventListener("error", () => media.remove(), { once: true })
+          media.appendChild(image)
+        } else {
+          media.remove()
+        }
 
         finalizeCard(newsCard)
         container.appendChild(newsCard)

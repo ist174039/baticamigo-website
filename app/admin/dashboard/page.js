@@ -43,5 +43,5 @@ const markup = body
 export const metadata = { title: "Painel administrativo | BaticAmigo" };
 
 export default function AdminDashboardPage() {
-  return <><main className="dashboard-page"><div className="dashboard-welcome"><span className="eyebrow">Espaço de gestão</span><h1>Bom dia. <em>A comunidade espera.</em></h1><p>Organize iniciativas, conteúdos e momentos que aproximam pessoas.</p></div><div dangerouslySetInnerHTML={{ __html: markup }} /></main><AdminTablePagination/><AdminFirebaseScripts page="dashboard"/></>;
+  return <><main className="dashboard-page"><div className="dashboard-welcome"><span className="eyebrow">Espaço de gestão</span><h1>Bom dia. <em>A comunidade espera.</em></h1><p>Organize iniciativas, conteúdos e momentos que aproximam pessoas.</p></div><div id="admin-init-error" className="admin-init-error" role="alert" hidden/><div dangerouslySetInnerHTML={{ __html: markup }} /></main><AdminTablePagination/><AdminFirebaseScripts page="dashboard"/></>;
 }

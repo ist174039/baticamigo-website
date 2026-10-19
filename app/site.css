@@ -419,6 +419,9 @@ body{background:var(--paper)}
 .member-image.media-fallback,.partner-logo.media-fallback{display:grid;place-items:center;background:#f1edf5}
 .member-image .media-initials,.partner-logo .media-initials{display:grid;place-items:center;width:58px;height:58px;border:1px solid #d8c9e3;border-radius:50%;background:#e9e0f1;color:#563276;font:700 19px/1 var(--display);letter-spacing:.04em}
 .partner-logo .media-initials{width:auto;min-width:70px;padding:0 15px;border-radius:12px;background:#f3eef7}
+/* Keep full member portraits visible so faces are never cut by the card crop. */
+.people-section .people-grid .member-image{background:#f1edf5}
+.people-section .people-grid .member-image img{object-fit:contain;object-position:center;transform:none!important}
 @media(max-width:700px){
   .dynamic-grid>.event-card,.dynamic-grid>.program-card,.dynamic-grid>.agenda-card,.dynamic-grid>.news-card{grid-column:1/-1}
   .people-section .people-grid,.partner-section .partner-grid{grid-template-columns:1fr}
