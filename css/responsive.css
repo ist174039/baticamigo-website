@@ -1,0 +1,167 @@
+/* Responsive Styles */
+@media (max-width: 1024px) {
+  .hero-content h1 {
+    font-size: 3.5rem;
+  }
+
+  .hero-content p {
+    font-size: 1.3rem;
+  }
+
+  .contact-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .mobile-menu-btn {
+    display: flex;
+  }
+
+  .nav-menu {
+    position: fixed;
+    top: 90px;
+    left: -100%;
+    width: 100%;
+    height: calc(100vh - 90px);
+    background-color: var(--light-color);
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+    z-index: 999;
+  }
+
+  .nav-menu.active {
+    left: 0;
+  }
+
+  .nav-menu li {
+    margin: 15px 0;
+  }
+
+  .hero-content h1 {
+    font-size: 3rem;
+  }
+
+  .hero-content p {
+    font-size: 1.1rem;
+  }
+
+  .section-header h2 {
+    font-size: 2rem;
+  }
+
+  .pillars-grid,
+  .members-grid,
+  .partners-grid,
+  .events-grid,
+  .programs-grid,
+  .agenda-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .footer-content {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .footer-info {
+    text-align: center;
+  }
+
+  .mission-content,
+  .description-content {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .description-image {
+    order: 1;
+  }
+
+  .description-text {
+    order: 2;
+  }
+
+  .gallery-content {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  }
+
+  .modal-prev,
+  .modal-next {
+    font-size: 1.5rem;
+  }
+
+  .modal-prev {
+    left: -40px;
+  }
+
+  .modal-next {
+    right: -40px;
+  }
+
+  .powered-by {
+    margin-top: 5px;
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .logo img {
+    height: 70px; /* Aumentado de 50px para 70px em telas menores */
+  }
+
+  .hero-content h1 {
+    font-size: 2.5rem;
+  }
+
+  .hero-content p {
+    font-size: 1rem;
+  }
+
+  .btn {
+    padding: 10px 20px;
+  }
+
+  .section {
+    padding: 60px 0;
+  }
+
+  .section-header h2 {
+    font-size: 1.8rem;
+  }
+
+  .contact-item {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .contact-item i {
+    margin-right: 0;
+    margin-bottom: 10px;
+  }
+
+  .social-media {
+    justify-content: center;
+  }
+
+  .gallery-content {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  }
+
+  .modal-prev,
+  .modal-next {
+    position: static;
+    transform: none;
+    margin: 10px;
+  }
+
+  .modal-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+}
+

@@ -1,0 +1,177 @@
+/* Estilos do Carrossel */
+.carousel {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  margin-top: 90px;
+  z-index: 1;
+}
+
+.carousel-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.carousel-slide {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 1s ease-in-out;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  z-index: 0; /* Garante que o z-index não afete outros elementos */
+}
+
+.carousel-slide.active {
+  opacity: 1;
+  z-index: 1; /* Apenas o slide ativo fica acima */
+}
+
+.carousel-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6));
+  z-index: 1;
+}
+
+.carousel-pattern {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url("../images/african-pattern.png");
+  background-size: 200px;
+  opacity: 0.1;
+  z-index: 2;
+}
+
+.carousel-content {
+  position: relative;
+  z-index: 3;
+  color: var(--light-color);
+  text-align: center;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.carousel-content h2 {
+  font-size: 3.5rem;
+  margin-bottom: 1rem;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.carousel-content p {
+  font-size: 1.5rem;
+  margin-bottom: 2rem;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.carousel-controls {
+  position: absolute;
+  bottom: 30px;
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  z-index: 4;
+}
+
+.carousel-indicators {
+  display: flex;
+  gap: 10px;
+}
+
+.carousel-indicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.carousel-indicator.active {
+  background-color: var(--light-color);
+  transform: scale(1.2);
+}
+
+.carousel-nav {
+  position: absolute;
+  top: 50%;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 30px;
+  z-index: 4;
+  transform: translateY(-50%);
+}
+
+.carousel-nav button {
+  background: rgba(0, 0, 0, 0.3);
+  color: var(--light-color);
+  border: none;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  font-size: 1.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+}
+
+.carousel-nav button:hover {
+  background: rgba(0, 0, 0, 0.6);
+}
+
+/* Responsividade do carrossel */
+@media (max-width: 768px) {
+  .carousel-content h2 {
+    font-size: 2.5rem;
+  }
+
+  .carousel-content p {
+    font-size: 1.2rem;
+  }
+
+  .carousel-nav button {
+    width: 40px;
+    height: 40px;
+    font-size: 1.2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .carousel-content h2 {
+    font-size: 2rem;
+  }
+
+  .carousel-content p {
+    font-size: 1rem;
+  }
+
+  .carousel-nav {
+    padding: 0 15px;
+  }
+
+  .carousel-nav button {
+    width: 35px;
+    height: 35px;
+    font-size: 1rem;
+  }
+}
+
