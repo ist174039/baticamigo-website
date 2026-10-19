@@ -32,8 +32,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       const membersSnapshot = await db.collection("membros").get()
       const container = document.getElementById("members-container")
 
-      if (!container || membersSnapshot.empty) {
-        console.log("Nenhum membro encontrado ou container não existe")
+      if (!container) return
+      if (membersSnapshot.empty) {
+        container.innerHTML = '<p class="no-results">Ainda não há membros publicados.</p>'
         return
       }
 
@@ -60,6 +61,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       console.log(`${membersSnapshot.size} membros carregados`)
     } catch (error) {
+      const container = document.getElementById("members-container");
+      if (container) container.innerHTML = '<p class="no-results">Não foi possível carregar os membros. Atualize a página para tentar novamente.</p>';
       console.error("Erro ao carregar membros:", error)
     }
   }
@@ -70,8 +73,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       const partnersSnapshot = await db.collection("parceiros").get()
       const container = document.getElementById("partners-container")
 
-      if (!container || partnersSnapshot.empty) {
-        console.log("Nenhum parceiro encontrado ou container não existe")
+      if (!container) return
+      if (partnersSnapshot.empty) {
+        container.innerHTML = '<p class="no-results">Ainda não há parceiros publicados.</p>'
         return
       }
 
@@ -98,6 +102,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       console.log(`${partnersSnapshot.size} parceiros carregados`)
     } catch (error) {
+      const container = document.getElementById("partners-container");
+      if (container) container.innerHTML = '<p class="no-results">Não foi possível carregar os parceiros. Atualize a página para tentar novamente.</p>';
       console.error("Erro ao carregar parceiros:", error)
     }
   }
@@ -348,6 +354,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       console.log(`${events.length} eventos carregados`)
     } catch (error) {
+      const container = document.getElementById("events-container");
+      if (container) container.innerHTML = '<p class="no-results">Não foi possível carregar os eventos. Atualize a página para tentar novamente.</p>';
       console.error("Erro ao carregar eventos:", error)
     }
   }
@@ -419,6 +427,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       console.log(`${programs.length} programas carregados`)
     } catch (error) {
+      const container = document.getElementById("programs-container");
+      if (container) container.innerHTML = '<p class="no-results">Não foi possível carregar os programas. Atualize a página para tentar novamente.</p>';
       console.error("Erro ao carregar programas:", error)
     }
   }
@@ -504,6 +514,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       console.log(`${agendaItems.length} itens de agenda carregados`)
     } catch (error) {
+      const container = document.getElementById("agenda-container");
+      if (container) container.innerHTML = '<p class="no-results">Não foi possível carregar a agenda. Atualize a página para tentar novamente.</p>';
       console.error("Erro ao carregar agenda:", error)
     }
   }
@@ -552,6 +564,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       console.log(`${news.length} notícias carregadas`)
     } catch (error) {
+      const container = document.getElementById("news-container");
+      if (container) container.innerHTML = '<p class="no-results">Não foi possível carregar as notícias. Atualize a página para tentar novamente.</p>';
       console.error("Erro ao carregar notícias:", error)
     }
   }
