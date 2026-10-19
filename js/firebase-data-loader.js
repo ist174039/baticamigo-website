@@ -12,18 +12,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     const isEmpty = state === "empty" && count === 0
     const section = container.closest("section")
 
-    if (containerId === "members-container" || containerId === "partners-container") {
-      const panel = container.closest(".people-panel")
-      if (panel) panel.hidden = isEmpty
-
-      const community = document.getElementById("membros")
-      if (community) {
-        const panels = community.querySelectorAll(".people-panel")
-        community.hidden = panels.length > 0 && [...panels].every((item) => item.hidden)
-      }
-      return
-    }
-
     if (section) section.hidden = isEmpty
   }
 
