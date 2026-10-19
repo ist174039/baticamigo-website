@@ -21,7 +21,11 @@ function SiteFooter() {
       </div>
       <nav className="footer-nav" aria-label="Explorar">
         <span className="footer-label">Explorar</span>
-        <a href="#missao">Quem somos</a><a href="#pilares">O que nos move</a><a href="#eventos">Atividades</a><a href="#membros">Comunidade</a>
+        <a href="#missao">Quem somos</a><a href="#pilares">O que nos move</a><a href="#eventos">Atividades</a><a href="#programas">Programas</a>
+      </nav>
+      <nav className="footer-nav footer-nav-more" aria-label="Mais da BaticAmigo">
+        <span className="footer-label">Comunidade</span>
+        <a href="#agenda">Agenda</a><a href="#membros">Pessoas</a><a href="#parceiros">Parceiros</a><a href="#noticias">Notícias</a>
       </nav>
       <div className="footer-connect">
         <span className="footer-label">Fale connosco</span>
@@ -39,7 +43,7 @@ function Hero() {
 }
 
 function Pillars() {
-  return <section className="content-section pillars-section" id="pilares"><div className="section-topline"><span>O que nos move</span><span>As nossas áreas de impacto</span></div><SectionHeading eyebrow="Quatro pilares, um propósito" title={<>Um lugar para<br/><em>cada possibilidade.</em></>} description="Acreditamos que uma comunidade forte se constrói quando cada pessoa encontra espaço para participar, aprender e contribuir."/><div className="pillar-grid">{pillars.map((pillar) => <article className="pillar-card" key={pillar.number}><div className="pillar-card-top"><span>{pillar.number}</span><i className={`fa-solid ${pillar.icon}`} aria-hidden="true"/></div><h3>{pillar.title}</h3><p>{pillar.text}</p><a href="#contato" aria-label={`Saiba mais sobre ${pillar.title}`}>Saiba mais <span aria-hidden="true">↗</span></a></article>)}</div></section>;
+  return <section className="content-section pillars-section" id="pilares"><div className="section-topline"><span>O que nos move</span><span>As nossas áreas de impacto</span></div><SectionHeading eyebrow="Quatro pilares, um propósito" title={<>Um lugar para<br/><em>cada possibilidade.</em></>} description="Acreditamos que uma comunidade forte se constrói quando cada pessoa encontra espaço para participar, aprender e contribuir."/><div className="pillar-grid">{pillars.map((pillar) => <article className="pillar-card" key={pillar.number}><div className="pillar-card-top"><span>{pillar.number}</span><i className={`fa-solid ${pillar.icon}`} aria-hidden="true"/></div><h3>{pillar.title}</h3><p>{pillar.text}</p><a href="#contato" aria-label={`Fale connosco sobre ${pillar.title}`}>Fale connosco <span aria-hidden="true">↗</span></a></article>)}</div></section>;
 }
 
 function About() {
@@ -66,7 +70,7 @@ function ContactSection() {
 }
 
 export default function HomePage() {
-  return <><SiteHeader/><main><Hero/><About/><Pillars/>
+  return <><SiteHeader/><main id="conteudo"><Hero/><About/><Pillars/>
     <DynamicSection id="eventos" eyebrow="Em comunidade" title={<>Acontece<br/><em>por aqui.</em></>} description="Encontros e atividades para viver em conjunto." containerId="events-container" searchId="eventos-search" searchPlaceholder="Pesquisar eventos"/>
     <DynamicSection id="programas" eyebrow="Novos caminhos" title={<>Ideias que<br/><em>ganham vida.</em></>} description="Iniciativas e programas da associação." containerId="programs-container" searchId="programas-search" searchPlaceholder="Pesquisar programas" className="soft-section"/>
     <DynamicSection id="agenda" eyebrow="Marque na agenda" title={<>O próximo encontro<br/><em>é consigo.</em></>} description="Atividades com data marcada." containerId="agenda-container" searchId="agenda-search" searchPlaceholder="Pesquisar agenda"/>
