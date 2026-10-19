@@ -126,19 +126,22 @@ document.addEventListener("DOMContentLoaded", async () => {
       const container = document.getElementById("members-container")
 
       if (!container) return
-      if (membersSnapshot.empty) {
+      const members = []
+      membersSnapshot.forEach((doc) => members.push({ ...doc.data(), id: doc.id }))
+      // Ignore incomplete Firestore documents. A document with no displayable
+      // information must not create a blank card or keep an empty section open.
+      const visibleMembers = members.filter((member) => [member.nome, member.cargo, member.descricao, member.imagem].some((value) => text(value)))
+      if (!visibleMembers.length) {
         container.innerHTML = '<p class="no-results">Ainda não há membros publicados.</p>'
         setCollectionState("members-container", "empty")
         return
       }
 
-      setCollectionState("members-container", "loaded", membersSnapshot.size)
+      setCollectionState("members-container", "loaded", visibleMembers.length)
 
       container.innerHTML = ""
 
-      const members = []
-      membersSnapshot.forEach((doc) => members.push({ ...doc.data(), id: doc.id }))
-      sortNewest(members, ["createdAt", "created_at", "created", "createdOn", "created_on", "data", "data_criacao", "dataCriacao", "updatedAt", "updated_at", "atualizadoAt"]).forEach((member) => {
+      sortNewest(visibleMembers, ["createdAt", "created_at", "created", "createdOn", "created_on", "data", "data_criacao", "dataCriacao", "updatedAt", "updated_at", "atualizadoAt"]).forEach((member) => {
         const memberCard = document.createElement("div")
         memberCard.className = "member-card"
 
@@ -173,19 +176,21 @@ document.addEventListener("DOMContentLoaded", async () => {
       const container = document.getElementById("partners-container")
 
       if (!container) return
-      if (partnersSnapshot.empty) {
+      const partners = []
+      partnersSnapshot.forEach((doc) => partners.push({ ...doc.data(), id: doc.id }))
+      // Keep only records that can render useful partner information.
+      const visiblePartners = partners.filter((partner) => [partner.nome, partner.logo, partner.descricao, partner.website].some((value) => text(value)))
+      if (!visiblePartners.length) {
         container.innerHTML = '<p class="no-results">Ainda não há parceiros publicados.</p>'
         setCollectionState("partners-container", "empty")
         return
       }
 
-      setCollectionState("partners-container", "loaded", partnersSnapshot.size)
+      setCollectionState("partners-container", "loaded", visiblePartners.length)
 
       container.innerHTML = ""
 
-      const partners = []
-      partnersSnapshot.forEach((doc) => partners.push({ ...doc.data(), id: doc.id }))
-      sortNewest(partners, ["createdAt", "created_at", "created", "createdOn", "created_on", "data", "data_criacao", "dataCriacao", "updatedAt", "updated_at", "atualizadoAt"]).forEach((partner) => {
+      sortNewest(visiblePartners, ["createdAt", "created_at", "created", "createdOn", "created_on", "data", "data_criacao", "dataCriacao", "updatedAt", "updated_at", "atualizadoAt"]).forEach((partner) => {
         const partnerCard = document.createElement("div")
         partnerCard.className = "partner-card"
         const website = safeUrl(partner.website)

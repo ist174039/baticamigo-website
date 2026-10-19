@@ -50,7 +50,12 @@ function DynamicSection({ id, eyebrow, title, description, containerId, searchId
   return <section className={`content-section dynamic-section ${className}`} id={id}>
     <header className="collection-header">
       <div className="collection-heading-copy"><span className="eyebrow">{eyebrow}</span><SectionHeading eyebrow="" title={title} description={description}/></div>
-      {searchId && <label className="collection-search"><i className="fa-solid fa-magnifying-glass" aria-hidden="true"/><input id={searchId} type="search" placeholder={searchPlaceholder} aria-label={searchPlaceholder}/><span className="sr-only">Pesquisar</span></label>}
+      {searchId && <div className="collection-search-wrap">
+        <label className="collection-search" htmlFor={searchId}>
+          <i className="fa-solid fa-magnifying-glass" aria-hidden="true"/>
+          <input id={searchId} type="search" placeholder={searchPlaceholder} aria-label={searchPlaceholder} autoComplete="off" />
+        </label>
+      </div>}
     </header>
     <div className="dynamic-grid collection-grid" id={containerId} aria-live="polite"><div className="empty-state"><span className="empty-mark">✳</span><p>A carregar lista…</p></div></div>
   </section>;

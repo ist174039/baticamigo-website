@@ -13,9 +13,13 @@ const collections = [
 
 export default function CollectionProgressiveReveal() {
   useEffect(() => {
-    const cleanups = [];
+    const cleanups = new Map();
 
-    collections.forEach(({ id, searchId, label, item, batch }) => {
+    // The Firebase loader runs after hydration and may replace the list nodes.
+    // Keep looking for the containers and observe their descendants so a late
+    // render, filter, or replacement always recalculates the visible batch.
+    function attach({ id, searchId, label, item, batch }) {
+      if (cleanups.has(id)) return;
       const container = document.getElementById(id);
       if (!container) return;
 
@@ -34,10 +38,14 @@ export default function CollectionProgressiveReveal() {
 
       function update() {
         const cards = Array.from(container.querySelectorAll(item));
-        visibleCount = Math.min(visibleCount, cards.length);
+        visibleCount = Math.max(batch, Math.min(visibleCount, cards.length));
         cards.forEach((card, index) => card.classList.toggle("collection-item-hidden", index >= visibleCount));
         controls.hidden = cards.length <= batch;
-        if (cards.length <= batch) return;
+        if (cards.length <= batch) {
+          button.textContent = "";
+          button.onclick = null;
+          return;
+        }
 
         const hasMore = visibleCount < cards.length;
         button.textContent = hasMore ? `Ver mais (${cards.length - visibleCount})` : "Mostrar menos";
@@ -59,17 +67,26 @@ export default function CollectionProgressiveReveal() {
       searchInput?.addEventListener("input", resetList);
 
       const observer = new MutationObserver(update);
-      observer.observe(container, { childList: true });
+      observer.observe(container, { childList: true, subtree: true });
       update();
-      cleanups.push(() => {
+      cleanups.set(id, () => {
         observer.disconnect();
         searchInput?.removeEventListener("input", resetList);
         button.onclick = null;
         if (createdControls) controls.remove();
       });
-    });
+    }
 
-    return () => cleanups.forEach((cleanup) => cleanup());
+    const attachExisting = () => collections.forEach(attach);
+    attachExisting();
+    const documentObserver = new MutationObserver(attachExisting);
+    documentObserver.observe(document.documentElement, { childList: true, subtree: true });
+
+    return () => {
+      documentObserver.disconnect();
+      cleanups.forEach((cleanup) => cleanup());
+      cleanups.clear();
+    };
   }, []);
 
   return null;
