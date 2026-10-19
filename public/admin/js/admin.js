@@ -16,7 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
       loadData()
     } else {
       // Redirecionar para a página de login se não estiver autenticado
-      window.location.href = "index.html"
+      window.location.href = "/admin/login"
     }
   })
 
@@ -24,7 +24,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("logout-btn").addEventListener("click", async () => {
     try {
       await auth.signOut()
-      window.location.href = "index.html"
+      window.location.href = "/admin/login"
     } catch (error) {
       console.error("Erro ao fazer logout:", error)
       alert("Erro ao fazer logout. Tente novamente.")

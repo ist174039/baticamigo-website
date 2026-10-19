@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", () => {
   auth.onAuthStateChanged((user) => {
     if (user) {
       // Redirecionar para o dashboard se já estiver autenticado
-      window.location.href = "dashboard.html"
+      window.location.href = "/admin/dashboard"
     }
   })
 
@@ -39,7 +39,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // Tentativa de login
         await auth.signInWithEmailAndPassword(email, password)
         // Redirecionar para o dashboard após login bem-sucedido
-        window.location.href = "dashboard.html"
+        window.location.href = "/admin/dashboard"
       } catch (error) {
         console.error("Erro de autenticação:", error)
 
