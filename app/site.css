@@ -426,3 +426,26 @@ body{background:var(--paper)}
   .dynamic-grid>.event-card,.dynamic-grid>.program-card,.dynamic-grid>.agenda-card,.dynamic-grid>.news-card{grid-column:1/-1}
   .people-section .people-grid,.partner-section .partner-grid{grid-template-columns:1fr}
 }
+
+/* Use a compact media rail so portraits and partner marks stay balanced beside their details. */
+.people-section .people-grid>.member-card,.partner-section .partner-grid>.partner-card{display:grid;grid-template-columns:minmax(148px,32%) minmax(0,1fr);align-items:stretch;min-height:190px}
+.people-section .people-grid .member-image,.partner-section .partner-grid .partner-logo{width:auto;height:auto;min-width:0;min-height:170px;display:grid;place-items:center;overflow:hidden;padding:14px;background:#f6f2f8;border:0;border-right:1px solid #eee8f1}
+.people-section .people-grid .member-image img{width:100%;height:100%;max-width:170px;max-height:170px;object-fit:contain;object-position:center;transform:none!important}
+.partner-section .partner-grid .partner-logo{background:#f7f4f9}
+.partner-section .partner-grid .partner-logo img{width:100%;height:100%;max-width:155px;max-height:105px;object-fit:contain;object-position:center;transform:none!important}
+.member-image.media-fallback,.partner-logo.media-fallback{background:#f6f2f8}
+.people-section .people-grid .member-info,.partner-section .partner-grid .partner-info{align-self:center;padding:20px 22px}
+@media(max-width:700px){
+  .people-section .people-grid>.member-card,.partner-section .partner-grid>.partner-card{grid-template-columns:minmax(112px,34%) minmax(0,1fr);min-height:154px}
+  .people-section .people-grid .member-image,.partner-section .partner-grid .partner-logo{min-height:138px;padding:10px}
+  .people-section .people-grid .member-image img{max-width:132px;max-height:132px}
+  .partner-section .partner-grid .partner-logo img{max-width:120px;max-height:84px}
+  .people-section .people-grid .member-info,.partner-section .partner-grid .partner-info{padding:15px 16px}
+}
+@media(max-width:380px){
+  .people-section .people-grid>.member-card,.partner-section .partner-grid>.partner-card{grid-template-columns:98px minmax(0,1fr);min-height:136px}
+  .people-section .people-grid .member-image,.partner-section .partner-grid .partner-logo{min-height:120px;padding:8px}
+  .people-section .people-grid .member-image img{max-width:112px;max-height:112px}
+  .partner-section .partner-grid .partner-logo img{max-width:96px;max-height:72px}
+  .people-section .people-grid .member-info,.partner-section .partner-grid .partner-info{padding:12px}
+}
