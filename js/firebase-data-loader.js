@@ -2,8 +2,37 @@
 document.addEventListener("DOMContentLoaded", async () => {
   console.log("Carregando dados do Firebase...")
 
-  // Verificar se o Firebase está inicializado
+  // Hide only collections that successfully loaded with zero records. A failed
+  // request stays visible so visitors can distinguish an error from no content.
+  function setCollectionState(containerId, state, count = 0) {
+    const container = document.getElementById(containerId)
+    if (!container) return
+
+    container.dataset.collectionState = state
+    const isEmpty = state === "empty" && count === 0
+    const section = container.closest("section")
+
+    if (containerId === "members-container" || containerId === "partners-container") {
+      const panel = container.closest(".people-panel")
+      if (panel) panel.hidden = isEmpty
+
+      const community = document.getElementById("membros")
+      if (community) {
+        const panels = community.querySelectorAll(".people-panel")
+        community.hidden = panels.length > 0 && [...panels].every((item) => item.hidden)
+      }
+      return
+    }
+
+    if (section) section.hidden = isEmpty
+  }
+
+  // Keep sections visible when Firebase fails to initialize; that is an error,
+  // not an empty collection.
+  const collectionIds = ["events-container", "programs-container", "agenda-container", "members-container", "partners-container", "news-container"]
+  collectionIds.forEach((id) => setCollectionState(id, "loading"))
   if (typeof firebase === "undefined") {
+    collectionIds.forEach((id) => setCollectionState(id, "error"))
     console.error("Firebase não está inicializado. Verifique se os scripts do Firebase foram carregados.")
     return
   }
@@ -35,8 +64,11 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (!container) return
       if (membersSnapshot.empty) {
         container.innerHTML = '<p class="no-results">Ainda não há membros publicados.</p>'
+        setCollectionState("members-container", "empty")
         return
       }
+
+      setCollectionState("members-container", "loaded", membersSnapshot.size)
 
       container.innerHTML = ""
 
@@ -62,6 +94,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       console.log(`${membersSnapshot.size} membros carregados`)
     } catch (error) {
       const container = document.getElementById("members-container");
+      setCollectionState("members-container", "error");
       if (container) container.innerHTML = '<p class="no-results">Não foi possível carregar os membros. Atualize a página para tentar novamente.</p>';
       console.error("Erro ao carregar membros:", error)
     }
@@ -76,8 +109,11 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (!container) return
       if (partnersSnapshot.empty) {
         container.innerHTML = '<p class="no-results">Ainda não há parceiros publicados.</p>'
+        setCollectionState("partners-container", "empty")
         return
       }
+
+      setCollectionState("partners-container", "loaded", partnersSnapshot.size)
 
       container.innerHTML = ""
 
@@ -103,6 +139,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       console.log(`${partnersSnapshot.size} parceiros carregados`)
     } catch (error) {
       const container = document.getElementById("partners-container");
+      setCollectionState("partners-container", "error");
       if (container) container.innerHTML = '<p class="no-results">Não foi possível carregar os parceiros. Atualize a página para tentar novamente.</p>';
       console.error("Erro ao carregar parceiros:", error)
     }
@@ -237,20 +274,28 @@ document.addEventListener("DOMContentLoaded", async () => {
     const gallerySection = document.createElement("div")
     gallerySection.className = "gallery"
 
-    const galleryTitle = document.createElement("div")
+    const galleryId = `gallery-${Math.random().toString(36).slice(2, 10)}`
+    const galleryTitle = document.createElement("button")
+    galleryTitle.type = "button"
     galleryTitle.className = "gallery-title"
-    galleryTitle.innerHTML = `<i class="fas fa-chevron-down"></i> ${title || "Galeria"}`
+    galleryTitle.setAttribute("aria-expanded", "false")
+    galleryTitle.setAttribute("aria-controls", galleryId)
+    galleryTitle.innerHTML = `<i class="fas fa-chevron-down" aria-hidden="true"></i> ${title || "Galeria"}`
 
     const galleryContent = document.createElement("div")
     galleryContent.className = "gallery-content"
+    galleryContent.id = galleryId
 
     item.galeria.forEach((media, index) => {
-      const galleryItem = document.createElement("div")
+      const galleryItem = document.createElement("button")
+      galleryItem.type = "button"
       galleryItem.className = `gallery-item ${media.tipo === "video" ? "video" : ""}`
+      galleryItem.setAttribute("aria-label", `Abrir ${media.tipo === "video" ? "vídeo" : "fotografia"}${media.legenda ? `: ${media.legenda}` : ""}`)
 
       const thumbnail = document.createElement("img")
       thumbnail.src = media.tipo === "video" ? media.thumbnail : media.url
-      thumbnail.alt = media.legenda
+      thumbnail.alt = media.legenda || ""
+      thumbnail.loading = "lazy"
 
       galleryItem.appendChild(thumbnail)
       galleryContent.appendChild(galleryItem)
@@ -263,6 +308,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     galleryTitle.addEventListener("click", () => {
       galleryTitle.classList.toggle("active")
       galleryContent.classList.toggle("active")
+      galleryTitle.setAttribute("aria-expanded", String(galleryContent.classList.contains("active")))
     })
 
     gallerySection.appendChild(galleryTitle)
@@ -286,6 +332,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       eventsSnapshot.forEach((doc) => {
         events.push({ ...doc.data(), id: doc.id })
       })
+
+      setCollectionState("events-container", events.length ? "loaded" : "empty", events.length)
 
       function renderEvents(filteredEvents = events) {
         container.innerHTML = ""
@@ -355,6 +403,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       console.log(`${events.length} eventos carregados`)
     } catch (error) {
       const container = document.getElementById("events-container");
+      setCollectionState("events-container", "error");
       if (container) container.innerHTML = '<p class="no-results">Não foi possível carregar os eventos. Atualize a página para tentar novamente.</p>';
       console.error("Erro ao carregar eventos:", error)
     }
@@ -376,6 +425,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       programsSnapshot.forEach((doc) => {
         programs.push({ ...doc.data(), id: doc.id })
       })
+
+      setCollectionState("programs-container", programs.length ? "loaded" : "empty", programs.length)
 
       function renderPrograms(filteredPrograms = programs) {
         container.innerHTML = ""
@@ -428,6 +479,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       console.log(`${programs.length} programas carregados`)
     } catch (error) {
       const container = document.getElementById("programs-container");
+      setCollectionState("programs-container", "error");
       if (container) container.innerHTML = '<p class="no-results">Não foi possível carregar os programas. Atualize a página para tentar novamente.</p>';
       console.error("Erro ao carregar programas:", error)
     }
@@ -449,6 +501,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       agendaSnapshot.forEach((doc) => {
         agendaItems.push({ ...doc.data(), id: doc.id })
       })
+
+      setCollectionState("agenda-container", agendaItems.length ? "loaded" : "empty", agendaItems.length)
 
       function renderAgenda(filteredAgenda = agendaItems) {
         container.innerHTML = ""
@@ -515,6 +569,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       console.log(`${agendaItems.length} itens de agenda carregados`)
     } catch (error) {
       const container = document.getElementById("agenda-container");
+      setCollectionState("agenda-container", "error");
       if (container) container.innerHTML = '<p class="no-results">Não foi possível carregar a agenda. Atualize a página para tentar novamente.</p>';
       console.error("Erro ao carregar agenda:", error)
     }
@@ -535,6 +590,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       newsSnapshot.forEach((doc) => {
         news.push({ ...doc.data(), id: doc.id })
       })
+
+      setCollectionState("news-container", news.length ? "loaded" : "empty", news.length)
 
       container.innerHTML = ""
 
@@ -565,6 +622,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       console.log(`${news.length} notícias carregadas`)
     } catch (error) {
       const container = document.getElementById("news-container");
+      setCollectionState("news-container", "error");
       if (container) container.innerHTML = '<p class="no-results">Não foi possível carregar as notícias. Atualize a página para tentar novamente.</p>';
       console.error("Erro ao carregar notícias:", error)
     }

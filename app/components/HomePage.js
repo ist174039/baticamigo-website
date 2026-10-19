@@ -21,7 +21,7 @@ function Hero() {
 }
 
 function ImpactBand() {
-  return <div className="impact-band"><div><strong>4</strong><span>pilares de<br/>intervenção</span></div><div><strong>1</strong><span>comunidade<br/>mais próxima</span></div><div><strong>∞</strong><span>possibilidades<br/>para crescer</span></div><p>Pequenos gestos.<br/><b>Impacto que fica.</b></p></div>;
+  return <div className="impact-band"><div><strong>4</strong><span>áreas de<br/>intervenção</span></div><div><strong>1</strong><span>comunidade<br/>mais próxima</span></div><p>Pequenos gestos.<br/><b>Impacto que fica.</b></p></div>;
 }
 
 function Pillars() {
