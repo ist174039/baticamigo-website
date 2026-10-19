@@ -59,6 +59,29 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (className) img.className = className
     return img
   }
+  function appendCardMedia(wrapper, url, label, kind) {
+    if (!wrapper) return
+    const image = imageElement(url, "", `${kind}-photo`)
+    if (!image) {
+      appendMediaFallback(wrapper, label)
+      return
+    }
+
+    image.addEventListener("error", () => {
+      image.remove()
+      appendMediaFallback(wrapper, label)
+    }, { once: true })
+    wrapper.appendChild(image)
+  }
+  function appendMediaFallback(wrapper, label) {
+    wrapper.classList.add("media-fallback")
+    const initials = text(label).split(/\s+/).filter(Boolean).slice(0, 2).map((word) => word.charAt(0)).join("").toLocaleUpperCase() || "✳"
+    const mark = document.createElement("span")
+    mark.className = "media-initials"
+    mark.setAttribute("aria-hidden", "true")
+    mark.textContent = initials
+    wrapper.replaceChildren(mark)
+  }
   function pruneEmptyFields(root) {
     root.querySelectorAll("p, span, a").forEach((node) => {
       if (!node.textContent.trim() && !node.querySelector("img, video, i")) node.remove()
@@ -130,7 +153,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       membersSnapshot.forEach((doc) => members.push({ ...doc.data(), id: doc.id }))
       // Ignore incomplete Firestore documents. A document with no displayable
       // information must not create a blank card or keep an empty section open.
-      const visibleMembers = members.filter((member) => [member.nome, member.cargo, member.descricao, member.imagem].some((value) => text(value)))
+      const visibleMembers = members.filter((member) => text(member.nome))
       if (!visibleMembers.length) {
         container.innerHTML = '<p class="no-results">Ainda não há membros publicados.</p>'
         setCollectionState("members-container", "empty")
@@ -146,9 +169,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         memberCard.className = "member-card"
 
         memberCard.innerHTML = `
-          <div class="member-image">
-            <img src="${safeUrl(member.imagem)}" alt="${escapeHtml(member.nome)}">
-          </div>
+          <div class="member-image"></div>
           <div class="member-info">
             <h3>${escapeHtml(member.nome)}</h3>
             <p class="member-position">${escapeHtml(member.cargo)}</p>
@@ -156,6 +177,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           </div>
         `
 
+        appendCardMedia(memberCard.querySelector(".member-image"), member.imagem, member.nome, "member")
         finalizeCard(memberCard)
         container.appendChild(memberCard)
       })
@@ -179,7 +201,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       const partners = []
       partnersSnapshot.forEach((doc) => partners.push({ ...doc.data(), id: doc.id }))
       // Keep only records that can render useful partner information.
-      const visiblePartners = partners.filter((partner) => [partner.nome, partner.logo, partner.descricao, partner.website].some((value) => text(value)))
+      const visiblePartners = partners.filter((partner) => text(partner.nome))
       if (!visiblePartners.length) {
         container.innerHTML = '<p class="no-results">Ainda não há parceiros publicados.</p>'
         setCollectionState("partners-container", "empty")
@@ -196,9 +218,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         const website = safeUrl(partner.website)
 
         partnerCard.innerHTML = `
-          <div class="partner-logo">
-            <img src="${safeUrl(partner.logo)}" alt="${escapeHtml(partner.nome)}">
-          </div>
+          <div class="partner-logo"></div>
           <div class="partner-info">
             <h3>${escapeHtml(partner.nome)}</h3>
             <p>${escapeHtml(partner.descricao)}</p>
@@ -206,6 +226,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           </div>
         `
 
+        appendCardMedia(partnerCard.querySelector(".partner-logo"), partner.logo, partner.nome, "partner")
         finalizeCard(partnerCard)
         container.appendChild(partnerCard)
       })
