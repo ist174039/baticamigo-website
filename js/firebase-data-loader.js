@@ -100,6 +100,37 @@ document.addEventListener("DOMContentLoaded", async () => {
     return date.toLocaleDateString(document.documentElement.lang || "pt-PT", options)
   }
 
+  // Sort public records newest first. Firestore timestamps, Date instances,
+  // ISO strings and common seconds/milliseconds fields are accepted. Missing
+  // or invalid dates retain their original Firestore order after dated rows.
+  function dateValue(value) {
+    if (value == null) return null
+    if (typeof value.toDate === "function") value = value.toDate()
+    if (value instanceof Date) return Number.isNaN(value.getTime()) ? null : value.getTime()
+    if (typeof value === "number") return value < 1e12 ? value * 1000 : value
+    if (typeof value === "string") {
+      const parsed = Date.parse(value)
+      return Number.isNaN(parsed) ? null : parsed
+    }
+    if (typeof value === "object") {
+      if (typeof value.seconds === "number") return value.seconds * 1000
+      if (typeof value._seconds === "number") return value._seconds * 1000
+    }
+    return null
+  }
+
+  function sortNewest(records, fields) {
+    return records
+      .map((record, index) => ({ record, index, time: fields.map((field) => dateValue(record[field])).find((value) => value != null) }))
+      .sort((a, b) => {
+        if (a.time == null && b.time != null) return 1
+        if (a.time != null && b.time == null) return -1
+        if (a.time != null && b.time != null && a.time !== b.time) return b.time - a.time
+        return a.index - b.index
+      })
+      .map(({ record }) => record)
+  }
+
   // Função para carregar e exibir membros
   async function loadMembers() {
     try {
@@ -117,8 +148,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       container.innerHTML = ""
 
-      membersSnapshot.forEach((doc) => {
-        const member = doc.data()
+      const members = []
+      membersSnapshot.forEach((doc) => members.push({ ...doc.data(), id: doc.id }))
+      sortNewest(members, ["createdAt", "created_at", "created", "createdOn", "created_on", "data", "data_criacao", "dataCriacao", "updatedAt", "updated_at", "atualizadoAt"]).forEach((member) => {
         const memberCard = document.createElement("div")
         memberCard.className = "member-card"
 
@@ -163,8 +195,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       container.innerHTML = ""
 
-      partnersSnapshot.forEach((doc) => {
-        const partner = doc.data()
+      const partners = []
+      partnersSnapshot.forEach((doc) => partners.push({ ...doc.data(), id: doc.id }))
+      sortNewest(partners, ["createdAt", "created_at", "created", "createdOn", "created_on", "data", "data_criacao", "dataCriacao", "updatedAt", "updated_at", "atualizadoAt"]).forEach((partner) => {
         const partnerCard = document.createElement("div")
         partnerCard.className = "partner-card"
         const website = safeUrl(partner.website)
@@ -384,6 +417,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       eventsSnapshot.forEach((doc) => {
         events.push({ ...doc.data(), id: doc.id })
       })
+      sortNewest(events, ["data", "data_inicio", "data_publicacao", "dataPublicacao", "createdAt", "created_at"])
 
       setCollectionState("events-container", events.length ? "loaded" : "empty", events.length)
 
@@ -471,6 +505,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       programsSnapshot.forEach((doc) => {
         programs.push({ ...doc.data(), id: doc.id })
       })
+      sortNewest(programs, ["data_inicio", "data", "data_publicacao", "dataPublicacao", "createdAt", "created_at"])
 
       setCollectionState("programs-container", programs.length ? "loaded" : "empty", programs.length)
 
@@ -542,6 +577,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       agendaSnapshot.forEach((doc) => {
         agendaItems.push({ ...doc.data(), id: doc.id })
       })
+      sortNewest(agendaItems, ["data_inicio", "data", "data_publicacao", "dataPublicacao", "createdAt", "created_at"])
 
       setCollectionState("agenda-container", agendaItems.length ? "loaded" : "empty", agendaItems.length)
 
@@ -626,6 +662,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       newsSnapshot.forEach((doc) => {
         news.push({ ...doc.data(), id: doc.id })
       })
+      sortNewest(news, ["data", "data_publicacao", "dataPublicacao", "createdAt", "created_at", "updatedAt", "updated_at"])
 
       setCollectionState("news-container", news.length ? "loaded" : "empty", news.length)
 
