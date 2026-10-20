@@ -28,6 +28,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const response = await fetch("/api/admin/users?check=1", { headers: { Authorization: `Bearer ${token}` }, cache: "no-store" })
     if (response.status === 401 || response.status === 403) return false
     if (!response.ok) throw new Error("A validação de acesso falhou.")
+    const result = await response.json()
+    if (result.refreshToken) await user.getIdToken(true)
     return true
   }
 

@@ -20,6 +20,8 @@ document.addEventListener("DOMContentLoaded", () => {
           return
         }
         if (!access.ok) throw new Error("Falha ao validar as permissões da conta.")
+        const accessResult = await access.json()
+        if (accessResult.refreshToken) await user.getIdToken(true)
       } catch (error) {
         console.error("Não foi possível validar o acesso administrativo:", error)
         const errorBox = document.getElementById("admin-init-error")

@@ -54,7 +54,15 @@ async function requireAdmin(request) {
     throw new ApiError(401, "A sessão expirou. Inicie sessão novamente.");
   }
   if (!isAdmin(decoded)) throw new ApiError(403, "A sua conta não tem acesso à gestão de utilizadores.");
-  return { auth, decoded };
+  let refreshToken = false;
+  if (bootstrapAdmins().has(String(decoded.email || "").toLowerCase())) {
+    const account = await auth.getUser(decoded.uid);
+    if (account.customClaims?.admin !== true) {
+      await auth.setCustomUserClaims(decoded.uid, { ...account.customClaims, admin: true, role: "admin" });
+      refreshToken = true;
+    }
+  }
+  return { auth, decoded, refreshToken };
 }
 
 function json(data, status = 200) {
@@ -97,9 +105,9 @@ async function listAllUsers(auth) {
 
 export async function GET(request) {
   try {
-    const { auth } = await requireAdmin(request);
+    const { auth, refreshToken } = await requireAdmin(request);
     const url = new URL(request.url);
-    if (url.searchParams.get("check") === "1") return json({ authorized: true });
+    if (url.searchParams.get("check") === "1") return json({ authorized: true, refreshToken });
     const users = await listAllUsers(auth);
     return json({ users: users.filter((user) => isAdmin({ email: user.email, admin: user.customClaims?.admin })).map(serializeUser) });
   } catch (error) {
