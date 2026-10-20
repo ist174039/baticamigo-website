@@ -4,6 +4,8 @@
 
 ## Problemas corrigidos
 
+- Parceiros e colaboradores no admin estavam aninhados dentro de Contacto, que ficava oculto ao navegar. Corrigido o fecho da secção e acrescentada uma regressão para garantir painéis independentes.
+
 - Área misturava apresentação pública com operação: passou para navegação lateral e cartões segundo o admin, com visão geral e atalhos.
 - Formulários de sessão/pessoa ficavam abaixo das listas: editores aparecem antes da lista, com foco no primeiro campo, ação de fechar e cancelamento.
 - Seleções múltiplas exigiam teclas Ctrl/Command: substituídas por caixas de seleção com rótulos e áreas de toque.
