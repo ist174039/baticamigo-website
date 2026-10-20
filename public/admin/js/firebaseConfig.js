@@ -20,10 +20,9 @@ if (!firebase.apps.length) {
 const auth = firebase.auth()
 const db = firebase.firestore()
 const storage = firebase.storage()
-const functions = firebase.functions()
 
 // Configuração de idioma para português
 auth.useDeviceLanguage()
 
 // Exportar as referências
-export { auth, db, storage, functions }
+export { auth, db, storage }

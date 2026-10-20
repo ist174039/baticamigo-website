@@ -7,7 +7,6 @@ const scripts = [
   "https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js",
   "https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js",
   "https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js",
-  "https://www.gstatic.com/firebasejs/8.10.0/firebase-functions.js",
 ];
 
 // The admin area can mount twice in React Strict Mode. Keep script loading
@@ -37,10 +36,9 @@ export default function AdminFirebaseScripts({ page }) {
   useEffect(() => {
     let cancelled = false;
     async function start() {
-      for (const src of scripts) {
-        if (cancelled) return;
-        await loadScript(src);
-      }
+      await loadScript(scripts[0]);
+      await Promise.all(scripts.slice(1).map((src) => loadScript(src)));
+      if (cancelled) return;
       await loadScript("/admin/js/firebaseConfig.js", true);
       await loadScript(`/admin/js/${page === "login" ? "auth" : "admin"}.js`, true);
       if (!cancelled && !initializedPages.has(page)) {

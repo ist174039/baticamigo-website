@@ -33,7 +33,6 @@ document.addEventListener("DOMContentLoaded", () => {
   window.db = firebase.firestore()
   window.auth = firebase.auth()
   window.storage = firebase.storage()
-  window.functions = firebase.functions()
 
   // Configuração de idioma para português
   if (firebase && firebase.auth) {
