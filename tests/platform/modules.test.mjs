@@ -55,3 +55,10 @@ test('admin rendering escapes stored text and attributes and disallows executabl
   assert.equal(safeMediaUrl('data:text/html;base64,AAAA'), '');
   assert.equal(safeMediaUrl('https://example.org/a" onerror="x'), 'https://example.org/a%22%20onerror=%22x');
 });
+
+test('assessment chronology uses the pedagogical date rather than entry order',()=>{
+  const base={kind:'assessment',studentId:'s1',subject:'Português',origin:'Teste',scaleMin:0,scaleMax:20};
+  const records=[{...base,id:'old',assessedOn:'2026-01-01',createdAt:'2026-03-01',score:10},{...base,id:'new',assessedOn:'2026-02-01',createdAt:'2026-02-02',score:14}];
+  const summary=progressSummary(student,records,[],[]);assert.equal(summary.subjects[0].latest.id,'new');assert.equal(summary.subjects[0].change,4);
+  assert.throws(()=>moduleInput({...base,title:'Teste',period:'Mensal',score:10,assessedOn:'2026-99-99'}));
+});

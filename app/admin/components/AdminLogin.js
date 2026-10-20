@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-html-link-for-pages -- Full document navigation resets the legacy Firebase login lifecycle. */
 import Image from "next/image";
 import AdminFirebaseScripts from "./AdminFirebaseScripts";
 
