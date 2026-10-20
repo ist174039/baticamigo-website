@@ -53,7 +53,7 @@ export default function AdminTablePagination() {
           </div>
         </div>
       `;
-      wrapper.insertAdjacentElement("afterend", controls);
+      wrapper.insertAdjacentElement("beforebegin", controls);
 
       const previous = controls.querySelector('[data-page="previous"]');
       const next = controls.querySelector('[data-page="next"]');

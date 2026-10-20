@@ -305,6 +305,19 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       failed.push(name)
       console.error(`Erro ao carregar ${name}:`, result.reason)
+      if (name === "membros" || name === "parceiros") {
+        const tbody = document.getElementById(`${name}-table-body`)
+        if (tbody) {
+          const row = document.createElement("tr")
+          const cell = document.createElement("td")
+          cell.colSpan = 3
+          cell.textContent = result.reason?.code === "permission-denied"
+            ? `Sem permissão do Firestore para consultar ${name}.`
+            : `Não foi possível carregar ${name}. Tente novamente.`
+          row.appendChild(cell)
+          tbody.replaceChildren(row)
+        }
+      }
     })
 
     const errorBox = document.getElementById("admin-init-error")
@@ -433,6 +446,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const tableBody = document.getElementById("membros-table-body")
     tableBody.innerHTML = ""
 
+    if (!membros.length) {
+      const row = document.createElement("tr")
+      row.innerHTML = '<td colspan="3">Ainda não existem membros registados.</td>'
+      tableBody.appendChild(row)
+      return
+    }
+
     membros.forEach((doc) => {
       const membro = doc.data()
       const row = document.createElement("tr")
@@ -457,6 +477,13 @@ document.addEventListener("DOMContentLoaded", () => {
   function renderParceiros(parceiros) {
     const tableBody = document.getElementById("parceiros-table-body")
     tableBody.innerHTML = ""
+
+    if (!parceiros.length) {
+      const row = document.createElement("tr")
+      row.innerHTML = '<td colspan="3">Ainda não existem parceiros registados.</td>'
+      tableBody.appendChild(row)
+      return
+    }
 
     parceiros.forEach((doc) => {
       const parceiro = doc.data()
