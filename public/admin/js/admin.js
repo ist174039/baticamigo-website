@@ -313,6 +313,23 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Função para carregar dados do Firestore
+  async function loadAdminCollection(name) {
+    const user = auth.currentUser
+    if (!user) throw new Error("A sessão terminou. Inicie sessão novamente.")
+    const token = await user.getIdToken()
+    const response = await fetch(`/api/admin/users?collection=${encodeURIComponent(name)}`, {
+      headers: { Authorization: `Bearer ${token}` },
+      cache: "no-store",
+    })
+    const result = await response.json().catch(() => ({}))
+    if (!response.ok) {
+      const error = new Error(result.error || `Não foi possível carregar ${name}.`)
+      error.code = result.code || "admin-api/unavailable"
+      throw error
+    }
+    return { docs: (result.documents || []).map(({ id, data }) => ({ id, data: () => data })) }
+  }
+
   async function loadData() {
     const collections = [
       ["eventos", renderEventos],
@@ -322,7 +339,11 @@ document.addEventListener("DOMContentLoaded", () => {
       ["membros", renderMembros],
       ["parceiros", renderParceiros],
     ]
-    const results = await Promise.allSettled(collections.map(([name]) => db.collection(name).get()))
+    const results = await Promise.allSettled(collections.map(([name]) => (
+      name === "membros" || name === "parceiros"
+        ? loadAdminCollection(name)
+        : db.collection(name).get()
+    )))
     const failed = []
 
     results.forEach((result, index) => {

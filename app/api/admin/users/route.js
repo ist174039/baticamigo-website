@@ -1,6 +1,7 @@
 import { randomBytes } from "node:crypto";
 import { cert, getApps, initializeApp } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
+import { getFirestore } from "firebase-admin/firestore";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -110,6 +111,11 @@ export async function GET(request) {
     const { auth, refreshToken } = await requireAdmin(request);
     const url = new URL(request.url);
     if (url.searchParams.get("check") === "1") return json({ authorized: true, refreshToken });
+    const collectionName = url.searchParams.get("collection");
+    if (collectionName === "membros" || collectionName === "parceiros") {
+      const snapshot = await getFirestore(auth.app).collection(collectionName).get();
+      return json({ documents: snapshot.docs.map((doc) => ({ id: doc.id, data: doc.data() })) });
+    }
     const users = await listAllUsers(auth);
     return json({ users: users.filter((user) => isAdmin({ email: user.email, admin: user.customClaims?.admin })).map(serializeUser) });
   } catch (error) {
