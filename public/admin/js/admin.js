@@ -26,8 +26,9 @@ document.addEventListener("DOMContentLoaded", () => {
         console.error("Não foi possível validar o acesso administrativo:", error)
         const errorBox = document.getElementById("admin-init-error")
         if (errorBox) {
-          errorBox.textContent = "Não foi possível validar as permissões administrativas. Atualize a página ou tente novamente mais tarde."
+          errorBox.textContent = `Não foi possível validar as permissões administrativas (${error.code || "erro de ligação"}). Atualize a página ou tente novamente mais tarde.`
           errorBox.hidden = false
+          errorBox.style.display = "block"
         }
         return
       }
@@ -339,11 +340,29 @@ document.addEventListener("DOMContentLoaded", () => {
       ["membros", renderMembros],
       ["parceiros", renderParceiros],
     ]
-    const results = await Promise.allSettled(collections.map(([name]) => (
+    const errorBox = document.getElementById("admin-init-error")
+    if (errorBox) {
+      errorBox.textContent = "A carregar conteúdos e dados da comunidade…"
+      errorBox.hidden = false
+      errorBox.style.display = "block"
+    }
+    const pending = collections.map(([name]) => (
       name === "membros" || name === "parceiros"
         ? loadAdminCollection(name)
         : db.collection(name).get()
-    )))
+    ))
+    pending.forEach((promise, index) => {
+      const [name] = collections[index]
+      const tbody = document.getElementById(`${name}-table-body`)
+      if (!tbody) return
+      const row = document.createElement("tr")
+      const cell = document.createElement("td")
+      cell.colSpan = name === "eventos" ? 5 : name === "programas" ? 4 : 3
+      cell.textContent = "A carregar…"
+      row.append(cell)
+      tbody.replaceChildren(row)
+    })
+    const results = await Promise.allSettled(pending)
     const failed = []
 
     results.forEach((result, index) => {
@@ -360,9 +379,7 @@ document.addEventListener("DOMContentLoaded", () => {
           const row = document.createElement("tr")
           const cell = document.createElement("td")
           cell.colSpan = 3
-          cell.textContent = result.reason?.code === "permission-denied"
-            ? `Sem permissão do Firestore para consultar ${name}.`
-            : `Não foi possível carregar ${name}. Tente novamente.`
+          cell.textContent = `Não foi possível carregar ${name}. ${result.reason?.message || "Tente novamente."}`
           row.appendChild(cell)
           tbody.replaceChildren(row)
         }
@@ -372,14 +389,15 @@ document.addEventListener("DOMContentLoaded", () => {
     const errorBox = document.getElementById("admin-init-error")
     if (errorBox) {
       if (failed.length) {
-        const reason = results.find((result) => result.status === "rejected")?.reason
-        const permissionDenied = reason?.code === "permission-denied"
-        errorBox.textContent = permissionDenied
-          ? `Sem permissão para ler ${failed.join(", ")}. Verifique as regras de acesso do Firestore para a conta autenticada.`
-          : `Não foi possível carregar ${failed.join(", ")}. Tente novamente; as outras listas continuam disponíveis.`
+        const errors = results
+          .map((result, index) => result.status === "rejected" ? `${collections[index][0]} (${result.reason?.code || "erro"})` : null)
+          .filter(Boolean)
+        errorBox.textContent = `Falha ao carregar ${failed.join(", ")}: ${errors.join("; ")}. Abra a lista para ver os detalhes.`
         errorBox.hidden = false
+        errorBox.style.display = "block"
       } else {
         errorBox.hidden = true
+        errorBox.style.display = "none"
       }
     }
   }

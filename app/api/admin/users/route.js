@@ -15,24 +15,25 @@ const bootstrapAdmins = () => new Set(
 );
 
 class ApiError extends Error {
-  constructor(status, message) {
+  constructor(status, message, code) {
     super(message);
     this.status = status;
+    this.code = code;
   }
 }
 
 function firebaseAuth() {
   const serializedAccount = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
-  if (!serializedAccount) throw new ApiError(503, "A gestão de utilizadores ainda não está configurada no servidor.");
+  if (!serializedAccount) throw new ApiError(503, "A gestão de utilizadores ainda não está configurada no servidor.", "admin/configuration-missing");
 
   let serviceAccount;
   try {
     serviceAccount = JSON.parse(serializedAccount);
   } catch {
-    throw new ApiError(503, "A credencial Firebase do servidor não tem um formato válido.");
+    throw new ApiError(503, "A credencial Firebase do servidor não tem um formato válido.", "admin/invalid-credentials");
   }
   if (serviceAccount.project_id !== projectId) {
-    throw new ApiError(503, "A credencial Firebase configurada pertence a outro projeto.");
+    throw new ApiError(503, "A credencial Firebase configurada pertence a outro projeto.", "admin/wrong-project");
   }
 
   const app = getApps().find((candidate) => candidate.name === "baticamigo-admin")
@@ -73,13 +74,13 @@ function json(data, status = 200) {
 }
 
 function handleError(error) {
-  if (error instanceof ApiError) return json({ error: error.message }, error.status);
+  if (error instanceof ApiError) return json({ error: error.message, code: error.code || "admin/request-rejected" }, error.status);
   const code = error?.code;
   if (code === "auth/email-already-exists") return json({ error: "Já existe uma conta com esse email." }, 409);
   if (code === "auth/user-not-found") return json({ error: "A conta já não existe." }, 404);
   if (code === "auth/invalid-email" || code === "auth/invalid-password") return json({ error: "Os dados da conta são inválidos." }, 400);
-  console.error("Erro na gestão de utilizadores Firebase:", code || error?.message || "unknown");
-  return json({ error: "Não foi possível concluir a operação. Tente novamente." }, 500);
+  console.error("Erro na gestão de utilizadores Firebase:", code || error?.message || "unknown", error?.stack);
+  return json({ error: "Não foi possível concluir a operação. Tente novamente.", code: String(code || "admin/server-error") }, 500);
 }
 
 function serializeUser(user) {
@@ -113,7 +114,9 @@ export async function GET(request) {
     if (url.searchParams.get("check") === "1") return json({ authorized: true, refreshToken });
     const collectionName = url.searchParams.get("collection");
     if (collectionName === "membros" || collectionName === "parceiros") {
+      console.info("Leitura da coleção administrativa solicitada:", collectionName, auth.app.options.projectId);
       const snapshot = await getFirestore(auth.app).collection(collectionName).get();
+      console.info("Leitura da coleção administrativa concluída:", collectionName, snapshot.size);
       return json({ documents: snapshot.docs.map((doc) => ({ id: doc.id, data: doc.data() })) });
     }
     const users = await listAllUsers(auth);
