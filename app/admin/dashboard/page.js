@@ -41,7 +41,7 @@ const markup = body
     (_match, key, label) => `<button id="add-${key}-btn" class="admin-btn primary-btn">${label}<span aria-hidden="true">＋</span></button></div>`
   )
   .replace(
-    /(<\/div>\s*<div id="membros-section")/,
+    /(<div id="membros-section" class="admin-section">)/,
     `<div id="contacto-section" class="admin-section">
                     <section class="admin-card admin-settings-card" aria-labelledby="contact-settings-title">
                       <div class="admin-card-header"><div class="admin-card-heading"><span class="admin-card-kicker">Conteúdo do site</span><h3 id="contact-settings-title">Informações de contacto</h3></div></div>
@@ -56,7 +56,6 @@ const markup = body
                         <div class="admin-settings-footer"><p id="contact-settings-status" role="status" aria-live="polite"></p><button id="save-contact-settings" class="admin-btn primary-btn" type="submit">Guardar alterações</button></div>
                       </form>
                     </section>
-                </div>
                 $1`
   );
 
