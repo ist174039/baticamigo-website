@@ -66,10 +66,14 @@ export async function POST(request) {
       let target; try { target=await auth.getUser(value.uid); } catch { assert(false,'Conta Firebase inexistente.'); } assert(!target.disabled || !value.active,'Conta Firebase desativada.');
       await db.runTransaction(async tx=>{
         const lock=collection(db,'locks').doc('accounts'); await tx.get(lock);
-        const linked=[]; for(const profileId of value.profileIds) { const p=await tx.get(collection(db,'profiles').doc(profileId)); assert(p.exists && p.data().active===true,'Perfil inexistente ou inativo.'); assert(!p.data().accountUid || p.data().accountUid===value.uid,'Perfil associado a outra conta.'); linked.push(p.data()); const used=await tx.get(collection(db,'accounts').where('profileIds','array-contains',profileId).limit(2)); assert(used.docs.every(d=>d.id===value.uid),'Perfil já associado a outra conta.'); }
-        const represented=(role)=>role==='volunteer' ? linked.some(p=>p.kind==='tutor') : linked.some(p=>p.kind===role);
-        assert(linked.every(p=>value.roles.includes(p.kind) || (p.kind==='tutor' && value.roles.includes('volunteer'))) && value.roles.filter(r=>['student','guardian','tutor','volunteer'].includes(r)).every(represented),'Os papéis devem corresponder aos perfis.');
+        const linked=[]; for(const profileId of value.profileIds) { const p=await tx.get(collection(db,'profiles').doc(profileId)); assert(p.exists && p.data().active===true,'Perfil inexistente ou inativo.'); assert(!p.data().accountUid || p.data().accountUid===value.uid,'Perfil associado a outra conta.'); linked.push({id:profileId,data:p.data()}); const used=await tx.get(collection(db,'accounts').where('profileIds','array-contains',profileId).limit(2)); assert(used.docs.every(d=>d.id===value.uid),'Perfil já associado a outra conta.'); }
+        const represented=(role)=>role==='volunteer' ? linked.some(p=>p.data.kind==='tutor') : linked.some(p=>p.data.kind===role);
+        assert(linked.every(p=>value.roles.includes(p.data.kind) || (p.data.kind==='tutor' && value.roles.includes('volunteer'))) && value.roles.filter(r=>['student','guardian','tutor','volunteer'].includes(r)).every(represented),'Os papéis devem corresponder aos perfis.');
         const targetRef=collection(db,'accounts').doc(value.uid); const previous=await tx.get(targetRef);
+        const previousIds=previous.exists ? profileIds(previous.data()) : [];
+        const removedIds=previousIds.filter(profileId=>!value.profileIds.includes(profileId));
+        const removedRefs=removedIds.map(profileId=>collection(db,'profiles').doc(profileId));
+        const removedProfiles=removedRefs.length ? await tx.getAll(...removedRefs) : [];
         if(previous.exists && previous.data().active===true && (previous.data().roles || [previous.data().role]).includes('admin') && (!value.active || !value.roles.includes('admin'))) {
           const admins=collection(db,'accounts');
           const [arrayAdmins,legacyAdmins]=await Promise.all([
@@ -79,13 +83,16 @@ export async function POST(request) {
           const remaining=new Set([...arrayAdmins.docs,...legacyAdmins.docs].map(doc=>doc.id).filter(uid=>uid!==value.uid));
           assert(remaining.size>0,'Não pode remover ou desativar a última conta administradora ativa.');
         }
-        tx.set(lock,{updatedAt:Date.now()}); tx.set(targetRef,value); audit(tx,db,account,body.action,value.uid);
+        tx.set(lock,{updatedAt:Date.now()});
+        removedProfiles.forEach((profile,index)=>{ if(profile.exists && profile.data().accountUid===value.uid) tx.set(removedRefs[index],{...profile.data(),accountUid:''}); });
+        linked.forEach(profile=>tx.set(collection(db,'profiles').doc(profile.id),{...profile.data,accountUid:value.uid}));
+        tx.set(targetRef,value); audit(tx,db,account,body.action,value.uid);
       });
       return json({saved:true});
     }
     if(body.action==='save-profile') {
       assert(manages(account),'Sem permissão.',403); const value=profileInput(body.profile); const ref=value.id ? collection(db,'profiles').doc(value.id) : collection(db,'profiles').doc(); delete value.id;
-      await db.runTransaction(async tx=>{ const previous=await tx.get(ref); assert(!previous.exists || previous.data().kind===value.kind,'Não pode alterar o tipo de perfil.'); for(const guardian of value.guardianIds) {const p=await tx.get(collection(db,'profiles').doc(guardian)); assert(p.exists && p.data().kind==='guardian' && p.data().active,'Encarregado inválido.');} tx.set(ref,value); audit(tx,db,account,body.action,ref.id); }); return json({saved:true,id:ref.id});
+      await db.runTransaction(async tx=>{ const previous=await tx.get(ref); assert(!previous.exists || previous.data().kind===value.kind,'Não pode alterar o tipo de perfil.'); for(const guardian of value.guardianIds) {const p=await tx.get(collection(db,'profiles').doc(guardian)); assert(p.exists && p.data().kind==='guardian' && p.data().active,'Encarregado inválido.');} value.accountUid=previous.exists ? previous.data().accountUid || '' : ''; tx.set(ref,value); audit(tx,db,account,body.action,ref.id); }); return json({saved:true,id:ref.id});
     }
     if(body.action==='create-session' || body.action==='update-session') {
       assert(manages(account),'Sem permissão.',403); const value=sessionInput(body.session); const ref=body.action==='create-session' ? collection(db,'sessions').doc() : collection(db,'sessions').doc(id(body.id));

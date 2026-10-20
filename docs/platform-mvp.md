@@ -35,7 +35,7 @@ Papéis operacionais `student`, `guardian`, `tutor` e `volunteer` exigem perfis 
 4. Fazer primeiro uma validação de staging com contas de cada papel, incluindo tentativas negativas para alunos não associados, encarregados não associados, explicadores de outras sessões, conta inativa, versão antiga e conflitos de horário.
 5. Confirmar privacidade e retenção de dados de menores com o responsável antes de carregar dados reais. Começar com dados de teste sem informação pessoal.
 
-Não foram criados, migrados nem consultados documentos Firebase reais. Não foi executada publicação nem atualização de regras remotas. O produto Firestore existente e a estratégia de backup/restauro continuam por confirmar.
+Não foram criados, migrados nem consultados documentos Firebase reais. O produto Firestore existente e a estratégia de backup/restauro continuam por confirmar.
 
 ## Rastreabilidade e critérios ainda por decidir
 
@@ -50,3 +50,14 @@ Os requisitos FR-010–020 e NFR-002/NFR-007 não são cobertos integralmente po
 - `npm run build` — passou; o ambiente não conseguiu obter a folha de estilos remota do Google Fonts e usou o fallback local.
 - `git diff --check` — passou.
 - Firebase Emulator, regras remotas, integração com tokens reais, acessibilidade manual e fluxos reais de utilizador não foram executados.
+
+## Melhorias da área e validação temporal
+
+- A área privada reutiliza a paleta verde-floresta/verde-lima, fundo neutro e tipografia do website público; mantém estados de foco visíveis e adapta os formulários a ecrãs pequenos.
+- Horários introduzidos e editados usam explicitamente `Europe/Lisbon`, mesmo quando o dispositivo está configurado noutro fuso. Uma hora local inexistente na mudança de primavera é recusada; uma hora repetida na mudança de outono escolhe a primeira ocorrência de forma determinística.
+- A associação de perfis a contas é mantida na mesma transação que altera permissões. Perfis removidos perdem o vínculo correspondente e a edição normal de perfil preserva o vínculo; `save-profile` não aceita atribuir `accountUid` diretamente.
+- Os testes `tests/platform/time.test.mjs` cobrem inverno, verão e mudanças de hora. A cobertura de handlers Firebase, Rules e fluxos por papel permanece pendente.
+
+## Publicação
+
+A versão base `5a9b233` foi publicada na Vercel como produção em 20/10/2026 e verificada com HTTP 200 no website e em `/area`. Esta publicação não altera nem comprova regras Firestore/Storage, políticas de retenção ou backup. As melhorias descritas acima só se consideram publicadas depois do respetivo commit e da confirmação de estado `READY` na Vercel.

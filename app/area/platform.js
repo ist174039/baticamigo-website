@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import { browserSessionPersistence, onAuthStateChanged, sendPasswordResetEmail, setPersistence, signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { platformAuth } from "../../lib/firebase-client";
+import { lisbonDateTimeInput, lisbonDateTimeToIso } from "../../lib/platform/time.mjs";
 
 const roleNames = { admin: "Administração", coordinator: "Coordenação", student: "Aluno", guardian: "Encarregado", tutor: "Explicador", volunteer: "Voluntário", member: "Sócio" };
 const kindNames = { student: "Aluno", guardian: "Encarregado", tutor: "Explicador" };
@@ -17,11 +19,6 @@ function Field({ label, children }) {
 
 function selected(form, name) { return form.getAll(name).map(String); }
 function values(event) { return new FormData(event.currentTarget); }
-function localDate(value) {
-  const date = new Date(value);
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}T${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
-}
-
 export default function Platform() {
   const [user, setUser] = useState(null);
   const [ready, setReady] = useState(false);
@@ -143,7 +140,7 @@ export default function Platform() {
     action(async () => {
       await save({ action: editingSession ? "update-session" : "create-session", ...(editingSession ? { id: editingSession.id, version: editingSession.version, status: String(form.get("status")) } : {}), session: {
         title: String(form.get("title")).trim(), tutorId: String(form.get("tutorId")), studentIds: selected(form, "studentIds"),
-        room: String(form.get("room")).trim(), startsAt: new Date(String(form.get("startsAt"))).toISOString(), endsAt: new Date(String(form.get("endsAt"))).toISOString(),
+        room: String(form.get("room")).trim(), startsAt: lisbonDateTimeToIso(String(form.get("startsAt"))), endsAt: lisbonDateTimeToIso(String(form.get("endsAt"))),
       } });
       setEditingSession(null);
       element.reset();
@@ -158,7 +155,7 @@ export default function Platform() {
 
   return <div className="platform">
     <a className="platform-skip" href="#area-content">Saltar para o conteúdo</a>
-    <header className="platform-header"><a href="/" className="platform-brand">BaticAmigo <span>Apoio escolar</span></a>{user && <button disabled={busy} onClick={() => action(async () => { revision.current += 1; setData(empty); await signOut(platformAuth()); }, "Sessão terminada.")}>Terminar sessão</button>}</header>
+    <header className="platform-header"><a href="/" className="platform-brand"><Image src="/images/logo.png" alt="" width={44} height={44} priority/><span className="platform-brand-copy">BaticAmigo <span>Apoio escolar</span></span></a>{user && <button disabled={busy} onClick={() => action(async () => { revision.current += 1; setData(empty); await signOut(platformAuth()); }, "Sessão terminada.")}>Terminar sessão</button>}</header>
     <main id="area-content" className="platform-main">
       <div className="platform-title"><p className="platform-eyebrow">Mais perto. Mais juntos.</p><h1>Área de apoio escolar</h1><p>Alunos, famílias e explicadores, ligados em cada sessão.</p></div>
       <div ref={notice} tabIndex={-1} className="platform-notices">{error && <p className="platform-error" role="alert">{error}</p>}{message && <p className="platform-success" role="status">{message}</p>}</div>
@@ -173,7 +170,7 @@ export default function Platform() {
               const canMark = session.status !== "cancelled" && (manager || roles.some((role) => ["tutor", "volunteer"].includes(role)) && (data.account.profileIds || [data.account.profileId]).includes(session.tutorId));
               return <li key={studentId}><span>{profileName(studentId)}</span>{canMark && new Date(session.startsAt) <= new Date() ? <select aria-label={`Presença de ${profileName(studentId)} na sessão ${session.title}`} disabled={busy} value={record?.status || ""} onChange={(event) => action(() => save({ action: "set-attendance", sessionId: session.id, studentId, status: event.target.value, version: record?.version || 0 }), "Presença guardada.")}><option value="" disabled>Por registar</option>{Object.entries(attendanceNames).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select> : <span>{attendanceNames[record?.status] || "Por registar"}</span>}</li>;
             })}</ul></article></li>)}</ul> : <p>Ainda não existem sessões disponíveis.</p>}</section>
-          {manager && <section className="platform-card"><h2>{editingSession ? "Alterar sessão" : "Agendar sessão"}</h2><p>Introduza as horas no fuso do seu dispositivo ({Intl.DateTimeFormat().resolvedOptions().timeZone}).</p><form key={editingSession?.id || "new-session"} onSubmit={saveSession}><fieldset disabled={busy}><Field label="Disciplina / título"><input name="title" required maxLength={120} defaultValue={editingSession?.title}/></Field><Field label="Explicador"><select name="tutorId" required defaultValue={editingSession?.tutorId || ""}><option value="" disabled>Selecionar explicador</option>{tutors.filter((profile) => profile.active || profile.id === editingSession?.tutorId).map((profile) => <option key={profile.id} value={profile.id}>{profile.name}</option>)}</select></Field><Field label="Alunos (seleção múltipla)"><select name="studentIds" multiple required size={Math.min(6, Math.max(3, students.length))} defaultValue={editingSession?.studentIds || []}>{students.filter((profile) => profile.active || editingSession?.studentIds.includes(profile.id)).map((profile) => <option key={profile.id} value={profile.id}>{profile.name}</option>)}</select></Field><Field label="Sala"><input name="room" required maxLength={80} defaultValue={editingSession?.room}/></Field><Field label="Início"><input name="startsAt" type="datetime-local" required defaultValue={editingSession ? localDate(editingSession.startsAt) : undefined}/></Field><Field label="Fim"><input name="endsAt" type="datetime-local" required defaultValue={editingSession ? localDate(editingSession.endsAt) : undefined}/></Field>{editingSession && <Field label="Estado"><select name="status" defaultValue={editingSession.status}><option value="scheduled">Agendada</option><option value="cancelled">Cancelada</option></select></Field>}<div className="platform-actions"><button className="platform-primary">Guardar sessão</button>{editingSession && <button type="button" onClick={() => setEditingSession(null)}>Cancelar edição</button>}</div></fieldset></form></section>}
+          {manager && <section className="platform-card"><h2>{editingSession ? "Alterar sessão" : "Agendar sessão"}</h2><p>As horas são interpretadas no fuso Europe/Lisbon, independentemente da configuração do dispositivo.</p><form key={editingSession?.id || "new-session"} onSubmit={saveSession}><fieldset disabled={busy}><Field label="Disciplina / título"><input name="title" required maxLength={120} defaultValue={editingSession?.title}/></Field><Field label="Explicador"><select name="tutorId" required defaultValue={editingSession?.tutorId || ""}><option value="" disabled>Selecionar explicador</option>{tutors.filter((profile) => profile.active || profile.id === editingSession?.tutorId).map((profile) => <option key={profile.id} value={profile.id}>{profile.name}</option>)}</select></Field><Field label="Alunos (seleção múltipla)"><select name="studentIds" multiple required size={Math.min(6, Math.max(3, students.length))} defaultValue={editingSession?.studentIds || []}>{students.filter((profile) => profile.active || editingSession?.studentIds.includes(profile.id)).map((profile) => <option key={profile.id} value={profile.id}>{profile.name}</option>)}</select></Field><Field label="Sala"><input name="room" required maxLength={80} defaultValue={editingSession?.room}/></Field><Field label="Início"><input name="startsAt" type="datetime-local" required defaultValue={editingSession ? lisbonDateTimeInput(editingSession.startsAt) : undefined}/></Field><Field label="Fim"><input name="endsAt" type="datetime-local" required defaultValue={editingSession ? lisbonDateTimeInput(editingSession.endsAt) : undefined}/></Field>{editingSession && <Field label="Estado"><select name="status" defaultValue={editingSession.status}><option value="scheduled">Agendada</option><option value="cancelled">Cancelada</option></select></Field>}<div className="platform-actions"><button className="platform-primary">Guardar sessão</button>{editingSession && <button type="button" onClick={() => setEditingSession(null)}>Cancelar edição</button>}</div></fieldset></form></section>}
         </div>}
         {tab === "access" && admin && <section className="platform-card platform-access"><h2>Perfis de acesso</h2><p>A conta deve existir no Firebase Authentication. Atribua apenas os perfis necessários. O UID liga a conta aos perfis da pessoa.</p><form onSubmit={saveAccount}><fieldset disabled={busy}><Field label="UID da conta"><input name="uid" required maxLength={128}/></Field><fieldset><legend>Permissões (pode selecionar várias)</legend>{Object.entries(roleNames).map(([key, label]) => <label className="platform-check" key={key}><input name="roles" type="checkbox" value={key}/>{label}</label>)}</fieldset><Field label="Perfis associados (pode selecionar vários)"><select name="profileIds" multiple size={Math.min(8, Math.max(3, data.profiles.length))}>{data.profiles.map((profile) => <option key={profile.id} value={profile.id}>{profile.name} · {kindNames[profile.kind]}</option>)}</select></Field><label className="platform-check"><input type="checkbox" name="active" defaultChecked/>Acesso ativo</label><button className="platform-primary">Guardar permissões</button></fieldset></form></section>}
       </>}
