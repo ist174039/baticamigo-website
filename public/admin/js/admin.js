@@ -144,36 +144,43 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Navegação entre seções
   const sidebarLinks = document.querySelectorAll(".admin-sidebar-menu a")
-  const sections = document.querySelectorAll(".admin-section")
   const sectionTitle = document.getElementById("section-title")
+
+  // Keep the dashboard's navigation explicit. The HTML is rendered by the
+  // Next.js wrapper from the legacy dashboard; synchronizing both `hidden`
+  // and the active class prevents a selected tab from leaving a blank panel
+  // when CSS or cached markup differs between deployments.
+  function activateSection(sectionId, link) {
+    const target = document.getElementById(`${sectionId}-section`)
+    if (!target || !target.classList.contains("admin-section")) {
+      console.error(`Secção administrativa não encontrada: ${sectionId}`)
+      return
+    }
+
+    document.querySelectorAll(".admin-section").forEach((section) => {
+      const active = section === target
+      section.classList.toggle("active", active)
+      section.hidden = !active
+      section.setAttribute("aria-hidden", String(!active))
+    })
+    sidebarLinks.forEach((item) => {
+      const active = item === link
+      item.classList.toggle("active", active)
+      if (active) item.setAttribute("aria-current", "page")
+      else item.removeAttribute("aria-current")
+    })
+    if (sectionTitle && link) sectionTitle.textContent = link.textContent.trim()
+  }
 
   sidebarLinks.forEach((link) => {
     link.addEventListener("click", (e) => {
       e.preventDefault()
-
-      // Remover classe active de todos os links
-      sidebarLinks.forEach((l) => {
-        l.classList.remove("active")
-        l.removeAttribute("aria-current")
-      })
-
-      // Adicionar classe active ao link clicado
-      link.classList.add("active")
-      link.setAttribute("aria-current", "page")
-
-      // Obter a seção correspondente
-      const sectionId = link.getAttribute("data-section")
-
-      // Atualizar título da seção
-      if (sectionTitle) sectionTitle.textContent = link.textContent.trim()
-
-      // Esconder todas as seções
-      sections.forEach((section) => section.classList.remove("active"))
-
-      // Mostrar a seção correspondente
-      document.getElementById(`${sectionId}-section`)?.classList.add("active")
+      activateSection(link.getAttribute("data-section"), link)
     })
   })
+
+  const initiallySelected = document.querySelector(".admin-sidebar-menu a.active[data-section]")
+  if (initiallySelected) activateSection(initiallySelected.getAttribute("data-section"), initiallySelected)
 
   // Navegação entre tabs nos modais
   document.querySelectorAll(".admin-tab").forEach((tab) => {
