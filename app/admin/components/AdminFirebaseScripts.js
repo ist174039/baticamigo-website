@@ -41,6 +41,7 @@ export default function AdminFirebaseScripts({ page }) {
       if (cancelled) return;
       await loadScript("/admin/js/firebaseConfig.js", true);
       await loadScript(`/admin/js/${page === "login" ? "auth" : "admin"}.js`, true);
+      if (page === "dashboard") await loadScript("/admin/js/admin-users.js", true);
       if (!cancelled && !initializedPages.has(page)) {
         initializedPages.add(page);
         document.dispatchEvent(new Event("DOMContentLoaded"));

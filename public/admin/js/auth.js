@@ -9,12 +9,27 @@ document.addEventListener("DOMContentLoaded", () => {
   const resetPasswordLink = document.getElementById("reset-password-link")
 
   // Verificar se o usuário já está autenticado
-  auth.onAuthStateChanged((user) => {
-    if (user) {
-      // Redirecionar para o dashboard se já estiver autenticado
-      window.location.href = "/admin/dashboard"
+  auth.onAuthStateChanged(async (user) => {
+    if (!user) return
+    try {
+      if (await validateAdminAccount(user)) window.location.href = "/admin/dashboard"
+      else {
+        await auth.signOut()
+        showError("Esta conta não tem acesso ao painel administrativo.")
+      }
+    } catch (error) {
+      console.error("Erro ao validar permissões administrativas:", error)
+      showError("Não foi possível validar o acesso. Tente novamente mais tarde.")
     }
   })
+
+  async function validateAdminAccount(user) {
+    const token = await user.getIdToken()
+    const response = await fetch("/api/admin/users?check=1", { headers: { Authorization: `Bearer ${token}` }, cache: "no-store" })
+    if (response.status === 401 || response.status === 403) return false
+    if (!response.ok) throw new Error("A validação de acesso falhou.")
+    return true
+  }
 
   // Função para exibir mensagem de erro
   function showError(message) {
@@ -40,6 +55,10 @@ document.addEventListener("DOMContentLoaded", () => {
     loginStatus.hidden = false
   }
 
+  if (new URLSearchParams(window.location.search).get("access") === "denied") {
+    showError("Esta conta não tem acesso ao painel administrativo.")
+  }
+
   // Evento de envio do formulário de login
   if (loginForm) {
     loginForm.addEventListener("submit", async (e) => {
@@ -58,8 +77,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
       try {
         // Tentativa de login
-        await auth.signInWithEmailAndPassword(email, password)
-        // Redirecionar para o dashboard após login bem-sucedido
+        const credential = await auth.signInWithEmailAndPassword(email, password)
+        if (!await validateAdminAccount(credential.user)) {
+          await auth.signOut()
+          showError("Esta conta não tem acesso ao painel administrativo.")
+          return
+        }
+        // Redirecionar para o dashboard após validar as permissões.
         window.location.href = "/admin/dashboard"
       } catch (error) {
         console.error("Erro de autenticação:", error)

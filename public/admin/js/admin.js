@@ -9,8 +9,27 @@ document.addEventListener("DOMContentLoaded", () => {
   // const storage = firebase.storage() // Removed redeclaration
 
   // Verificar autenticação
-  auth.onAuthStateChanged((user) => {
+  auth.onAuthStateChanged(async (user) => {
     if (user) {
+      try {
+        const token = await user.getIdToken()
+        const access = await fetch("/api/admin/users?check=1", { headers: { Authorization: `Bearer ${token}` }, cache: "no-store" })
+        if (access.status === 401 || access.status === 403) {
+          await auth.signOut()
+          window.location.href = "/admin/login?access=denied"
+          return
+        }
+        if (!access.ok) throw new Error("Falha ao validar as permissões da conta.")
+      } catch (error) {
+        console.error("Não foi possível validar o acesso administrativo:", error)
+        const errorBox = document.getElementById("admin-init-error")
+        if (errorBox) {
+          errorBox.textContent = "Não foi possível validar as permissões administrativas. Atualize a página ou tente novamente mais tarde."
+          errorBox.hidden = false
+        }
+        return
+      }
+
       // Usuário autenticado
       const email = user.email || ""
       const displayName = user.displayName || email.split("@")[0] || "Administrador"
