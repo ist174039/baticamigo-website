@@ -59,8 +59,10 @@ async function requireAdmin(request) {
     const account = await auth.getUser(decoded.uid);
     if (account.customClaims?.admin !== true) {
       await auth.setCustomUserClaims(decoded.uid, { ...account.customClaims, admin: true, role: "admin" });
-      refreshToken = true;
     }
+    // A parallel management request can set the claim before this request,
+    // while this request still carries the user's older, claimless ID token.
+    refreshToken = decoded.admin !== true;
   }
   return { auth, decoded, refreshToken };
 }
