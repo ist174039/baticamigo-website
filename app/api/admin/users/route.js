@@ -186,7 +186,7 @@ export async function DELETE(request) {
     const target = await auth.getUser(targetUid);
     if (isAdmin({ email: target.email, admin: target.customClaims?.admin })) {
       const activeAdmins = (await listAllUsers(auth)).filter((user) => !user.disabled && isAdmin({ email: user.email, admin: user.customClaims?.admin }));
-      if (!target.disabled && activeAdmins.length <= 1) throw new ApiError(400, "Não pode remover o último administrador ativo.");
+      if (activeAdmins.length <= 1) throw new ApiError(400, "Não pode remover a última conta administrativa ativa.");
     }
     await auth.deleteUser(targetUid);
     return json({ deleted: true });
