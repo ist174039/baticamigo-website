@@ -198,14 +198,14 @@
             </div>
             <form id="evento-form" class="admin-form">
                 <input type="hidden" id="evento-id">
-                <div class="admin-tabs">
-                    <div class="admin-tab active" data-tab="evento-info">Informações</div>
-                    <div class="admin-tab" data-tab="evento-media">Mídia</div>
-                    <div class="admin-tab" data-tab="evento-galeria">Galeria</div>
+                <div class="admin-tabs" role="tablist" aria-label="Separadores do evento">
+                    <button type="button" class="admin-tab active" id="evento-info-tab" role="tab" aria-selected="true" aria-controls="evento-info" data-tab="evento-info">Informações</button>
+                    <button type="button" class="admin-tab" id="evento-media-tab" role="tab" aria-selected="false" aria-controls="evento-media" data-tab="evento-media">Mídia</button>
+                    <button type="button" class="admin-tab" id="evento-galeria-tab" role="tab" aria-selected="false" aria-controls="evento-galeria" data-tab="evento-galeria">Galeria</button>
                 </div>
                 
                 <!-- Tab Informações -->
-                <div id="evento-info" class="admin-tab-content active">
+                <div id="evento-info" class="admin-tab-content active" role="tabpanel" aria-labelledby="evento-info-tab" tabindex="0">
                     <div class="admin-form-group">
                         <label for="evento-nome">Nome do Evento</label>
                         <input type="text" id="evento-nome" name="nome" required>
@@ -253,7 +253,7 @@
                 </div>
                 
                 <!-- Tab Mídia -->
-                <div id="evento-media" class="admin-tab-content">
+                <div id="evento-media" class="admin-tab-content" role="tabpanel" aria-labelledby="evento-media-tab" tabindex="0">
                     <div class="admin-file-upload">
                         <label class="admin-file-upload-label">Imagem Principal</label>
                         <label class="admin-file-upload-btn">
@@ -268,7 +268,7 @@
                 </div>
                 
                 <!-- Tab Galeria -->
-                <div id="evento-galeria" class="admin-tab-content">
+                <div id="evento-galeria" class="admin-tab-content" role="tabpanel" aria-labelledby="evento-galeria-tab" tabindex="0">
                     <div class="admin-file-upload">
                         <label class="admin-file-upload-label">Imagens da Galeria</label>
                         <label class="admin-file-upload-btn">
@@ -355,13 +355,13 @@
             </div>
             <form id="agenda-form" class="admin-form">
                 <input type="hidden" id="agenda-id">
-                <div class="admin-tabs">
-                    <div class="admin-tab active" data-tab="agenda-info">Informações</div>
-                    <div class="admin-tab" data-tab="agenda-galeria">Galeria</div>
+                <div class="admin-tabs" role="tablist" aria-label="Separadores da agenda">
+                    <button type="button" class="admin-tab active" id="agenda-info-tab" role="tab" aria-selected="true" aria-controls="agenda-info" data-tab="agenda-info">Informações</button>
+                    <button type="button" class="admin-tab" id="agenda-galeria-tab" role="tab" aria-selected="false" aria-controls="agenda-galeria" data-tab="agenda-galeria">Galeria</button>
                 </div>
                 
                 <!-- Tab Informações -->
-                <div id="agenda-info" class="admin-tab-content active">
+                <div id="agenda-info" class="admin-tab-content active" role="tabpanel" aria-labelledby="agenda-info-tab" tabindex="0">
                     <div class="admin-form-group">
                         <label for="agenda-nome">Nome do Evento</label>
                         <input type="text" id="agenda-nome" name="nome" required>
@@ -423,7 +423,7 @@
                 </div>
                 
                 <!-- Tab Galeria -->
-                <div id="agenda-galeria" class="admin-tab-content">
+                <div id="agenda-galeria" class="admin-tab-content" role="tabpanel" aria-labelledby="agenda-galeria-tab" tabindex="0">
                     <div class="admin-file-upload">
                         <label class="admin-file-upload-label">Imagens da Galeria</label>
                         <label class="admin-file-upload-btn">

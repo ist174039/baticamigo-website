@@ -26,3 +26,18 @@
 .admin-table th{padding:15px 18px;background:#f8f5f0;border-color:#eee8df;color:#80786f;font-size:9px;letter-spacing:.12em}.admin-table td{padding:16px 18px;border-color:#f0ebe4;color:#47413c;font-size:12px;line-height:1.45}.admin-table tbody tr{transition:background .18s}.admin-table tbody tr:hover{background:#faf7f2}.admin-pagination{padding:17px 21px;background:#fffdfb;border-color:#eee8df}.admin-pagination-count{font-size:11px}.admin-pagination-actions button{padding:9px 13px;border-radius:99px;font-size:11px}.admin-pagination-page{font-size:11px}
 @media(max-width:850px){.admin-dashboard{border-radius:20px}.admin-sidebar{flex-basis:auto;width:auto}.admin-content{padding:24px 20px 30px}.admin-sidebar-menu a{border-radius:99px}}
 @media(max-width:520px){.dashboard-welcome{padding-bottom:25px}.dashboard-welcome h1{font-size:39px}.admin-content{padding:20px 13px 24px}.admin-header{margin-bottom:23px}.admin-card{border-radius:15px}.admin-card-header{padding:18px}.admin-card-header h3{font-size:21px}.admin-card-actions{gap:8px}.admin-card-header .admin-btn,.admin-list-link{font-size:10px;padding:10px 12px}.admin-pagination{align-items:flex-start;flex-direction:column}.admin-pagination-actions{align-self:flex-end}}
+
+/* Clear, single-view navigation and responsive dashboard header. */
+.admin-section{display:none}
+.admin-section.active{display:block}
+.dashboard-welcome{display:flex;align-items:flex-end;justify-content:space-between;gap:24px}
+.admin-view-site{display:inline-flex;align-items:center;gap:12px;min-height:42px;margin:0 8px 33px 0;padding:0 15px;border:1px solid #dcd3e7;border-radius:99px;background:#fff9;color:var(--admin-purple);font-size:11px;font-weight:700;text-decoration:none;transition:background .18s,border-color .18s,transform .18s}
+.admin-view-site:hover{transform:translateY(-1px);border-color:#c9b7dc;background:#fff}
+.admin-view-site span{color:var(--admin-orange);font-size:15px}
+.admin-sidebar-menu a:focus-visible,.admin-view-site:focus-visible,.admin-list-link:focus-visible,.admin-card-header .admin-btn:focus-visible,.admin-pagination-actions button:focus-visible{outline:3px solid var(--admin-orange);outline-offset:2px}
+.admin-tabs{flex-wrap:wrap;gap:4px;width:max-content;max-width:100%;padding:4px;border:1px solid #e8e1d8;border-radius:11px;background:#f7f4f0}
+.admin-tab{appearance:none;border:0;border-radius:8px;background:transparent;color:#716a78;font:600 12px var(--admin-body-font);line-height:1.25}
+.admin-tab.active{border:0;background:#fff;color:var(--admin-purple);box-shadow:0 2px 8px #241b380f}
+.admin-tab:focus-visible{outline:3px solid var(--admin-orange);outline-offset:2px}
+@media(max-width:850px){.admin-sidebar-menu{scrollbar-width:thin;scrollbar-color:#ffffff3a transparent}.admin-sidebar-menu a{min-height:42px}.dashboard-welcome{align-items:flex-start}.admin-view-site{margin-bottom:26px}}
+@media(max-width:520px){.dashboard-welcome{align-items:flex-start;flex-direction:column;gap:10px}.admin-view-site{margin:0 0 20px 4px}.admin-section-intro{display:none}.admin-sidebar-menu{padding-bottom:7px}.admin-sidebar-menu a{min-height:44px}.admin-card-header .admin-btn{min-height:42px}}

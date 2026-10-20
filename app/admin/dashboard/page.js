@@ -15,7 +15,7 @@ const markup = body
     `<div class="admin-nav-label">Gestão</div>
     <ul class="admin-sidebar-menu">
       <li class="admin-nav-group">Conteúdo</li>
-      <li><a href="#eventos-section" class="active" data-section="eventos"><i class="fas fa-calendar-check"></i>Eventos</a></li>
+      <li><a href="#eventos-section" class="active" aria-current="page" data-section="eventos"><i class="fas fa-calendar-check"></i>Eventos</a></li>
       <li><a href="#programas-section" data-section="programas"><i class="fas fa-layer-group"></i>Programas</a></li>
       <li><a href="#agenda-section" data-section="agenda"><i class="fas fa-clock"></i>Agenda</a></li>
       <li><a href="#noticias-section" data-section="noticias"><i class="fas fa-newspaper"></i>Notícias</a></li>
@@ -29,7 +29,6 @@ const markup = body
   .replace(
     /<div id="(eventos|programas|agenda|noticias|membros|parceiros)-section" class="admin-section( active)?">\s*<div class="admin-card">\s*<div class="admin-card-header">\s*<h3>Lista de ([^<]+)<\/h3>/g,
     (_match, key, active, label) => `<div id="${key}-section" class="admin-section${active || ""}">
-                    <div class="admin-section-intro"><span>Área de gestão</span><p>Acompanhe, edite e organize os registos da comunidade num só lugar.</p></div>
                     <div class="admin-card">
                         <div class="admin-card-header">
                             <div class="admin-card-heading"><span class="admin-card-kicker">Registos</span><h3>Lista de ${label}</h3></div>
@@ -43,5 +42,22 @@ const markup = body
 export const metadata = { title: "Painel administrativo | BaticAmigo" };
 
 export default function AdminDashboardPage() {
-  return <><main className="dashboard-page"><div className="dashboard-welcome"><span className="eyebrow">Espaço de gestão</span><h1>Bom dia. <em>A comunidade espera.</em></h1><p>Organize iniciativas, conteúdos e momentos que aproximam pessoas.</p></div><div id="admin-init-error" className="admin-init-error" role="alert" hidden/><div dangerouslySetInnerHTML={{ __html: markup }} /></main><AdminTablePagination/><AdminFirebaseScripts page="dashboard"/></>;
+  return (
+    <>
+      <main className="dashboard-page">
+        <header className="dashboard-welcome">
+          <div>
+            <span className="eyebrow">Espaço de gestão</span>
+            <h1>Gestão <em>BaticAmigo.</em></h1>
+            <p>Conteúdos, iniciativas e comunidade num só lugar.</p>
+          </div>
+          <a className="admin-view-site" href="/" target="_blank" rel="noreferrer">Ver site <span aria-hidden="true">↗</span></a>
+        </header>
+        <div id="admin-init-error" className="admin-init-error" role="alert" hidden />
+        <div dangerouslySetInnerHTML={{ __html: markup }} />
+      </main>
+      <AdminTablePagination />
+      <AdminFirebaseScripts page="dashboard" />
+    </>
+  );
 }

@@ -41,22 +41,26 @@ document.addEventListener("DOMContentLoaded", () => {
       e.preventDefault()
 
       // Remover classe active de todos os links
-      sidebarLinks.forEach((l) => l.classList.remove("active"))
+      sidebarLinks.forEach((l) => {
+        l.classList.remove("active")
+        l.removeAttribute("aria-current")
+      })
 
       // Adicionar classe active ao link clicado
       link.classList.add("active")
+      link.setAttribute("aria-current", "page")
 
       // Obter a seção correspondente
       const sectionId = link.getAttribute("data-section")
 
       // Atualizar título da seção
-      sectionTitle.textContent = link.textContent.trim()
+      if (sectionTitle) sectionTitle.textContent = link.textContent.trim()
 
       // Esconder todas as seções
       sections.forEach((section) => section.classList.remove("active"))
 
       // Mostrar a seção correspondente
-      document.getElementById(`${sectionId}-section`).classList.add("active")
+      document.getElementById(`${sectionId}-section`)?.classList.add("active")
     })
   })
 
@@ -73,10 +77,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Adicionar classe active à tab clicada
       tab.classList.add("active")
+      tabsContainer.querySelectorAll(".admin-tab").forEach((button) => {
+        button.setAttribute("aria-selected", String(button === tab))
+        button.tabIndex = button === tab ? 0 : -1
+      })
 
       // Mostrar o conteúdo correspondente
       const tabId = tab.getAttribute("data-tab")
-      document.getElementById(tabId).classList.add("active")
+      document.getElementById(tabId)?.classList.add("active")
     })
   })
 
