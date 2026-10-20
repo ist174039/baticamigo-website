@@ -4,6 +4,8 @@
 
 ## Problemas corrigidos
 
+- Home mobile: seletores de cartões destacados e posteriores mantinham spans de desktop por maior especificidade, incluindo Programas e Agenda. A regra final mobile define uma única coluna real e prevalece também sobre os destaques, evitando cartões estreitos e texto partido.
+
 - Parceiros e colaboradores no admin estavam aninhados dentro de Contacto, que ficava oculto ao navegar. Corrigido o fecho da secção e acrescentada uma regressão para garantir painéis independentes.
 
 - Área misturava apresentação pública com operação: passou para navegação lateral e cartões segundo o admin, com visão geral e atalhos.
