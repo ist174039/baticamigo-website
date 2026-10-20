@@ -22,6 +22,8 @@ const markup = body
       <li class="admin-nav-group admin-nav-group-people">Comunidade</li>
       <li><a href="#membros-section" data-section="membros"><i class="fas fa-users"></i>Membros</a></li>
       <li><a href="#parceiros-section" data-section="parceiros"><i class="fas fa-handshake"></i>Parceiros</a></li>
+      <li class="admin-nav-group admin-nav-group-settings">Site</li>
+      <li><a href="#contacto-section" data-section="contacto"><i class="fas fa-address-card"></i>Contacto do site</a></li>
     </ul>`
   )
   // Add short context and a consistent jump-to-list action without changing
@@ -37,6 +39,25 @@ const markup = body
   .replace(
     /<button id="add-(evento|programa|agenda|noticia|membro|parceiro)-btn" class="admin-btn primary-btn">([^<]+)<\/button>/g,
     (_match, key, label) => `<button id="add-${key}-btn" class="admin-btn primary-btn">${label}<span aria-hidden="true">＋</span></button></div>`
+  )
+  .replace(
+    /(<\/div>\s*<div id="membros-section")/,
+    `<div id="contacto-section" class="admin-section">
+                    <section class="admin-card admin-settings-card" aria-labelledby="contact-settings-title">
+                      <div class="admin-card-header"><div class="admin-card-heading"><span class="admin-card-kicker">Conteúdo do site</span><h3 id="contact-settings-title">Informações de contacto</h3></div></div>
+                      <form id="contact-settings-form" class="admin-settings-form">
+                        <label for="contact-intro">Mensagem de apresentação</label>
+                        <textarea id="contact-intro" name="intro" rows="3" required>Quer saber mais, colaborar ou fazer parte? Estamos prontos para ouvir.</textarea>
+                        <div class="admin-settings-grid">
+                          <div><label for="contact-email">Email</label><input id="contact-email" name="email" type="email" value="info@baticamigo.pt" required></div>
+                          <div><label for="contact-address">Morada</label><input id="contact-address" name="address" type="text" value="Avenida Dr. Arlindo Vicente, Lote 370 A, loja 1" required></div>
+                        </div>
+                        <div><label for="contact-instagram">Link do Instagram</label><input id="contact-instagram" name="instagram" type="url" value="https://www.instagram.com/aba2022cultura/" required></div>
+                        <div class="admin-settings-footer"><p id="contact-settings-status" role="status" aria-live="polite"></p><button id="save-contact-settings" class="admin-btn primary-btn" type="submit">Guardar alterações</button></div>
+                      </form>
+                    </section>
+                </div>
+                $1`
   );
 
 export const metadata = { title: "Painel administrativo | BaticAmigo" };

@@ -39,5 +39,19 @@
 .admin-tab{appearance:none;border:0;border-radius:8px;background:transparent;color:#716a78;font:600 12px var(--admin-body-font);line-height:1.25}
 .admin-tab.active{border:0;background:#fff;color:var(--admin-purple);box-shadow:0 2px 8px #241b380f}
 .admin-tab:focus-visible{outline:3px solid var(--admin-orange);outline-offset:2px}
+.admin-settings-form{display:grid;gap:16px;padding:22px 25px 25px}
+.admin-settings-form>label,.admin-settings-form>div>label{display:block;margin:0 0 7px;color:#403747;font-size:12px;font-weight:700}
+.admin-settings-form input,.admin-settings-form textarea{box-sizing:border-box;width:100%;min-height:46px;padding:11px 13px;border:1px solid #ded8e3;border-radius:9px;background:#fff;color:#241b2e;font:500 13px var(--admin-body-font)}
+.admin-settings-form textarea{min-height:94px;resize:vertical;line-height:1.55}
+.admin-settings-form input:focus,.admin-settings-form textarea:focus{outline:0;border-color:var(--admin-purple);box-shadow:0 0 0 3px #6846b91a}
+.admin-settings-grid{display:grid;grid-template-columns:1fr 1.35fr;gap:16px}
+.admin-settings-footer{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-top:3px}
+.admin-settings-footer p{margin:0;color:#52734d;font-size:12px}
+.admin-settings-footer p[data-state="error"]{color:#963d2b}
+.admin-settings-footer .admin-btn{min-height:44px;padding:0 18px;border:0;border-radius:99px;background:var(--admin-purple);color:#fff;font:700 12px var(--admin-body-font);cursor:pointer}
+.admin-settings-footer .admin-btn:disabled{cursor:wait;opacity:.7}
+.admin-settings-form input:focus-visible,.admin-settings-form textarea:focus-visible,.admin-settings-footer .admin-btn:focus-visible{outline:3px solid var(--admin-orange);outline-offset:2px}
 @media(max-width:850px){.admin-sidebar-menu{scrollbar-width:thin;scrollbar-color:#ffffff3a transparent}.admin-sidebar-menu a{min-height:42px}.dashboard-welcome{align-items:flex-start}.admin-view-site{margin-bottom:26px}}
 @media(max-width:520px){.dashboard-welcome{align-items:flex-start;flex-direction:column;gap:10px}.admin-view-site{margin:0 0 20px 4px}.admin-section-intro{display:none}.admin-sidebar-menu{padding-bottom:7px}.admin-sidebar-menu a{min-height:44px}.admin-card-header .admin-btn{min-height:42px}}
+@media(max-width:700px){.admin-settings-grid{grid-template-columns:1fr}}
+@media(max-width:520px){.admin-settings-form{padding:18px 16px}.admin-settings-footer{align-items:stretch;flex-direction:column}.admin-settings-footer .admin-btn{width:100%}}

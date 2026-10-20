@@ -14,9 +14,56 @@ document.addEventListener("DOMContentLoaded", () => {
       // Usuário autenticado
       document.getElementById("user-email").textContent = user.email
       loadData()
+      loadContactSettings()
     } else {
       // Redirecionar para a página de login se não estiver autenticado
       window.location.href = "/admin/login"
+    }
+  })
+
+  async function loadContactSettings() {
+    const form = document.getElementById("contact-settings-form")
+    if (!form) return
+    try {
+      const snapshot = await db.collection("site_config").doc("contact").get()
+      const settings = snapshot.exists ? snapshot.data() : {}
+      for (const field of ["intro", "email", "address", "instagram"]) {
+        if (typeof settings[field] === "string" && settings[field]) form.elements[field].value = settings[field]
+      }
+    } catch (error) {
+      console.error("Erro ao carregar as informações de contacto:", error)
+      setContactSettingsStatus("Não foi possível carregar as informações guardadas.", true)
+    }
+  }
+
+  function setContactSettingsStatus(message, isError = false) {
+    const status = document.getElementById("contact-settings-status")
+    if (!status) return
+    status.textContent = message
+    status.dataset.state = isError ? "error" : "success"
+  }
+
+  document.getElementById("contact-settings-form")?.addEventListener("submit", async (event) => {
+    event.preventDefault()
+    const form = event.currentTarget
+    const button = document.getElementById("save-contact-settings")
+    const values = Object.fromEntries(["intro", "email", "address", "instagram"].map((field) => [field, form.elements[field].value.trim()]))
+    if (!/^https?:\/\//i.test(values.instagram)) {
+      setContactSettingsStatus("Introduza um link do Instagram válido (https://…).", true)
+      form.elements.instagram.focus()
+      return
+    }
+    button.disabled = true
+    button.textContent = "A guardar…"
+    try {
+      await db.collection("site_config").doc("contact").set(values, { merge: true })
+      setContactSettingsStatus("Informações guardadas com sucesso.")
+    } catch (error) {
+      console.error("Erro ao guardar as informações de contacto:", error)
+      setContactSettingsStatus("Não foi possível guardar. Verifique a ligação e as permissões do Firestore.", true)
+    } finally {
+      button.disabled = false
+      button.textContent = "Guardar alterações"
     }
   })
 

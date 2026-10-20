@@ -29,8 +29,8 @@ function SiteFooter() {
       </nav>
       <div className="footer-connect">
         <span className="footer-label">Fale connosco</span>
-        <a className="footer-contact" href="mailto:info@baticamigo.pt">info@baticamigo.pt <span aria-hidden="true">↗</span></a>
-        <a className="footer-social" href="https://www.instagram.com/aba2022cultura/" target="_blank" rel="noreferrer">Instagram <span aria-hidden="true">↗</span></a>
+        <a className="footer-contact" data-contact-email href="mailto:info@baticamigo.pt">info@baticamigo.pt <span aria-hidden="true">↗</span></a>
+        <a className="footer-social" data-contact-instagram href="https://www.instagram.com/aba2022cultura/" target="_blank" rel="noreferrer">Instagram <span aria-hidden="true">↗</span></a>
       </div>
       <a className="footer-back-top" href="#inicio" aria-label="Voltar ao início">↑</a>
     </div>
@@ -66,7 +66,7 @@ function DynamicSection({ id, eyebrow, title, description, containerId, searchId
 }
 
 function ContactSection() {
-  return <section className="contact-section" id="contato"><div className="contact-intro"><span className="eyebrow eyebrow-light">Contacto</span><h2>Boas ideias<br/>começam com<br/><em>uma conversa.</em></h2><p>Quer saber mais, colaborar ou fazer parte? Estamos prontos para ouvir.</p><div className="contact-detail"><span className="detail-icon"><i className="fa-regular fa-envelope" aria-hidden="true"/></span><div><small>Escreva-nos</small><a href="mailto:info@baticamigo.pt">info@baticamigo.pt</a></div></div><div className="contact-detail"><span className="detail-icon"><i className="fa-solid fa-location-dot" aria-hidden="true"/></span><div><small>Visite-nos</small><span>Avenida Dr. Arlindo Vicente, Lote 370 A, loja 1</span></div></div><a className="social-link" href="https://www.instagram.com/aba2022cultura/" target="_blank" rel="noreferrer">Instagram <span aria-hidden="true">↗</span></a></div><div className="contact-form-panel"><div className="form-panel-heading"><span>Envie-nos uma mensagem</span><span className="form-asterisk">✳</span></div><ContactForm/></div></section>;
+  return <section className="contact-section" id="contato"><div className="contact-intro"><span className="eyebrow eyebrow-light">Contacto</span><h2>Boas ideias<br/>começam com<br/><em>uma conversa.</em></h2><p data-contact-intro>Quer saber mais, colaborar ou fazer parte? Estamos prontos para ouvir.</p><div className="contact-detail"><span className="detail-icon"><i className="fa-regular fa-envelope" aria-hidden="true"/></span><div><small>Escreva-nos</small><a data-contact-email href="mailto:info@baticamigo.pt">info@baticamigo.pt</a></div></div><div className="contact-detail"><span className="detail-icon"><i className="fa-solid fa-location-dot" aria-hidden="true"/></span><div><small>Visite-nos</small><span data-contact-address>Avenida Dr. Arlindo Vicente, Lote 370 A, loja 1</span></div></div><a className="social-link" data-contact-instagram href="https://www.instagram.com/aba2022cultura/" target="_blank" rel="noreferrer">Instagram <span aria-hidden="true">↗</span></a></div><div className="contact-form-panel"><div className="form-panel-heading"><span>Envie-nos uma mensagem</span><span className="form-asterisk">✳</span></div><ContactForm/></div></section>;
 }
 
 export default function HomePage() {

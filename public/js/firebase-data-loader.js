@@ -28,6 +28,34 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Referência ao Firestore
   const db = firebase.firestore()
 
+  async function loadContactSettings() {
+    try {
+      const snapshot = await db.collection("site_config").doc("contact").get()
+      if (!snapshot.exists) return
+      const settings = snapshot.data() || {}
+      const intro = document.querySelector("[data-contact-intro]")
+      if (intro && typeof settings.intro === "string") intro.textContent = settings.intro
+      const email = document.querySelectorAll("[data-contact-email]")
+      if (typeof settings.email === "string") email.forEach((element) => {
+        element.href = `mailto:${settings.email}`
+        const label = element.querySelector("span")
+        element.textContent = settings.email
+        if (label) element.appendChild(label)
+      })
+      const address = document.querySelector("[data-contact-address]")
+      if (address && typeof settings.address === "string") address.textContent = settings.address
+      if (typeof settings.instagram === "string") {
+        try {
+          const url = new URL(settings.instagram)
+          if (["http:", "https:"].includes(url.protocol)) document.querySelectorAll("[data-contact-instagram]").forEach((element) => { element.href = url.href })
+        } catch { /* Keep the default link when a stored URL is invalid. */ }
+      }
+    } catch (error) {
+      console.error("Erro ao carregar as informações de contacto:", error)
+    }
+  }
+  loadContactSettings()
+
   // Dynamic text is escaped before entering the few static HTML templates
   // below; URLs are separately constrained to web-safe protocols.
   function escapeHtml(value) {
