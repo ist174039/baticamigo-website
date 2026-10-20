@@ -114,7 +114,7 @@ export const metadata = { title: "Painel administrativo | BaticAmigo" };
 export default function AdminDashboardPage() {
   return (
     <>
-      <main className="dashboard-page">
+      <a className="skip-link" href="#conteudo-admin">Saltar para o conteúdo</a><main id="conteudo-admin" tabIndex={-1} className="dashboard-page">
         <header className="dashboard-welcome">
           <div>
             <span className="eyebrow">Espaço de gestão</span>

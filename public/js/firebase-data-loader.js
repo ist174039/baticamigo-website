@@ -1,6 +1,5 @@
 // Script para carregar dados do Firebase
 document.addEventListener("DOMContentLoaded", async () => {
-  console.log("Carregando dados do Firebase...")
 
   // Hide only collections that successfully loaded with zero records. A failed
   // request stays visible so visitors can distinguish an error from no content.
@@ -51,7 +50,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         } catch { /* Keep the default link when a stored URL is invalid. */ }
       }
     } catch (error) {
-      console.error("Erro ao carregar as informações de contacto:", error)
+      console.error("Erro ao carregar as informações de contacto:")
     }
   }
   loadContactSettings()
@@ -210,12 +209,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         container.appendChild(memberCard)
       })
 
-      console.log(`${membersSnapshot.size} membros carregados`)
     } catch (error) {
       const container = document.getElementById("members-container");
       setCollectionState("members-container", "error");
       if (container) container.innerHTML = '<p class="no-results">Não foi possível carregar os membros. Atualize a página para tentar novamente.</p>';
-      console.error("Erro ao carregar membros:", error)
+      console.error("Erro ao carregar membros:")
     }
   }
 
@@ -259,12 +257,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         container.appendChild(partnerCard)
       })
 
-      console.log(`${partnersSnapshot.size} parceiros carregados`)
     } catch (error) {
       const container = document.getElementById("partners-container");
       setCollectionState("partners-container", "error");
       if (container) container.innerHTML = '<p class="no-results">Não foi possível carregar os parceiros. Atualize a página para tentar novamente.</p>';
-      console.error("Erro ao carregar parceiros:", error)
+      console.error("Erro ao carregar parceiros:")
     }
   }
 
@@ -447,7 +444,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       const searchInput = document.getElementById("eventos-search")
 
       if (!container) {
-        console.log("Container de eventos não encontrado")
+
         return
       }
 
@@ -518,12 +515,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         })
       }
 
-      console.log(`${events.length} eventos carregados`)
     } catch (error) {
       const container = document.getElementById("events-container");
       setCollectionState("events-container", "error");
       if (container) container.innerHTML = '<p class="no-results">Não foi possível carregar os eventos. Atualize a página para tentar novamente.</p>';
-      console.error("Erro ao carregar eventos:", error)
+      console.error("Erro ao carregar eventos:")
     }
   }
 
@@ -535,7 +531,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       const searchInput = document.getElementById("programas-search")
 
       if (!container) {
-        console.log("Container de programas não encontrado")
+
         return
       }
 
@@ -590,12 +586,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         })
       }
 
-      console.log(`${programs.length} programas carregados`)
     } catch (error) {
       const container = document.getElementById("programs-container");
       setCollectionState("programs-container", "error");
       if (container) container.innerHTML = '<p class="no-results">Não foi possível carregar os programas. Atualize a página para tentar novamente.</p>';
-      console.error("Erro ao carregar programas:", error)
+      console.error("Erro ao carregar programas:")
     }
   }
 
@@ -607,7 +602,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       const searchInput = document.getElementById("agenda-search")
 
       if (!container) {
-        console.log("Container de agenda não encontrado")
+
         return
       }
 
@@ -676,12 +671,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         })
       }
 
-      console.log(`${agendaItems.length} itens de agenda carregados`)
     } catch (error) {
       const container = document.getElementById("agenda-container");
       setCollectionState("agenda-container", "error");
       if (container) container.innerHTML = '<p class="no-results">Não foi possível carregar a agenda. Atualize a página para tentar novamente.</p>';
-      console.error("Erro ao carregar agenda:", error)
+      console.error("Erro ao carregar agenda:")
     }
   }
 
@@ -692,7 +686,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       const container = document.getElementById("news-container")
 
       if (!container) {
-        console.log("Container de notícias não encontrado")
+
         return
       }
 
@@ -739,12 +733,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         container.appendChild(newsCard)
       })
 
-      console.log(`${news.length} notícias carregadas`)
     } catch (error) {
       const container = document.getElementById("news-container");
       setCollectionState("news-container", "error");
       if (container) container.innerHTML = '<p class="no-results">Não foi possível carregar as notícias. Atualize a página para tentar novamente.</p>';
-      console.error("Erro ao carregar notícias:", error)
+      console.error("Erro ao carregar notícias:")
     }
   }
 
@@ -757,9 +750,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     await loadPrograms()
     await loadAgenda()
     await loadNews()
-    console.log("Todos os dados foram carregados com sucesso")
+
   } catch (error) {
-    console.error("Erro ao carregar dados:", error)
+    console.error("Erro ao carregar dados:")
   }
 })
 

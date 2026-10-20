@@ -1,0 +1,59 @@
+import assert from 'node:assert/strict';
+import {generateKeyPairSync} from 'node:crypto';
+import {spawn} from 'node:child_process';
+import {initializeApp} from 'firebase-admin/app';
+import {getAuth} from 'firebase-admin/auth';
+import {getFirestore} from 'firebase-admin/firestore';
+for(const key of ['FIRESTORE_EMULATOR_HOST','FIREBASE_AUTH_EMULATOR_HOST']) assert.match(process.env[key] || '',/^(127\.0\.0\.1|localhost):\d+$/,'Integration tests require local Firebase emulators; cloud access is forbidden.');
+const projectId='baticamigo-c0384', host='http://127.0.0.1:3101';
+const app=initializeApp({projectId},'integration-fixtures'), db=getFirestore(app), auth=getAuth(app);
+const {privateKey}=generateKeyPairSync('rsa',{modulusLength:2048,privateKeyEncoding:{type:'pkcs8',format:'pem'},publicKeyEncoding:{type:'spki',format:'pem'}});
+// Ephemeral synthetic key: never persisted, never used outside local emulators.
+const credential={project_id:projectId,client_email:'test-only@baticamigo-c0384.iam.gserviceaccount.com',private_key:privateKey};
+const server=spawn(process.execPath,['node_modules/next/dist/bin/next','dev','--hostname','127.0.0.1','--port','3101'],{env:{...process.env,FIREBASE_SERVICE_ACCOUNT_JSON:JSON.stringify(credential)},stdio:['ignore','pipe','pipe']});
+let serverLog='';for(const stream of [server.stdout,server.stderr])stream.on('data',chunk=>{serverLog=(serverLog+chunk.toString()).slice(-12000);});
+const tokens={};
+const fixtures=[['admin','admin',[]],['student','student',['s1']],['otherStudent','student',['s2']],['guardian','guardian',['g1']],['otherGuardian','guardian',['g2']],['tutor','tutor',['t1']],['otherTutor','tutor',['t2']],['member','member',['m1']]];
+async function request(who,body) {const response=await fetch(host+'/api/platform',{method:body?'POST':'GET',headers:{...(who ? {Authorization:'Bearer '+tokens[who]} : {}),...(body?{'Content-Type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})});return {status:response.status,body:await response.json()};}
+async function expect(who,body,status=200) {const result=await request(who,body);assert.equal(result.status,status,result.body.error);return result.body;}
+try {
+  for(let attempt=0;attempt<120;attempt++){try{const response=await fetch(host+'/api/platform');if(response.status===401)break;}catch{}if(attempt===119)throw new Error('Local server did not start.');await new Promise(resolve=>setTimeout(resolve,500));}
+  for(const [name,role,profileIds] of fixtures){const email=name.toLowerCase()+'@example.invalid';await auth.createUser({uid:name,email,password:'Synthetic-fixture-password-42',emailVerified:true});await db.collection('platform_accounts').doc(name).set({roles:[role],role,profileIds,active:true});const response=await fetch('http://'+process.env.FIREBASE_AUTH_EMULATOR_HOST+'/identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=emulator-only',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password:'Synthetic-fixture-password-42',returnSecureToken:true})});const result=await response.json();assert.ok(result.idToken,'Emulated sign-in failed.');tokens[name]=result.idToken;}
+  for(const [id,kind,name,guardians] of [['s1','student','Aluno de teste A',['g1']],['s2','student','Aluno de teste B',['g2']],['g1','guardian','Encarregado de teste A',[]],['g2','guardian','Encarregado de teste B',[]],['t1','tutor','Explicador de teste A',[]],['t2','tutor','Explicador de teste B',[]],['m1','member','Sócio de teste',[]]])await db.collection('platform_profiles').doc(id).set({kind,name,guardianIds:guardians,active:true});
+  await expect(null,null,401);
+  const start=new Date(Date.now()-86400000).toISOString(),end=new Date(Date.now()-82800000).toISOString();
+  const session={title:'Sessão de teste',studentIds:['s1'],tutorId:'t1',room:'Teste A',startsAt:start,endsAt:end};
+  const created=await expect('admin',{action:'create-session',session});
+  await expect('admin',{action:'create-session',session},409);
+  await expect('admin',{action:'create-session',session:{...session,studentIds:['s2'],tutorId:'t2',room:'Teste B'}});
+  for(const name of ['student','guardian','tutor']){const result=await expect(name);assert.ok(result.profiles.some(p=>p.id==='s1'));assert.equal(result.profiles.some(p=>p.id==='s2'),false);assert.equal(result.sessions.length,1);assert.equal(result.profiles.find(p=>p.id==='t1')?.name,'Explicador de teste A');}
+  console.log('PASS: authenticated reads and family/tutor isolation.');
+  const assessment={kind:'assessment',studentId:'s1',title:'Avaliação de teste',subject:'Português',period:'Mensal',origin:'Teste sintético',score:14,scaleMin:0,scaleMax:20};
+  for(const name of ['student','guardian','otherTutor','member'])await expect(name,{action:'save-record',record:assessment},403);
+  const saved=await expect('tutor',{action:'save-record',record:assessment});
+  assert.equal((await expect('guardian')).records.length,1);assert.equal((await expect('otherGuardian')).records.length,0);
+  await expect('tutor',{action:'save-record',record:{...assessment,id:saved.id,version:1,score:15}});
+  await expect('tutor',{action:'save-record',record:{...assessment,id:saved.id,version:1,score:16}},409);
+  await expect('tutor',{action:'save-record',record:{...assessment,score:22}},400);
+  console.log('PASS: record permissions, scale validation and optimistic concurrency.');
+  const presence={action:'set-attendance',sessionId:created.id,studentId:'s1',status:'present',version:0};
+  await expect('student',presence,403);await expect('otherTutor',presence,403);await expect('tutor',presence);await expect('tutor',presence,409);
+  await expect('guardian',{action:'save-record',record:{kind:'justification',studentId:'s1',title:'Motivo de teste',content:'Texto sintético',sessionId:created.id}});
+  await expect('otherGuardian',{action:'save-record',record:{kind:'justification',studentId:'s1',title:'Motivo de teste',content:'Texto sintético',sessionId:created.id}},403);
+  console.log('PASS: attendance and guardian justification permissions.');
+  await expect('admin',{action:'save-record',record:{kind:'document',studentId:'m1',title:'Documento de teste',content:'Conteúdo sintético'}});
+  assert.equal((await expect('member')).records.length,1);assert.equal((await expect('student')).records.some(r=>r.studentId==='m1'),false);
+  await expect('student',{action:'save-record',record:{kind:'message',studentId:'s1',title:'Mensagem de teste',content:'Mensagem sintética'}});
+  assert.ok((await expect('tutor')).records.some(r=>r.kind==='message'));
+  await expect('student',{action:'save-account',account:{uid:'otherStudent',roles:['admin'],profileIds:[],active:true}},403);
+  await expect('admin',{action:'save-profile',profile:{kind:'member',name:'Novo sócio sintético',active:true,memberNumber:'TEST',membershipStatus:'pending'}});
+  assert.ok((await db.collection('platform_audit').get()).size>=8);
+  console.log('PASS: member documents, messaging, account privilege protection and audit writes.');
+  await db.collection('platform_accounts').doc('student').update({active:false});await expect('student',null,403);
+  for(const path of ['/','/area','/admin/dashboard']){const response=await fetch(host+path);assert.equal(response.status,200);assert.equal(response.headers.get('x-content-type-options'),'nosniff');assert.match(await response.text(),/Saltar para o conteúdo/);}
+  console.log('PASS: inactive account rejection and shared HTTP/accessibility baseline.');
+  const direct=await fetch('http://'+process.env.FIRESTORE_EMULATOR_HOST+'/v1/projects/'+projectId+'/databases/(default)/documents/platform_profiles/s1',{headers:{Authorization:'Bearer '+tokens.guardian}});
+  assert.equal(direct.status,403,'Direct client access must be denied by emulator fixture rules.');
+  console.log('PASS: direct client access denied by local fixture rules.');
+  console.log('Integration tests completed against local emulators only.');
+} catch(error) {console.error('Integration test failed:',error.message);process.exitCode=1;} finally {server.kill('SIGTERM');await app.delete();}

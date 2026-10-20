@@ -451,3 +451,7 @@ body{background:var(--paper)}
   .partner-section .partner-grid .partner-logo img{max-width:96px;max-height:72px}
   .people-section .people-grid .member-info,.partner-section .partner-grid .partner-info{padding:12px}
 }
+/* Shared keyboard and low-motion baseline for public and admin surfaces. */
+.app-body :is(a,button,input,select,textarea,[tabindex]):focus-visible{outline:3px solid #ad5017;outline-offset:4px}
+.contact-privacy-note{font-size:12px;line-height:1.6;color:#62576e;margin:16px 0}
+@media(prefers-reduced-motion:reduce){.app-body *,.app-body *::before,.app-body *::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}

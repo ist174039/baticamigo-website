@@ -61,3 +61,17 @@ Os requisitos FR-010–020 e NFR-002/NFR-007 não são cobertos integralmente po
 ## Publicação
 
 A versão base `5a9b233` foi publicada na Vercel como produção em 20/10/2026 e verificada com HTTP 200 no website e em `/area`. Esta publicação não altera nem comprova regras Firestore/Storage, políticas de retenção ou backup. As melhorias descritas acima só se consideram publicadas depois do respetivo commit e da confirmação de estado `READY` na Vercel.
+
+## Remodelação e extensão não financeira — 20/10/2026
+
+Pedido: usar a área admin como referência de composição, cartões, cores e tipografia e ampliar os requisitos sem pagamentos/quotas.
+
+Implementado no código: dashboard e navegação por papel; filtros e pesquisa; pessoas, alunos/encarregados/explicadores e sócios; situação/histórico associativo; competências e disponibilidade; trabalhos, materiais/documentos por aluno; mensagens e avisos in-app; submissão de justificação pelo encarregado; avaliações numéricas ou qualitativas com disciplina, periodicidade, data, origem e escala; evolução descritiva com evidências e lacunas; relatório de cobertura por ano, faixa etária, explicador e associação, filtros e CSV. O resumo é determinístico, sem LLM, previsão ou diagnóstico. Upload binário e chat em tempo real não são implementados; materiais podem ser texto/ligação HTTPS, com controlo de acesso externo próprio. Avisos apresentam a situação atual; não incluem email/push ou contagem de não lidas.
+
+Pagamentos, quotas e dados financeiros excluídos pelo responsável. Requisitos locais continuam sem declaração de aceitação integral: os critérios de política/operação não foram inventados. Backup/restore, retenção, base legal e Rules/IAM remotos requerem validação.
+
+Validação técnica: testes de domínio/permissões/escalas/tempo/XSS; lint e build; auditoria de dependências de produção sem vulnerabilidades conhecidas após atualização para Next 15.5.28, Firebase 13.0.0 e Admin SDK 14.5.0, com overrides revistos de PostCSS e gRPC. Os loaders do home/admin passaram de Firebase 8.10 para a API compat 13.0.0; a auditoria npm não é auditoria da distribuição CDN nem substitui validação funcional em browser.
+
+Para reproduzir a integração local: usar Java 21, Node 22+ e executar `npx firebase-tools@14.22.0 emulators:exec --project baticamigo-c0384 --config tests/emulators/firebase.json --only auth,firestore 'node scripts/integration-test.mjs'`. O harness recusa hosts não locais, gera credencial sintética efémera e cria apenas dados de teste nos emuladores. Não usar credenciais reais nem exportar dados para produção. A política de teste nega acessos de clientes; não é uma substituição das regras remotas do website/admin.
+
+Revisão de UI/UX e limites em docs/operations/ui-ux-review.md. Avaliação de normas em docs/security/controls-assessment.md; a base local Standards & Controls no Notion contém aplicação, evidência e lacunas por controlo. Não há declaração de certificação nem validação humana de experiência visual.

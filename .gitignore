@@ -26,3 +26,6 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 .next/
+# Local Firebase emulator diagnostics
+*-debug.log
+firebase-export-*/

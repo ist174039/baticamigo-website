@@ -2,11 +2,11 @@
 
 import { useEffect } from "react";
 
-const firebaseApp = "https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js";
+const firebaseApp = "https://www.gstatic.com/firebasejs/13.0.0/firebase-app-compat.js";
 const firebaseServices = [
-  "https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js",
-  "https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js",
-  "https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js",
+  "https://www.gstatic.com/firebasejs/13.0.0/firebase-auth-compat.js",
+  "https://www.gstatic.com/firebasejs/13.0.0/firebase-firestore-compat.js",
+  "https://www.gstatic.com/firebasejs/13.0.0/firebase-storage-compat.js",
 ];
 const pageScripts = [
   "/js/firebase-config.js",

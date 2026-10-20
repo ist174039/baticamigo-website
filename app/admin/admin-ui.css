@@ -93,3 +93,6 @@
 .admin-table-search input:focus-visible,.admin-page-size select:focus-visible,.profile-security-content .admin-btn:focus-visible{outline:3px solid var(--admin-orange);outline-offset:2px}
 @media(max-width:700px){.admin-settings-grid{grid-template-columns:1fr}}
 @media(max-width:520px){.admin-settings-form{padding:18px 16px}.profile-security-content{padding:18px 16px}.admin-user-info{align-items:center;flex-direction:row!important;gap:7px}.admin-user-avatar{width:34px;height:34px}.admin-user-identity strong,.admin-user-identity small{max-width:145px}.admin-logout-btn{padding:9px 11px}.admin-table-tools,.admin-pagination-summary{align-items:stretch;flex-direction:column}.admin-table-search input{width:100%}.admin-pagination-actions{align-self:flex-end}}
+.admin-shell .admin-modal-close:focus-visible{outline:3px solid #f28a4b;outline-offset:3px}
+.admin-shell .admin-table-actions button{min-width:44px;min-height:44px}
+.admin-shell .admin-modal-close{min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center}

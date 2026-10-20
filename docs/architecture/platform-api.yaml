@@ -1,0 +1,39 @@
+openapi: 3.1.0
+info:
+  title: BaticAmigo platform API
+  version: 1.1.0
+  description: Initial contract. Legacy administration API and complete response schemas remain to document.
+paths:
+  /api/platform:
+    get:
+      summary: Read the authenticated account and its authorized records
+      security: [{firebaseToken: []}]
+      responses:
+        '200': {description: Account, profiles, sessions, attendance, records; accounts only for administrators}
+        '401': {description: Missing, expired or revoked token}
+        '403': {description: Inactive or unauthorized account}
+        '503': {description: Server credentials not configured}
+    post:
+      summary: Save a profile, account, session, attendance or pedagogical record
+      security: [{firebaseToken: []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [action]
+              properties:
+                action:
+                  enum: [save-profile, save-account, create-session, update-session, set-attendance, save-record]
+      responses:
+        '200': {description: Authorized operation saved and audited}
+        '400': {description: Invalid fields or domain constraints}
+        '401': {description: Invalid authentication}
+        '403': {description: No authorization for this resource or operation}
+        '404': {description: Missing referenced resource}
+        '409': {description: Concurrent modification or scheduling conflict}
+        '413': {description: Request exceeds the server payload limit}
+components:
+  securitySchemes:
+    firebaseToken: {type: http, scheme: bearer, bearerFormat: JWT}

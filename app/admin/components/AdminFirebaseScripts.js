@@ -3,10 +3,10 @@
 import { useEffect } from "react";
 
 const scripts = [
-  "https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js",
-  "https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js",
-  "https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js",
-  "https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js",
+  "https://www.gstatic.com/firebasejs/13.0.0/firebase-app-compat.js",
+  "https://www.gstatic.com/firebasejs/13.0.0/firebase-auth-compat.js",
+  "https://www.gstatic.com/firebasejs/13.0.0/firebase-firestore-compat.js",
+  "https://www.gstatic.com/firebasejs/13.0.0/firebase-storage-compat.js",
 ];
 
 // The admin area can mount twice in React Strict Mode. Keep script loading
