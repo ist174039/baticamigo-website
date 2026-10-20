@@ -40,6 +40,7 @@ export default function SiteHeader() {
         </button>
         <nav id="primary-navigation" className={`site-nav${menuOpen ? " is-open" : ""}`} aria-label="Navegação principal">
           {links.map(([label, id]) => <a key={id} href={`#${id}`} onClick={() => setMenuOpen(false)}>{label}</a>)}
+          <a href="/area" onClick={() => setMenuOpen(false)}>Área reservada</a>
           <a className="nav-cta" href="https://forms.gle/MtZwbpSMPdzeghZG8" target="_blank" rel="noreferrer" onClick={() => setMenuOpen(false)}>Junte-se a nós <span aria-hidden="true">↗</span></a>
         </nav>
       </div>

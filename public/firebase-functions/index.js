@@ -4,6 +4,15 @@ const nodemailer = require("nodemailer")
 
 admin.initializeApp()
 
+const htmlEscape = (value) => String(value ?? "")
+  .replace(/&/g, "&amp;")
+  .replace(/</g, "&lt;")
+  .replace(/>/g, "&gt;")
+  .replace(/"/g, "&quot;")
+  .replace(/'/g, "&#39;")
+
+const validEmail = (value) => typeof value === "string" && value.length <= 254 && /^\S+@\S+\.\S+$/.test(value)
+
 // Configuração do transporte de email
 const transporter = nodemailer.createTransport({
   service: "gmail",
@@ -17,14 +26,18 @@ const transporter = nodemailer.createTransport({
 exports.sendEmail = functions.https.onCall(async (data, context) => {
   // Verificar se o usuário está autenticado
   if (!context.auth) {
-    throw new functions.https.HttpsError("unauthenticated", "O usuário deve estar autenticado para enviar emails.")
+    throw new functions.https.HttpsError("unauthenticated", "Inicie sessão para continuar.")
   }
+  if (context.auth.token.admin !== true) throw new functions.https.HttpsError("permission-denied", "Sem permissão para enviar emails.")
 
   const { to, subject, text, html } = data
 
   // Validar dados
-  if (!to || !subject || (!text && !html)) {
+  if (!validEmail(to) || typeof subject !== "string" || !subject.trim() || subject.length > 200 || /[\r\n]/.test(subject) || (!text && !html)) {
     throw new functions.https.HttpsError("invalid-argument", "Dados inválidos para envio de email.")
+  }
+  if ((text && (typeof text !== "string" || text.length > 10000)) || (html && (typeof html !== "string" || html.length > 20000))) {
+    throw new functions.https.HttpsError("invalid-argument", "O conteúdo do email excede o limite permitido.")
   }
 
   // Configurar email
@@ -49,29 +62,33 @@ exports.sendEmail = functions.https.onCall(async (data, context) => {
 // Função para enviar email quando uma nova mensagem de contato for adicionada
 exports.sendContactEmail = functions.firestore.document("contato/{contactId}").onCreate(async (snap, context) => {
   const contactData = snap.data()
+  const name = String(contactData.nome || "").slice(0, 200)
+  const email = String(contactData.email || "").slice(0, 254)
+  const subject = String(contactData.assunto || "").slice(0, 200)
+  const message = String(contactData.mensagem || "").slice(0, 10000)
 
   // Configurar email
   const mailOptions = {
     from: functions.config().email.user,
     to: "carlos.gomes@baticamigo.com",
-    subject: `Nova mensagem de contato: ${contactData.assunto}`,
+    subject: `Nova mensagem de contacto: ${subject.replace(/[\r\n]/g, " ")}`,
     text: `
-                Nome: ${contactData.nome}
-                Email: ${contactData.email}
-                Assunto: ${contactData.assunto}
+                Nome: ${name}
+                Email: ${email}
+                Assunto: ${subject}
                 Data: ${new Date().toLocaleString("pt-BR")}
                 
                 Mensagem:
-                ${contactData.mensagem}
+                ${message}
             `,
     html: `
                 <h2>Nova mensagem de contato</h2>
-                <p><strong>Nome:</strong> ${contactData.nome}</p>
-                <p><strong>Email:</strong> ${contactData.email}</p>
-                <p><strong>Assunto:</strong> ${contactData.assunto}</p>
+                <p><strong>Nome:</strong> ${htmlEscape(name)}</p>
+                <p><strong>Email:</strong> ${htmlEscape(email)}</p>
+                <p><strong>Assunto:</strong> ${htmlEscape(subject)}</p>
                 <p><strong>Data:</strong> ${new Date().toLocaleString("pt-BR")}</p>
                 <h3>Mensagem:</h3>
-                <p>${contactData.mensagem.replace(/\n/g, "<br>")}</p>
+                <p>${htmlEscape(message).replace(/\n/g, "<br>")}</p>
             `,
   }
 

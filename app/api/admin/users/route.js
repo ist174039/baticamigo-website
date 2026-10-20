@@ -42,7 +42,41 @@ function firebaseAuth() {
 }
 
 function isAdmin(user) {
-  return user.admin === true || bootstrapAdmins().has(String(user.email || "").toLowerCase());
+  return user.admin === true || ((user.email_verified === true || user.emailVerified === true) && bootstrapAdmins().has(String(user.email || "").toLowerCase()));
+}
+
+async function readJson(request) {
+  const length = Number(request.headers.get("content-length") || 0);
+  if (length > 16384) throw new ApiError(413, "Pedido demasiado grande.");
+  const reader = request.body?.getReader();
+  if (!reader) throw new ApiError(400, "Pedido vazio.");
+  const chunks = [];
+  let size = 0;
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      size += value.byteLength;
+      if (size > 16384) {
+        await reader.cancel();
+        throw new ApiError(413, "Pedido demasiado grande.");
+      }
+      chunks.push(value);
+    }
+  } finally {
+    reader.releaseLock();
+  }
+  const bytes = new Uint8Array(size);
+  let offset = 0;
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  try {
+    return JSON.parse(new TextDecoder().decode(bytes));
+  } catch {
+    throw new ApiError(400, "JSON inválido.");
+  }
 }
 
 async function requireAdmin(request) {
@@ -54,6 +88,9 @@ async function requireAdmin(request) {
     decoded = await auth.verifyIdToken(token, true);
   } catch {
     throw new ApiError(401, "A sessão expirou. Inicie sessão novamente.");
+  }
+  if (bootstrapAdmins().has(String(decoded.email || "").toLowerCase()) && decoded.email_verified !== true) {
+    throw new ApiError(403, "Confirme o email da conta antes de gerir utilizadores.");
   }
   if (!isAdmin(decoded)) throw new ApiError(403, "A sua conta não tem acesso à gestão de utilizadores.");
   let refreshToken = false;
@@ -130,7 +167,7 @@ export async function POST(request) {
   let createdUser;
   try {
     const { auth } = await requireAdmin(request);
-    const body = await request.json();
+    const body = await readJson(request);
 
     if (body.action === "reset-password") {
       const uid = String(body.uid || "").trim();
@@ -176,7 +213,7 @@ export async function POST(request) {
 export async function PATCH(request) {
   try {
     const { auth, decoded } = await requireAdmin(request);
-    const body = await request.json();
+    const body = await readJson(request);
     const uid = String(body.uid || "").trim();
     if (!uid || typeof body.disabled !== "boolean") throw new ApiError(400, "Dados de atualização inválidos.");
     if (uid === decoded.uid) throw new ApiError(400, "Não pode desativar a sua própria conta.");
@@ -197,7 +234,7 @@ export async function PATCH(request) {
 export async function DELETE(request) {
   try {
     const { auth, decoded } = await requireAdmin(request);
-    const { uid } = await request.json();
+    const { uid } = await readJson(request);
     const targetUid = String(uid || "").trim();
     if (!targetUid) throw new ApiError(400, "Selecione uma conta válida.");
     if (targetUid === decoded.uid) throw new ApiError(400, "Não pode remover a sua própria conta.");

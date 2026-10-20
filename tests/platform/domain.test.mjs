@@ -1,0 +1,16 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {profileInput,sessionInput,accountInput,canReadStudent,canAttend,overlaps,manages,attendanceVersion} from '../../lib/platform/domain.mjs';
+const session={title:'Matemática',studentIds:['s1'],tutorId:'t1',room:'A',startsAt:'2026-10-20T10:00:00Z',endsAt:'2026-10-20T11:00:00Z'};
+test('reject mass assignment and malformed profile relationships',()=>{assert.throws(()=>profileInput({kind:'student',name:'Ana',admin:true})); assert.throws(()=>profileInput({kind:'tutor',name:'Ana',guardianIds:['g1']}));});
+test('multi-role accounts validated and fail closed for unknown roles',()=>{assert.equal(manages(accountInput({uid:'u',roles:['tutor','coordinator'],active:true})),true); assert.throws(()=>accountInput({uid:'u',roles:['owner'],active:true}));});
+test('student and guardian access requires exact relationship',()=>{const student={id:'s1',guardianIds:['g1']}; assert.equal(canReadStudent({roles:['guardian'],profileId:'g1'},student),true); assert.equal(canReadStudent({roles:['guardian'],profileId:'g2'},student),false); assert.equal(canReadStudent({roles:['student'],profileId:'s2'},student),false);});
+test('tutors can attend only assigned sessions',()=>{assert.equal(canAttend({roles:['tutor'],profileId:'t1'},session),true); assert.equal(canAttend({roles:['tutor'],profileId:'t2'},session),false);});
+
+test('multiple profiles and volunteer teaching roles remain scoped',()=>{const account=accountInput({uid:'u',roles:['student','volunteer'],profileIds:['s1','t1'],active:true}); assert.deepEqual(account.profileIds,['s1','t1']); assert.equal(canReadStudent(account,{id:'s1',guardianIds:[]}),true); assert.equal(canAttend(account,session),true); assert.equal(canAttend(account,{...session,tutorId:'t2'}),false);});
+
+test('attendance updates require the latest version',()=>{assert.equal(attendanceVersion(null,0),1); assert.equal(attendanceVersion({version:3},3),4); assert.throws(()=>attendanceVersion({version:3},2)); assert.throws(()=>attendanceVersion(null,-1));});
+test('schedule checks tutor, student and room conflicts but permits adjacent sessions',()=>{const a=sessionInput(session); assert.equal(overlaps(a,{...a,tutorId:'t2',studentIds:['s2']}),true); assert.equal(overlaps(a,{...a,room:'B',tutorId:'t2'}),true); assert.equal(overlaps(a,{...a,startsAt:a.endsAt,endsAt:'2026-10-20T12:00:00.000Z'}),false); assert.equal(overlaps(a,{...a,status:'cancelled'}),false);});
+test('session duration and participant validation',()=>{assert.throws(()=>sessionInput({...session,studentIds:[]})); assert.throws(()=>sessionInput({...session,endsAt:session.startsAt})); assert.throws(()=>sessionInput({...session,studentIds:['s1','s1']}));});
+
+test('session timestamps require timezone and valid calendar dates',()=>{assert.throws(()=>sessionInput({...session,startsAt:'2026-10-20T10:00'})); assert.throws(()=>sessionInput({...session,startsAt:'2026-02-30T10:00:00Z'}));});

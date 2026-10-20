@@ -1,0 +1,48 @@
+.platform { min-height:100vh; background:#f4f5f0; color:#183d32; font-family:"DM Sans",sans-serif; }
+.platform * { box-sizing:border-box; }
+.platform-header,.platform-footer { display:flex; justify-content:space-between; gap:20px; align-items:center; padding:24px max(24px,calc((100vw - 1240px)/2)); background:white; }
+.platform-brand { font-size:1.35rem; font-weight:800; color:#183d32; text-decoration:none; }
+.platform-brand span { display:block; font-size:.8rem; font-weight:500; }
+.platform-main { max-width:1240px; margin:auto; padding:48px 24px 80px; }
+.platform-title { max-width:720px; margin-bottom:24px; }
+.platform-title h1 { font-size:clamp(2rem,4vw,3.5rem); line-height:1.1; margin:12px 0; letter-spacing:-.04em; }
+.platform-eyebrow { text-transform:uppercase; letter-spacing:.1em; font-size:.75rem; font-weight:700; }
+.platform p { line-height:1.6; }
+.platform button,.platform input,.platform select { font:inherit; }
+.platform button { cursor:pointer; min-height:44px; border:1px solid #b6c6bc; padding:10px 16px; border-radius:8px; background:white; color:#183d32; font-weight:600; }
+.platform button:disabled { cursor:wait; opacity:.65; }
+.platform button.platform-primary { background:#20543e; color:white; border-color:#20543e; }
+.platform :is(button,a,input,select):focus-visible { outline:3px solid #895500; outline-offset:3px; }
+.platform-card { background:white; border:1px solid #dce3dc; border-radius:16px; padding:28px; min-width:0; }
+.platform-card h2 { font-size:1.35rem; margin:0 0 14px; }
+.platform-login { max-width:480px; }
+.platform-grid { display:grid; grid-template-columns:minmax(0,1.4fr) minmax(300px,1fr); gap:24px; align-items:start; }
+.platform-grid>.platform-card:only-child { grid-column:1/-1; }
+.platform form fieldset { padding:0; margin:0; border:0; min-width:0; }
+.platform form fieldset fieldset { margin:20px 0; }
+.platform-field { display:grid; gap:8px; margin:18px 0; font-size:.95rem; font-weight:600; }
+.platform-field input,.platform-field select { min-height:44px; padding:10px; border:1px solid #889d90; border-radius:6px; width:100%; background:white; color:#183d32; }
+.platform-field select[multiple] { min-height:100px; }
+.platform-check { display:flex; gap:10px; align-items:center; padding:8px 0; min-height:44px; }
+.platform-check input { width:20px; height:20px; accent-color:#20543e; }
+.platform-actions { display:flex; flex-wrap:wrap; gap:10px; margin-top:20px; }
+.platform-error,.platform-success { padding:16px; border-radius:8px; }
+.platform-error { color:#862626; background:#ffeded; border:1px solid #d2a4a4; }
+.platform-success { background:#e3f1e7; color:#184b2a; border:1px solid #abc7b1; }
+.platform-tabs { display:flex; flex-wrap:wrap; gap:10px; margin:24px 0; }
+.platform-tabs button[aria-current] { background:#20543e; color:white; }
+.platform-list { list-style:none; padding:0; margin:0; }
+.platform-list>li { border-top:1px solid #dce3dc; padding:20px 0; display:flex; gap:16px; justify-content:space-between; align-items:flex-start; }
+.platform-list p { margin:4px 0; overflow-wrap:anywhere; }
+.platform-list h3 { margin:0 0 8px; }
+.platform-sessions>li>article { width:100%; }
+.platform-attendance { list-style:none; padding:0; margin-top:16px; }
+.platform-attendance li { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:10px 0; border-top:1px dashed #dce3dc; }
+.platform-attendance select { min-height:44px; padding:8px; max-width:190px; border:1px solid #889d90; border-radius:6px; }
+.platform-access { max-width:640px; }
+.platform-account { overflow-wrap:anywhere; }
+.platform-footer { font-size:.9rem; }
+.platform-footer a { color:#183d32; }
+.platform-sr,.platform-skip:not(:focus) { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+.platform-skip:focus { display:block; padding:16px; background:white; color:#183d32; }
+@media(max-width:800px) { .platform-grid { grid-template-columns:1fr; } .platform-card { padding:20px; } .platform-header { padding:20px; } .platform-main { padding:32px 16px 60px; } .platform-footer { flex-wrap:wrap; } .platform-attendance li { flex-wrap:wrap; } }
