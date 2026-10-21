@@ -368,3 +368,82 @@
   .private-navigation-panel nav :is(a, button), .platform .platform-sidebar nav button, .platform-list > li { transition: none; }
   .private-navigation-panel nav :is(a, button):hover, .platform .platform-sidebar nav button:hover, .platform-list > li:hover { transform: none; }
 }
+
+/* One polished control and pagination language across the authenticated areas. */
+.platform button {
+  min-height: 40px;
+  border-radius: 10px;
+  font-weight: 650;
+  transition: background-color .16s ease, border-color .16s ease, box-shadow .16s ease, transform .16s ease;
+}
+.platform button:hover:not(:disabled) { transform: translateY(-1px); }
+.platform button.platform-primary {
+  border-color: var(--private-forest);
+  background: var(--private-forest);
+  box-shadow: 0 3px 9px #60347724;
+}
+.platform button.platform-primary:hover:not(:disabled) {
+  border-color: var(--private-deep);
+  background: var(--private-deep);
+  box-shadow: 0 5px 14px #2d183b28;
+}
+.platform button[data-variant="outline"], .platform button.border-input {
+  border-color: #ded3e4;
+  background: #fff;
+  color: var(--private-forest);
+}
+.platform button[data-variant="outline"]:hover:not(:disabled), .platform button.border-input:hover:not(:disabled) {
+  border-color: #cdb9d7;
+  background: #faf6fc;
+}
+.platform .user-manager-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 14px;
+  padding: 13px 15px;
+  border: 1px solid var(--private-line);
+  border-radius: 12px;
+  background: #fcfafc;
+  color: var(--private-muted);
+  font-size: 11px;
+}
+.platform .user-manager-pagination > div { display: flex; align-items: center; gap: 10px; }
+.platform .user-manager-pagination > div > span { min-width: 98px; color: var(--private-deep); font-size: 11px; font-weight: 650; text-align: center; }
+.platform .user-manager-pagination button { min-height: 36px; padding-inline: 12px; border-radius: 9px; font-size: 11px; }
+.platform .user-manager-pagination button:disabled { opacity: .45; }
+.admin-shell .admin-pagination {
+  gap: 12px;
+  padding: 15px 17px;
+  border: 1px solid var(--private-line);
+  border-radius: 13px;
+  background: #fff;
+  box-shadow: 0 4px 14px #2d183b08;
+}
+.admin-shell .admin-table-tools { align-items: end; padding-bottom: 13px; border-color: var(--private-line); }
+.admin-shell .admin-pagination-summary { align-items: center; padding-top: 1px; }
+.admin-shell .admin-pagination-count { color: var(--private-muted); font-size: 11px; }
+.admin-shell .admin-pagination-page { min-width: 100px; color: var(--private-deep); font-size: 11px; }
+.admin-shell .admin-pagination-actions { gap: 7px; }
+.admin-shell .admin-pagination-actions button {
+  min-height: 36px;
+  padding: 0 13px;
+  border-color: #ded3e4;
+  border-radius: 9px;
+  background: #fff;
+  color: var(--private-forest);
+  font-size: 11px;
+  transition: background-color .16s ease, border-color .16s ease, transform .16s ease;
+}
+.admin-shell .admin-pagination-actions button:hover:not(:disabled) { transform: translateY(-1px); border-color: #cdb9d7; background: #faf6fc; }
+.admin-shell .admin-pagination-actions button:disabled { opacity: .45; }
+.admin-shell .admin-page-size select, .admin-shell .admin-table-search input { min-height: 40px; border-color: #e3dbe7; border-radius: 9px; }
+
+@media (max-width: 600px) {
+  .platform .user-manager-pagination { align-items: stretch; flex-direction: column; }
+  .platform .user-manager-pagination > div { justify-content: space-between; }
+  .admin-shell .admin-table-tools, .admin-shell .admin-pagination-summary { align-items: stretch; flex-direction: column; }
+  .admin-shell .admin-table-search input { width: 100%; }
+  .admin-shell .admin-pagination-actions { align-self: flex-end; }
+}

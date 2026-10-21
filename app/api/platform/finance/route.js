@@ -1,6 +1,6 @@
 import {context,collection,json,failure,audit} from '../../../../lib/platform/server';
 import {assert,hasRole,profileIds} from '../../../../lib/platform/domain.mjs';
-import {dueInput,paymentInput,donationInput,lisbonToday,movementId} from '../../../../lib/platform/finance.mjs';
+import {dueInput,paymentInput,donationInput,financingInput,expenseInput,lisbonToday,movementId} from '../../../../lib/platform/finance.mjs';
 import {canAccessArea} from '../../../../lib/platform/access.mjs';
 
 export const runtime='nodejs';
@@ -9,7 +9,7 @@ const rows=snapshot=>snapshot.docs.map(doc=>({...doc.data(),id:doc.id}));
 async function bounded(query,label='registos financeiros') { const result=await query.limit(501).get();assert(result.size<=500,`Demasiados ${label}. Contacte o suporte.`,409);return rows(result); }
 async function body(request) { const length=Number(request.headers.get('content-length')||0);assert(length>0&&length<=16384,'Pedido inválido.',413);let value;try{value=await request.json();}catch{assert(false,'JSON inválido.');}assert(value&&typeof value==='object'&&!Array.isArray(value));return value; }
 function manager(account) { assert(hasRole(account,'admin'),'Apenas a administração pode consultar ou alterar a gestão financeira.',403); }
-function snapshot(data) { const keys=['memberId','periodType','period','amountCents','dueAt','paidAt','donatedAt','dueId','method','reference','donorName','anonymous','purpose','notes'];return Object.fromEntries(keys.filter(key=>data[key]!==undefined).map(key=>[key,data[key]])); }
+function snapshot(data) { const keys=['memberId','periodType','period','amountCents','dueAt','paidAt','donatedAt','receivedAt','dueId','method','reference','donorName','anonymous','funder','payee','category','purpose','notes'];return Object.fromEntries(keys.filter(key=>data[key]!==undefined).map(key=>[key,data[key]])); }
 
 export async function GET(request) {
   try {
@@ -32,7 +32,9 @@ export async function GET(request) {
     if(admin) payments=await bounded(collection(db,'due_payments'));
     else for(let offset=0;offset<dueIds.length;offset+=10) payments.push(...await bounded(collection(db,'due_payments').where('dueId','in',dueIds.slice(offset,offset+10))));
     const donations=admin?await bounded(collection(db,'donations')):[];
-    return json({permissions:{manage:admin},profiles,dues,payments,donations});
+    const financings=admin?await bounded(collection(db,'financings')):[];
+    const expenses=admin?await bounded(collection(db,'expenses')):[];
+    return json({permissions:{manage:admin},profiles,dues,payments,donations,financings,expenses});
   } catch(error) { return failure(error); }
 }
 
@@ -87,6 +89,24 @@ export async function POST(request) {
     if(value.action==='update-donation'||value.action==='delete-donation') {
       assert(Object.keys(value).every(key=>['action','id','version','donation'].includes(key)),'Campo não permitido.');const ref=collection(db,'donations').doc(movementId(value.id));
       await db.runTransaction(async tx=>{const current=await tx.get(ref);assert(current.exists,'Doação não encontrada.',404);assert(current.data().version===value.version,'A doação foi alterada. Atualize a página e tente novamente.',409);if(value.action==='delete-donation'){tx.delete(ref);audit(tx,db,account,'delete-donation',ref.id,{deleted:snapshot(current.data())});return;}const donation=donationInput(value.donation);assert(donation.donatedAt<=lisbonToday(),'A data da doação não pode ser futura.');tx.update(ref,{...donation,version:value.version+1,updatedAt:new Date().toISOString(),updatedBy:account.uid});audit(tx,db,account,'update-donation',ref.id,{before:snapshot(current.data())});});return json(value.action==='delete-donation'?{deleted:true}:{saved:true});
+    }
+    if(value.action==='record-financing') {
+      assert(Object.keys(value).every(key=>['action','financing'].includes(key)),'Campo não permitido.');
+      const financing=financingInput(value.financing);assert(financing.receivedAt<=lisbonToday(),'A data do recebimento não pode ser futura.');
+      const ref=collection(db,'financings').doc();await db.runTransaction(async tx=>{const now=new Date().toISOString();tx.set(ref,{...financing,version:1,createdAt:now,createdBy:account.uid});audit(tx,db,account,'record-financing',ref.id);});return json({saved:true,id:ref.id},201);
+    }
+    if(value.action==='update-financing'||value.action==='delete-financing') {
+      assert(Object.keys(value).every(key=>['action','id','version','financing'].includes(key)),'Campo não permitido.');const ref=collection(db,'financings').doc(movementId(value.id));
+      await db.runTransaction(async tx=>{const current=await tx.get(ref);assert(current.exists,'Financiamento não encontrado.',404);assert(current.data().version===value.version,'O financiamento foi alterado. Atualize a página e tente novamente.',409);if(value.action==='delete-financing'){tx.delete(ref);audit(tx,db,account,'delete-financing',ref.id,{deleted:snapshot(current.data())});return;}const financing=financingInput(value.financing);assert(financing.receivedAt<=lisbonToday(),'A data do recebimento não pode ser futura.');tx.update(ref,{...financing,version:value.version+1,updatedAt:new Date().toISOString(),updatedBy:account.uid});audit(tx,db,account,'update-financing',ref.id,{before:snapshot(current.data())});});return json(value.action==='delete-financing'?{deleted:true}:{saved:true});
+    }
+    if(value.action==='record-expense') {
+      assert(Object.keys(value).every(key=>['action','expense'].includes(key)),'Campo não permitido.');
+      const expense=expenseInput(value.expense);assert(expense.paidAt<=lisbonToday(),'A data da despesa não pode ser futura.');
+      const ref=collection(db,'expenses').doc();await db.runTransaction(async tx=>{const now=new Date().toISOString();tx.set(ref,{...expense,version:1,createdAt:now,createdBy:account.uid});audit(tx,db,account,'record-expense',ref.id);});return json({saved:true,id:ref.id},201);
+    }
+    if(value.action==='update-expense'||value.action==='delete-expense') {
+      assert(Object.keys(value).every(key=>['action','id','version','expense'].includes(key)),'Campo não permitido.');const ref=collection(db,'expenses').doc(movementId(value.id));
+      await db.runTransaction(async tx=>{const current=await tx.get(ref);assert(current.exists,'Despesa não encontrada.',404);assert(current.data().version===value.version,'A despesa foi alterada. Atualize a página e tente novamente.',409);if(value.action==='delete-expense'){tx.delete(ref);audit(tx,db,account,'delete-expense',ref.id,{deleted:snapshot(current.data())});return;}const expense=expenseInput(value.expense);assert(expense.paidAt<=lisbonToday(),'A data da despesa não pode ser futura.');tx.update(ref,{...expense,version:value.version+1,updatedAt:new Date().toISOString(),updatedBy:account.uid});audit(tx,db,account,'update-expense',ref.id,{before:snapshot(current.data())});});return json(value.action==='delete-expense'?{deleted:true}:{saved:true});
     }
     assert(false,'Operação financeira inválida.');
   } catch(error) { return failure(error); }

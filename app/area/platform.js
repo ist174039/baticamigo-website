@@ -201,7 +201,7 @@ export default function Platform() {
     ...(educational?[["sessions",manager?"Sessões e presenças":"As minhas sessões"]]:[]),
     ["profiles",admin?"Utilizadores":manager?"Pessoas e sócios":"Os meus perfis"],
     ...((hasStudents||manager)?[["assignment","Trabalhos"],["material","Materiais"],["assessment","Avaliações"],["progress","Evolução"],["justification","Justificações"]]:[]),
-    ...((admin||roles.includes("member"))?[["finance",admin?"Quotas e doações":"As minhas quotas"]]:[]),
+    ...((admin||roles.includes("member"))?[["finance","Área financeira"]]:[]),
     ["document","Documentos"],["message","Mensagens"],["notifications","Avisos"],
     ...(manager?[["reports","Relatórios"]]:[]),
   ];
@@ -249,6 +249,6 @@ export default function Platform() {
         </div>}
       </>}
     {attendanceEditing && <Dialog open onOpenChange={(open) => { if (!open) setAttendanceEditing(null); }} ariaLabel={`Registar presença de ${attendanceEditing.studentName}`} className="platform-dialog"><section className="platform-card platform-editor"><div className="platform-list-heading"><div><p className="platform-eyebrow">{attendanceEditing.sessionTitle}</p><h2>Presença de {attendanceEditing.studentName}</h2></div><Button type="button" variant="outline" onClick={() => setAttendanceEditing(null)}>Fechar</Button></div><form key={`${attendanceEditing.sessionId}:${attendanceEditing.studentId}:${attendanceEditing.version}`} onSubmit={saveAttendance}><fieldset disabled={busy}><Field label="Estado da presença"><NativeSelect name="status" required defaultValue={attendanceEditing.status}><option value="" disabled>Selecionar estado</option>{Object.entries(attendanceNames).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</NativeSelect></Field><div className="platform-actions"><Button type="submit" className="platform-primary">Guardar presença</Button><Button type="button" variant="outline" onClick={() => setAttendanceEditing(null)}>Cancelar</Button></div></fieldset></form></section></Dialog>}
-    <footer className="platform-footer"><a href="/">Website da associação ↗</a></footer></main></AreaNavigation>
+    </main></AreaNavigation>
   </div>;
 }
