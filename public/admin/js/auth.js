@@ -7,6 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const loginStatus = document.getElementById("login-status")
   const emailInput = document.getElementById("email")
   const resetPasswordLink = document.getElementById("reset-password-link")
+  const verifyEmailLink = document.getElementById("verify-email-link")
 
   // Verificar se o usuário já está autenticado
   auth.onAuthStateChanged(async (user) => {
@@ -18,15 +19,23 @@ document.addEventListener("DOMContentLoaded", () => {
         showError("Esta conta não tem acesso ao painel administrativo.")
       }
     } catch (error) {
+      if (error.code !== "admin/email-not-verified") await auth.signOut()
       console.error("Erro ao validar permissões administrativas:", error)
-      showError("Não foi possível validar o acesso. Tente novamente mais tarde.")
+      showError(error.message || "Não foi possível validar o acesso. Tente novamente mais tarde.")
+      if (verifyEmailLink) verifyEmailLink.hidden = error.code !== "admin/email-not-verified"
     }
   })
 
   async function validateAdminAccount(user) {
     const token = await user.getIdToken()
     const response = await fetch("/api/admin/users?check=1", { headers: { Authorization: `Bearer ${token}` }, cache: "no-store" })
-    if (response.status === 401 || response.status === 403) return false
+    if (response.status === 401) return false
+    if (response.status === 403) {
+      const result = await response.json().catch(() => ({}))
+      const error = new Error(result.error || "Esta conta não tem acesso ao painel administrativo.")
+      error.code = result.error === "Confirme o email da conta antes de gerir utilizadores." ? "admin/email-not-verified" : "admin/access-denied"
+      throw error
+    }
     if (!response.ok) throw new Error("A validação de acesso falhou.")
     const result = await response.json()
     if (result.refreshToken) await user.getIdToken(true)
@@ -48,11 +57,13 @@ document.addEventListener("DOMContentLoaded", () => {
     loginError.textContent = ""
     loginError.hidden = true
     loginError.style.display = ""
+    if (verifyEmailLink) verifyEmailLink.hidden = true
   }
 
   function showStatus(message) {
     if (!loginStatus) return
     if (loginError) loginError.hidden = true
+    if (verifyEmailLink) verifyEmailLink.hidden = true
     loginStatus.textContent = message
     loginStatus.hidden = false
   }
@@ -89,6 +100,7 @@ document.addEventListener("DOMContentLoaded", () => {
         window.location.href = "/admin/dashboard"
       } catch (error) {
         console.error("Erro de autenticação:", error)
+        if (error.code === "admin/access-denied") await auth.signOut()
 
         // Tratamento de erros específicos
         switch (error.code) {
@@ -107,12 +119,31 @@ document.addEventListener("DOMContentLoaded", () => {
           case "auth/network-request-failed":
             showError("Sem ligação ao serviço de acesso. Verifique a sua ligação e tente novamente.")
             break
+          case "admin/email-not-verified":
+            showError(error.message)
+            if (verifyEmailLink) verifyEmailLink.hidden = false
+            break
           default:
-            showError("Erro ao fazer login. Tente novamente.")
+            showError(error.message || "Erro ao fazer login. Tente novamente.")
         }
       } finally {
         if (submitButton) submitButton.disabled = false
         if (submitLabel && originalLabel) submitLabel.textContent = originalLabel
+      }
+    })
+  }
+
+  if (verifyEmailLink) {
+    verifyEmailLink.addEventListener("click", async (event) => {
+      event.preventDefault()
+      clearError()
+      try {
+        const user = auth.currentUser
+        if (!user) throw new Error("Inicie sessão para pedir um novo email de verificação.")
+        await user.sendEmailVerification()
+        showStatus("Enviámos um email de verificação. Confirme o endereço e volte a entrar no painel.")
+      } catch (error) {
+        showError(error.message || "Não foi possível enviar o email de verificação. Tente novamente.")
       }
     })
   }

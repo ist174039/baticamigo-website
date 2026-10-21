@@ -57,6 +57,7 @@ export default function AdminLogin() {
               <span>Conta protegida pelo Firebase</span>
               <a href="#reset-password" id="reset-password-link">Recuperar acesso</a>
             </div>
+            <a href="#verify-email" id="verify-email-link" className="login-verification-link" hidden>Reenviar email de verificação</a>
             <Button type="submit" className="login-submit">
               <span className="login-submit-label">Entrar no painel</span>
               <span aria-hidden="true">→</span>

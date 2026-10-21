@@ -23,6 +23,7 @@
 .login-form-options{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;margin-top:-3px;color:#827a88;font-size:10px}
 .login-form-options a,.login-home-link{color:var(--login-purple);font-weight:700;text-decoration:none}
 .login-form-options a:hover,.login-home-link:hover{text-decoration:underline;text-underline-offset:3px}
+.login-verification-link{justify-self:start;margin-top:-10px;color:var(--login-purple);font-size:11px;font-weight:700;text-decoration:none}.login-verification-link:hover{text-decoration:underline;text-underline-offset:3px}
 .login-submit{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:52px;margin:2px 0 0;padding:0 17px;border:0;border-radius:10px;background:var(--login-purple);color:#fff;font:700 13px var(--admin-body-font);cursor:pointer;transition:background .18s,transform .18s,box-shadow .18s}
 .login-submit:hover{transform:translateY(-1px);background:#56389e;box-shadow:0 8px 20px #6846b92a}
 .login-submit:focus-visible{outline:3px solid #f28a4b;outline-offset:3px}
