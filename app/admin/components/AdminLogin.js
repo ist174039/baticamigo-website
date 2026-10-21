@@ -1,5 +1,9 @@
 import Image from "next/image";
 import AdminFirebaseScripts from "./AdminFirebaseScripts";
+import { Button } from "@/app/components/ui/button";
+import { Card } from "@/app/components/ui/card";
+import { Input } from "@/app/components/ui/input";
+import { Label } from "@/app/components/ui/label";
 
 export default function AdminLogin() {
   return (
@@ -13,7 +17,7 @@ export default function AdminLogin() {
           </span>
         </a>
 
-        <div className="login-card">
+        <Card className="login-card">
           <header className="login-heading">
             <span className="login-eyebrow">Administração</span>
             <h1 id="login-title">Acesso ao<br /><em>painel.</em></h1>
@@ -25,8 +29,8 @@ export default function AdminLogin() {
 
           <form id="login-form" className="admin-form login-form">
             <div className="login-field">
-              <label htmlFor="email">Email</label>
-              <input
+              <Label htmlFor="email">Email</Label>
+              <Input
                 type="email"
                 id="email"
                 name="email"
@@ -37,8 +41,8 @@ export default function AdminLogin() {
               />
             </div>
             <div className="login-field">
-              <label htmlFor="password">Palavra-passe</label>
-              <input
+              <Label htmlFor="password">Palavra-passe</Label>
+              <Input
                 type="password"
                 id="password"
                 name="password"
@@ -52,14 +56,14 @@ export default function AdminLogin() {
               <span>Conta protegida pelo Firebase</span>
               <a href="#reset-password" id="reset-password-link">Recuperar acesso</a>
             </div>
-            <button type="submit" className="login-submit">
+            <Button type="submit" className="login-submit">
               <span className="login-submit-label">Entrar no painel</span>
               <span aria-hidden="true">→</span>
-            </button>
+            </Button>
           </form>
 
           <a className="login-home-link" href="/">← Voltar ao site</a>
-        </div>
+        </Card>
       </section>
 
       <aside className="login-aside" aria-label="Sobre a área administrativa">

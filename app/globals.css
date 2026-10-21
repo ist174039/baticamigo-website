@@ -1,3 +1,36 @@
 @import url("/css/styles.css");
 @import url("/css/carousel.css");
 @import url("/css/responsive.css");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 40 24% 96%;
+    --foreground: 150 20% 12%;
+    --card: 0 0% 100%;
+    --card-foreground: 150 20% 12%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 150 20% 12%;
+    --primary: 159 55% 16%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 89 68% 70%;
+    --secondary-foreground: 159 55% 13%;
+    --muted: 100 13% 93%;
+    --muted-foreground: 145 6% 43%;
+    --accent: 89 55% 91%;
+    --accent-foreground: 159 55% 13%;
+    --destructive: 5 64% 48%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 100 13% 87%;
+    --input: 100 13% 82%;
+    --ring: 88 36% 46%;
+    --radius: 0.4rem;
+    --brand-forest: #123d32;
+    --brand-deep: #0c2d26;
+    --brand-lime: #d4f075;
+    --brand-paper: #f8f7f2;
+  }
+}

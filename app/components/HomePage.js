@@ -4,6 +4,8 @@ import SectionHeading from "./SectionHeading";
 import ContactForm from "./ContactForm";
 import CollectionProgressiveReveal from "./CollectionProgressiveReveal";
 import Image from "next/image";
+import { Input } from "@/app/components/ui/input";
+import { Label } from "@/app/components/ui/label";
 
 const pillars = [
   { number: "01", icon: "fa-futbol", title: "Desporto", text: "Criamos espaços para crescer, cooperar e desenvolver hábitos de vida saudáveis através da prática desportiva." },
@@ -55,10 +57,10 @@ function DynamicSection({ id, eyebrow, title, description, containerId, searchId
     <header className="collection-header">
       <div className="collection-heading-copy"><span className="eyebrow">{eyebrow}</span><SectionHeading eyebrow="" title={title} description={description}/></div>
       {searchId && <div className="collection-search-wrap">
-        <label className="collection-search" htmlFor={searchId}>
+        <Label className="collection-search" htmlFor={searchId}>
           <i className="fa-solid fa-magnifying-glass" aria-hidden="true"/>
-          <input id={searchId} type="search" placeholder={searchPlaceholder} aria-label={searchPlaceholder} autoComplete="off" />
-        </label>
+          <Input id={searchId} type="search" placeholder={searchPlaceholder} aria-label={searchPlaceholder} autoComplete="off" />
+        </Label>
       </div>}
     </header>
     <div className="dynamic-grid collection-grid" id={containerId} aria-live="polite"><div className="empty-state"><span className="empty-mark">✳</span><p>A carregar lista…</p></div></div>

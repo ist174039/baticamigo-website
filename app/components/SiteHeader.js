@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import { Button } from "@/app/components/ui/button";
 
 const links = [
   ["Sobre", "missao"], ["Atividades", "eventos"], ["Programas", "programas"],
@@ -50,9 +51,9 @@ export default function SiteHeader({ variant = "public" }) {
           <Image src="/images/logo.png" alt="BaticAmigo" width={94} height={94} priority />
           <span><strong>BaticAmigo</strong><small>Associação</small></span>
         </a>
-        {variant === "public" && <button ref={menuButtonRef} className={`menu-toggle${menuOpen ? " is-open" : ""}`} type="button" aria-expanded={menuOpen} aria-controls="primary-navigation" aria-label={menuOpen ? "Fechar menu" : "Abrir menu"} onClick={() => setMenuOpen(!menuOpen)}>
+        {variant === "public" && <Button variant="ghost" ref={menuButtonRef} className={`menu-toggle${menuOpen ? " is-open" : ""}`} type="button" aria-expanded={menuOpen} aria-controls="primary-navigation" aria-label={menuOpen ? "Fechar menu" : "Abrir menu"} onClick={() => setMenuOpen(!menuOpen)}>
           <span /><span /><span />
-        </button>}
+        </Button>}
         <nav ref={navigationRef} id="primary-navigation" className={`site-nav${menuOpen ? " is-open" : ""}${variant === "area" ? " area-nav" : ""}`} aria-label="Navegação principal">
           {variant === "area" ? <a href="/">Website público</a> : <>
           {links.map(([label, id]) => <a key={id} href={`#${id}`} onClick={() => setMenuOpen(false)}>{label}</a>)}
@@ -62,7 +63,7 @@ export default function SiteHeader({ variant = "public" }) {
         </nav>
       </div>
     </header>
-    {variant === "public" && menuOpen && <button className="nav-backdrop" type="button" aria-label="Fechar menu" onClick={() => { setMenuOpen(false); menuButtonRef.current?.focus(); }} />}
+    {variant === "public" && menuOpen && <Button variant="ghost" className="nav-backdrop" type="button" aria-label="Fechar menu" onClick={() => { setMenuOpen(false); menuButtonRef.current?.focus(); }} />}
     </>
   );
 }
