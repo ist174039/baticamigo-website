@@ -1,0 +1,216 @@
+"use client";
+
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Badge } from "@/app/components/ui/badge";
+import { Button } from "@/app/components/ui/button";
+import { Card } from "@/app/components/ui/card";
+import { Checkbox } from "@/app/components/ui/checkbox";
+import { Input } from "@/app/components/ui/input";
+import { Label } from "@/app/components/ui/label";
+import { NativeSelect } from "@/app/components/ui/native-select";
+import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/app/components/ui/table";
+import { Dialog } from "@/app/components/ui/dialog";
+import { platformAuth } from "../../lib/firebase-client";
+
+const roleLabels = { admin: "Administrador", coordinator: "Coordenação", student: "Aluno", guardian: "Encarregado", tutor: "Explicador", volunteer: "Voluntário", member: "Sócio" };
+const profileLabels = { student: "Aluno", guardian: "Encarregado", tutor: "Explicador", member: "Sócio" };
+const membershipLabels = { active: "Sócio ativo", pending: "Sócio pendente", suspended: "Sócio suspenso", left: "Ex-sócio" };
+const blankForm = () => ({ displayName: "", email: "", roles: [], profileIds: [], active: true, profileKind: "student", createProfile: false });
+const date = (value) => value ? new Intl.DateTimeFormat("pt-PT", { dateStyle: "medium" }).format(new Date(value)) : "Nunca";
+
+function RoleOptions({ value, onChange }) {
+  return <fieldset className="user-manager-role-options"><legend>Permissões da área</legend>{Object.entries(roleLabels).map(([role, label]) => <label className="platform-check" key={role}><Checkbox checked={value.includes(role)} onChange={(event) => onChange(event.target.checked ? [...value, role] : value.filter((current) => current !== role))} />{label}</label>)}</fieldset>;
+}
+
+export default function AreaUserManager() {
+  const [users, setUsers] = useState([]);
+  const [allProfiles, setAllProfiles] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
+  const [query, setQuery] = useState("");
+  const [userDialogOpen, setUserDialogOpen] = useState(false);
+  const [dialogUser, setDialogUser] = useState(null);
+  const [form, setForm] = useState(blankForm);
+  const [profileEditorOpen, setProfileEditorOpen] = useState(false);
+  const [editingProfile, setEditingProfile] = useState(null);
+  const [profileForm, setProfileForm] = useState({});
+  const [confirmUser, setConfirmUser] = useState(null);
+  const [invite, setInvite] = useState(null);
+  const [temporaryPassword, setTemporaryPassword] = useState(false);
+  const [createdCredentials, setCreatedCredentials] = useState(null);
+
+  const request = useCallback(async (path = "", options = {}, endpoint = "/api/platform/users") => {
+    const currentUser = platformAuth().currentUser;
+    if (!currentUser) throw new Error("A sessão terminou. Inicie sessão novamente.");
+    const token = await currentUser.getIdToken();
+    const response = await fetch(`${endpoint}${path}`, {
+      ...options,
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}`, ...(options.headers || {}) },
+      cache: "no-store",
+    });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(result.error || "Não foi possível concluir a operação.");
+    return result;
+  }, []);
+
+  const reload = useCallback(async () => {
+    setLoading(true);
+    try {
+      const result = await request();
+      setUsers(result.users || []);
+      setAllProfiles(result.profiles || []);
+      setError("");
+    } catch (failure) { setError(failure.message); }
+    finally { setLoading(false); }
+  }, [request]);
+
+  useEffect(() => { reload(); }, [reload]);
+
+  const linkedProfileIds = useMemo(() => new Set(users.flatMap((user) => user.profileIds || [])), [users]);
+  const unlinked = allProfiles.filter((profile) => !linkedProfileIds.has(profile.id));
+  const filteredUsers = users.filter((user) => `${user.displayName} ${user.email} ${(user.roles || []).map((role) => roleLabels[role]).join(" ")} ${(user.profiles || []).map((profile) => profile.name).join(" ")}`.toLocaleLowerCase("pt-PT").includes(query.toLocaleLowerCase("pt-PT")));
+  const filteredProfiles = unlinked.filter((profile) => `${profile.name} ${profile.email || ""} ${profileLabels[profile.kind] || ""}`.toLocaleLowerCase("pt-PT").includes(query.toLocaleLowerCase("pt-PT")));
+
+  function openCreate(profile = null) {
+    const initial = blankForm();
+    if (profile) {
+      initial.displayName = profile.name;
+      initial.email = profile.email || "";
+      initial.profileIds = [profile.id];
+      initial.roles = [profile.kind];
+    }
+    setForm(initial);
+    setDialogUser(null);
+    setUserDialogOpen(true);
+  }
+
+  function openEdit(user) {
+    setDialogUser(user);
+    setForm({ displayName: user.displayName || "", email: user.email || "", roles: user.roles || [], profileIds: user.profileIds || [], active: user.accessActive || !(user.roles || []).length, profileKind: "student", createProfile: false });
+    setUserDialogOpen(true);
+  }
+
+  function openProfile(profile) {
+    setEditingProfile(profile);
+    setProfileForm({ name: profile.name || "", email: profile.email || "", active: profile.active === true, memberNumber: profile.memberNumber || "", membershipStatus: profile.membershipStatus || "active", subjects: profile.subjects || "", availability: profile.availability || "", schoolYear: profile.schoolYear || "", ageBand: profile.ageBand || "" });
+    setProfileEditorOpen(true);
+  }
+
+  function toggleProfile(profileId, checked) {
+    setForm((current) => ({ ...current, profileIds: checked ? [...current.profileIds, profileId] : current.profileIds.filter((id) => id !== profileId) }));
+  }
+
+  async function submit(event) {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    const profileIds = form.profileIds;
+    const body = dialogUser ? {
+      action: "update-access", uid: dialogUser.uid, roles: form.roles, profileIds, active: form.active,
+    } : {
+      email: String(formData.get("email") || "").trim(), displayName: String(formData.get("displayName") || "").trim(), roles: form.roles, profileIds,
+      ...(form.createProfile ? { profile: { kind: form.profileKind, name: String(formData.get("displayName") || "").trim(), email: String(formData.get("email") || "").trim(), active: true, guardianIds: [], membershipStatus: "active" } } : {}),
+    };
+    setBusy(true); setError(""); setMessage("");
+    try {
+      if (dialogUser) await request("", { method: "PATCH", body: JSON.stringify(body) });
+      else {
+        const result = await request("", { method: "POST", body: JSON.stringify({ ...body, delivery: temporaryPassword ? "temporary" : "invite" }) });
+        if (result.resetLink) setInvite({ email: result.user.email, link: result.resetLink, title: "Convite para definir palavra-passe" });
+        if (result.temporaryPassword) setCreatedCredentials({ email: result.user.email, password: result.temporaryPassword });
+      }
+      setMessage(dialogUser ? "Permissões atualizadas." : temporaryPassword ? "Conta criada com palavra-passe temporária." : "Conta criada. Envie a ligação de convite ao utilizador.");
+      setDialogUser(null);
+      setUserDialogOpen(false);
+      await reload();
+    } catch (failure) { setError(failure.message); }
+    finally { setBusy(false); }
+  }
+
+  async function changeSuspension() {
+    if (!confirmUser) return;
+    const target = confirmUser;
+    setBusy(true); setError("");
+    try {
+      await request("", { method: "PATCH", body: JSON.stringify({ action: target.suspended ? "restore" : "suspend", uid: target.uid }) });
+      setConfirmUser(null);
+      setMessage(target.suspended ? "Utilizador reativado." : "Acesso suspenso e sessões terminadas.");
+      await reload();
+    } catch (failure) { setError(failure.message); }
+    finally { setBusy(false); }
+  }
+
+  async function resetPassword(user) {
+    setBusy(true); setError("");
+    try {
+      const result = await request("", { method: "POST", body: JSON.stringify({ action: "reset-password", uid: user.uid }) });
+      setInvite({ email: user.email, link: result.resetLink, title: "Ligação de recuperação" });
+    } catch (failure) { setError(failure.message); }
+    finally { setBusy(false); }
+  }
+
+  async function saveProfile(event) {
+    event.preventDefault();
+    const data = new FormData(event.currentTarget);
+    const body = { action: "save-profile", profile: { id: editingProfile.id, kind: editingProfile.kind, ...profileForm, name: String(data.get("name") || "").trim(), email: String(data.get("email") || "").trim(), guardianIds: editingProfile.guardianIds || [], active: profileForm.active } };
+    setBusy(true); setError(""); setMessage("");
+    try {
+      await request("", { method: "POST", body: JSON.stringify(body) }, "/api/platform");
+      setProfileEditorOpen(false); setEditingProfile(null); setMessage("Perfil atualizado."); await reload();
+    } catch (failure) { setError(failure.message); }
+    finally { setBusy(false); }
+  }
+
+  return <div className="user-manager">
+    <Card className="user-manager-card">
+      <header className="user-manager-heading"><div><p className="platform-eyebrow">Contas, pessoas e sócios</p><h2>Gestão de utilizadores</h2><p>Crie contas, ligue perfis e trate permissões num só lugar.</p></div><Button className="platform-primary" onClick={() => openCreate()}>Novo utilizador</Button></header>
+      {error && <p className="platform-error" role="alert">{error}</p>}{message && <p className="platform-success" role="status">{message}</p>}
+      <div className="user-manager-toolbar"><Label className="platform-search"><span className="platform-sr">Pesquisar utilizadores e perfis</span><Input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Pesquisar por nome, email ou perfil" /></Label><span className="user-manager-count">{users.length} contas · {allProfiles.length} perfis</span></div>
+      <Table className="user-manager-table"><TableCaption>Contas Firebase e perfis da associação</TableCaption><TableHeader><TableRow><TableHead>Pessoa</TableHead><TableHead>Perfil e permissões</TableHead><TableHead>Estado</TableHead><TableHead>Último acesso</TableHead><TableHead><span className="platform-sr">Ações</span></TableHead></TableRow></TableHeader>
+        <TableBody>
+          {loading && <TableRow><TableCell colSpan={5}>A carregar utilizadores…</TableCell></TableRow>}
+          {!loading && filteredUsers.map((user) => <TableRow key={user.uid}>
+            <TableCell><strong>{user.displayName || "Sem nome"}</strong><small className="user-manager-secondary">{user.email || "Sem email"}</small></TableCell>
+            <TableCell><div className="user-manager-badges">{user.profiles.length ? user.profiles.map((profile) => <Badge key={profile.id} variant="secondary">{profileLabels[profile.kind]} · {profile.name}{profile.kind === "member" && profile.memberNumber ? ` · ${profile.memberNumber}` : ""}</Badge>) : <span className="user-manager-secondary">Sem perfil associado</span>}{user.roles.map((role) => <Badge key={role} variant="outline">{roleLabels[role] || role}</Badge>)}</div>{user.profiles.some((profile) => profile.kind === "member") && <small className="user-manager-secondary">{membershipLabels[user.profiles.find((profile) => profile.kind === "member").membershipStatus] || "Estado associativo por confirmar"}</small>}</TableCell>
+            <TableCell><Badge variant={user.suspended ? "destructive" : user.accessActive ? "default" : "outline"}>{user.suspended ? "Suspenso" : user.accessActive ? "Ativo" : "Sem acesso"}</Badge></TableCell>
+            <TableCell>{date(user.lastSignInAt)}</TableCell>
+            <TableCell><div className="user-manager-actions"><Button size="sm" variant="outline" disabled={busy} onClick={() => openEdit(user)}>Permissões</Button>{user.profileIds.map((profileId) => allProfiles.find((profile) => profile.id === profileId)).filter(Boolean).map((profile) => <Button key={profile.id} size="sm" variant="ghost" disabled={busy} onClick={() => openProfile(profile)}>Editar {profileLabels[profile.kind]}</Button>)}<Button size="sm" variant="ghost" disabled={busy} onClick={() => resetPassword(user)}>Enviar reset</Button><Button size="sm" variant={user.suspended ? "secondary" : "outline"} disabled={busy} onClick={() => setConfirmUser(user)}>{user.suspended ? "Reativar" : "Suspender"}</Button></div></TableCell>
+          </TableRow>)}
+          {!loading && filteredProfiles.map((profile) => <TableRow key={`profile-${profile.id}`}>
+            <TableCell><strong>{profile.name}</strong><small className="user-manager-secondary">{profile.email || "Sem conta de acesso"}</small></TableCell>
+            <TableCell><div className="user-manager-badges"><Badge variant="secondary">{profileLabels[profile.kind]}</Badge>{profile.kind === "member" && <Badge variant="outline">{membershipLabels[profile.membershipStatus] || "Estado por confirmar"}{profile.memberNumber ? ` · ${profile.memberNumber}` : ""}</Badge>}</div></TableCell>
+            <TableCell><Badge variant={profile.active ? "outline" : "destructive"}>{profile.active ? "Sem conta" : "Perfil inativo"}</Badge></TableCell>
+            <TableCell>—</TableCell>
+            <TableCell><div className="user-manager-actions"><Button size="sm" variant="outline" onClick={() => openCreate(profile)} disabled={!profile.active || busy}>Dar acesso</Button><Button size="sm" variant="ghost" onClick={() => openProfile(profile)}>Editar pessoa</Button></div></TableCell>
+          </TableRow>)}
+          {!loading && !filteredUsers.length && !filteredProfiles.length && <TableRow><TableCell colSpan={5}>Não foram encontrados utilizadores ou perfis.</TableCell></TableRow>}
+        </TableBody>
+      </Table>
+    </Card>
+
+    <Dialog open={profileEditorOpen} onOpenChange={(open) => { setProfileEditorOpen(open); if (!open) setEditingProfile(null); }} ariaLabel={editingProfile ? `Editar perfil de ${editingProfile.name}` : "Editar perfil"} className="platform-dialog user-manager-dialog"><section className="platform-card platform-editor"><div className="platform-list-heading"><div><p className="platform-eyebrow">{editingProfile ? profileLabels[editingProfile.kind] : "Perfil"}</p><h2>Editar pessoa</h2></div><Button type="button" variant="outline" onClick={() => setProfileEditorOpen(false)}>Fechar</Button></div><form onSubmit={saveProfile}><fieldset disabled={busy}><FieldLike label="Nome"><Input name="name" required maxLength={100} value={profileForm.name || ""} onChange={(event) => setProfileForm((current) => ({ ...current, name: event.target.value }))}/></FieldLike><FieldLike label="Email de contacto"><Input name="email" type="email" maxLength={254} value={profileForm.email || ""} onChange={(event) => setProfileForm((current) => ({ ...current, email: event.target.value }))}/></FieldLike>{editingProfile?.kind === "member" && <><FieldLike label="Número de sócio"><Input value={profileForm.memberNumber || ""} maxLength={200} onChange={(event) => setProfileForm((current) => ({ ...current, memberNumber: event.target.value }))}/></FieldLike><FieldLike label="Situação associativa"><NativeSelect value={profileForm.membershipStatus || "active"} onChange={(event) => setProfileForm((current) => ({ ...current, membershipStatus: event.target.value }))}><option value="pending">Pendente</option><option value="active">Ativo</option><option value="suspended">Suspenso</option><option value="left">Cessou</option></NativeSelect></FieldLike></>}{editingProfile?.kind === "student" && <><FieldLike label="Ano escolar"><Input value={profileForm.schoolYear || ""} maxLength={200} onChange={(event) => setProfileForm((current) => ({ ...current, schoolYear: event.target.value }))}/></FieldLike><FieldLike label="Faixa etária"><Input value={profileForm.ageBand || ""} maxLength={200} onChange={(event) => setProfileForm((current) => ({ ...current, ageBand: event.target.value }))}/></FieldLike></>}{editingProfile?.kind === "tutor" && <><FieldLike label="Disciplinas / competências"><Input value={profileForm.subjects || ""} maxLength={200} onChange={(event) => setProfileForm((current) => ({ ...current, subjects: event.target.value }))}/></FieldLike><FieldLike label="Disponibilidade"><Input value={profileForm.availability || ""} maxLength={1000} onChange={(event) => setProfileForm((current) => ({ ...current, availability: event.target.value }))}/></FieldLike></>}<label className="platform-check"><Checkbox checked={profileForm.active === true} onChange={(event) => setProfileForm((current) => ({ ...current, active: event.target.checked }))}/>Perfil ativo</label><div className="platform-actions"><Button className="platform-primary" type="submit">Guardar perfil</Button><Button type="button" variant="outline" onClick={() => setProfileEditorOpen(false)}>Cancelar</Button></div></fieldset></form></section></Dialog>
+
+    <Dialog open={userDialogOpen} onOpenChange={(open) => { setUserDialogOpen(open); if (!open) setDialogUser(null); }} ariaLabel={dialogUser ? `Permissões de ${dialogUser.displayName || dialogUser.email}` : "Criar utilizador"} className="platform-dialog user-manager-dialog">
+      <section className="platform-card platform-editor"><div className="platform-list-heading"><div><p className="platform-eyebrow">Gestão central</p><h2>{dialogUser ? "Permissões e perfis" : "Novo utilizador"}</h2></div><Button type="button" variant="outline" onClick={() => { setDialogUser(null); setUserDialogOpen(false); }}>Fechar</Button></div>
+        <form onSubmit={submit}><fieldset disabled={busy}>
+          {!dialogUser && <><FieldLike label="Nome"><Input name="displayName" required maxLength={100} defaultValue={form.displayName} /></FieldLike><FieldLike label="Email"><Input name="email" required type="email" maxLength={254} defaultValue={form.email} /></FieldLike><fieldset className="user-manager-profile-options"><legend>Acesso inicial</legend><label className="platform-check"><input type="radio" name="initial-access" checked={!temporaryPassword} onChange={() => setTemporaryPassword(false)} />Enviar convite para definir palavra-passe</label><label className="platform-check"><input type="radio" name="initial-access" checked={temporaryPassword} onChange={() => setTemporaryPassword(true)} />Gerar palavra-passe temporária</label><p className="platform-hint">A palavra-passe temporária é mostrada apenas uma vez. Entregue-a por um canal seguro e peça ao utilizador para a alterar ao entrar.</p></fieldset></>}
+          <RoleOptions value={form.roles} onChange={(roles) => setForm((current) => ({ ...current, roles }))} />
+          <fieldset className="user-manager-profile-options"><legend>Perfis associados</legend>{(dialogUser ? allProfiles.filter((profile) => !profile.accountUid || profile.accountUid === dialogUser.uid || form.profileIds.includes(profile.id)) : allProfiles.filter((profile) => !profile.accountUid || profile.id === form.profileIds[0])).map((profile) => <label className="platform-check" key={profile.id}><Checkbox checked={form.profileIds.includes(profile.id)} onChange={(event) => toggleProfile(profile.id, event.target.checked)} />{profileLabels[profile.kind]} · {profile.name}</label>)}{!allProfiles.length && <p className="platform-hint">Ainda não existem perfis disponíveis para associar.</p>}</fieldset>
+          {!dialogUser && <><label className="platform-check user-manager-create-profile"><Checkbox checked={form.createProfile} onChange={(event) => setForm((current) => ({ ...current, createProfile: event.target.checked, roles: event.target.checked && !current.roles.includes(current.profileKind) ? [...current.roles, current.profileKind] : current.roles }))} />Criar também um perfil novo</label>{form.createProfile && <FieldLike label="Tipo de perfil"><NativeSelect value={form.profileKind} onChange={(event) => setForm((current) => ({ ...current, profileKind: event.target.value, roles: current.roles.includes(current.profileKind) ? [...current.roles.filter((role) => role !== current.profileKind), event.target.value] : [...current.roles, event.target.value] }))}>{Object.entries(profileLabels).map(([kind, label]) => <option key={kind} value={kind}>{label}</option>)}</NativeSelect></FieldLike>}</>}
+          {dialogUser && <label className="platform-check"><Checkbox checked={form.active} onChange={(event) => setForm((current) => ({ ...current, active: event.target.checked }))} />Acesso à área ativo</label>}
+          <p className="platform-hint">As permissões são aplicadas ao criar a conta. O convite gera uma ligação segura para definir a palavra-passe; a palavra-passe temporária só é apresentada uma vez.</p>
+          <div className="platform-actions"><Button type="submit" className="platform-primary">{busy ? "A guardar…" : dialogUser ? "Guardar permissões" : "Criar utilizador"}</Button><Button type="button" variant="outline" onClick={() => { setDialogUser(null); setUserDialogOpen(false); }}>Cancelar</Button></div>
+        </fieldset></form>
+      </section>
+    </Dialog>
+
+    <Dialog open={!!confirmUser} onOpenChange={(open) => { if (!open) setConfirmUser(null); }} ariaLabel="Confirmar alteração do acesso" className="platform-dialog user-manager-confirm"><section className="platform-card platform-editor"><p className="platform-eyebrow">Confirmação</p><h2>{confirmUser?.suspended ? "Reativar acesso?" : "Suspender acesso?"}</h2><p>{confirmUser?.suspended ? `${confirmUser.displayName || confirmUser.email} poderá voltar a iniciar sessão.` : `${confirmUser?.displayName || confirmUser?.email} deixará de poder iniciar sessão e as sessões atuais serão terminadas.`}</p><div className="platform-actions"><Button className="platform-primary" disabled={busy} onClick={changeSuspension}>{busy ? "A processar…" : confirmUser?.suspended ? "Reativar utilizador" : "Suspender utilizador"}</Button><Button variant="outline" disabled={busy} onClick={() => setConfirmUser(null)}>Cancelar</Button></div></section></Dialog>
+    <Dialog open={!!invite} onOpenChange={(open) => { if (!open) setInvite(null); }} ariaLabel="Ligação de acesso ao utilizador" className="platform-dialog user-manager-confirm"><section className="platform-card platform-editor"><div className="platform-list-heading"><div><p className="platform-eyebrow">Acesso seguro</p><h2>{invite?.title || "Ligação de acesso"}</h2></div><Button type="button" variant="outline" onClick={() => setInvite(null)}>Fechar</Button></div><p>Envie esta ligação a <strong>{invite?.email}</strong> para definir ou alterar a palavra-passe e entrar na área.</p><FieldLike label="Ligação segura"><Input readOnly value={invite?.link || ""} onFocus={(event) => event.target.select()} /></FieldLike><div className="platform-actions"><Button className="platform-primary" onClick={async () => { try { await navigator.clipboard.writeText(invite?.link || ""); setMessage("Ligação copiada."); } catch { setMessage("Selecione a ligação e copie-a manualmente."); } }}>Copiar ligação</Button><Button variant="outline" onClick={() => setInvite(null)}>Concluir</Button></div></section></Dialog>
+    <Dialog open={!!createdCredentials} onOpenChange={(open) => { if (!open) setCreatedCredentials(null); }} ariaLabel="Palavra-passe temporária" className="platform-dialog user-manager-confirm"><section className="platform-card platform-editor"><div className="platform-list-heading"><div><p className="platform-eyebrow">Acesso inicial</p><h2>Palavra-passe temporária</h2></div><Button type="button" variant="outline" onClick={() => setCreatedCredentials(null)}>Fechar</Button></div><p>Partilhe por um canal seguro com <strong>{createdCredentials?.email}</strong>. Esta palavra-passe é mostrada apenas uma vez.</p><FieldLike label="Palavra-passe temporária"><Input readOnly value={createdCredentials?.password || ""} onFocus={(event) => event.target.select()} /></FieldLike><p className="platform-hint">O utilizador deve alterá-la imediatamente em “Alterar palavra-passe” após entrar.</p><div className="platform-actions"><Button className="platform-primary" onClick={async () => { try { await navigator.clipboard.writeText(createdCredentials?.password || ""); setMessage("Palavra-passe copiada."); } catch { setMessage("Selecione a palavra-passe e copie-a manualmente."); } }}>Copiar palavra-passe</Button><Button variant="outline" onClick={() => setCreatedCredentials(null)}>Concluir</Button></div></section></Dialog>
+  </div>;
+}
+
+function FieldLike({ label, children }) {
+  return <Label className="platform-field"><span>{label}</span>{children}</Label>;
+}
