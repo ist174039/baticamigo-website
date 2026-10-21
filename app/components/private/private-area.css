@@ -277,3 +277,94 @@
   .private-sidebar { padding-inline: 12px; }
   .private-navigation-panel nav { grid-template-columns: minmax(0, 1fr); }
 }
+
+/* Shared admin and member-area finish: BaticAmigo brand tokens, with Naraiana's
+   quieter spacing, grouped navigation, and clear data surfaces. */
+.private-sidebar { box-shadow: 8px 0 32px #2d183b12; }
+.private-sidebar-top { padding-bottom: 18px; border-bottom: 1px solid #ffffff20; }
+.private-brand { padding-bottom: 0; }
+.private-nav-label { margin-top: 18px; margin-bottom: 10px; }
+.private-nav-group { gap: 4px; margin-bottom: 8px; }
+.private-nav-group-label { margin: 10px 11px 5px; }
+.private-navigation-panel nav :is(a, button) { min-height: 42px; border-radius: 10px; transition: background-color .16s ease, color .16s ease, transform .16s ease; }
+.private-navigation-panel nav :is(a, button):hover { transform: translateX(2px); }
+.private-navigation-panel nav :is(a, button)[aria-current="page"],
+.private-navigation-panel nav button[aria-selected="true"] { background: #ffffff19; box-shadow: inset 3px 0 var(--private-lime); color: #fff; }
+.private-sidebar-footer { border-top: 1px solid #ffffff1c; }
+.private-sidebar-footer a { border-radius: 10px; }
+.private-content { min-height: 100vh; }
+.admin-private-shell .dashboard-page { max-width: 1680px; padding-inline: clamp(24px, 4vw, 64px); }
+.admin-private-shell .dashboard-welcome { margin-bottom: 28px; }
+.admin-private-shell .dashboard-welcome h1 { font-family: var(--font-sans, Arial, sans-serif); font-size: clamp(30px, 3.2vw, 42px); font-weight: 700; letter-spacing: -.055em; }
+.admin-private-shell .dashboard-welcome p { max-width: 64ch; line-height: 1.65; }
+.admin-private-shell .admin-card { border-radius: 16px; box-shadow: 0 8px 24px #2d183b0a; }
+.admin-private-shell .admin-card-header { padding: 20px 22px; }
+.admin-private-shell .admin-card-header h3 { font-family: var(--font-sans, Arial, sans-serif); font-size: 18px; font-weight: 650; letter-spacing: -.025em; }
+.admin-private-shell .admin-table th { padding-block: 13px; background: #f9f6fa; }
+.admin-private-shell .admin-table td { padding-block: 14px; }
+.admin-private-shell .admin-table tbody tr { transition: background-color .16s ease; }
+
+/* Match area backgrounds, controls and data surfaces to the same brand palette. */
+.platform {
+  --platform-ink: var(--private-deep);
+  --platform-forest: var(--private-forest);
+  --platform-deep: var(--private-deep);
+  --platform-orange: var(--private-lime);
+  --platform-muted: var(--private-muted);
+  --platform-line: var(--private-line);
+  background: radial-gradient(ellipse at 88% 0%, #6034770b, transparent 30%), radial-gradient(ellipse at 8% 46%, #f16a2209, transparent 30%), var(--private-paper);
+  color: var(--private-deep);
+  font-family: var(--font-sans, Arial, sans-serif);
+}
+.platform h1, .platform h2, .platform h3 { color: var(--private-deep); font-family: var(--font-sans, Arial, sans-serif); font-weight: 650; letter-spacing: -.035em; }
+.platform-sidebar { background: linear-gradient(155deg, var(--private-forest), var(--private-deep) 76%); box-shadow: 8px 0 32px #2d183b12; }
+.platform .platform-brand { padding-bottom: 20px; border-color: #ffffff24; }
+.platform-nav-label { color: #ffffffa8; font-size: 9px; font-weight: 700; letter-spacing: .13em; }
+.platform .platform-sidebar nav { gap: 4px; }
+.platform .platform-sidebar nav button { min-height: 42px; border-radius: 10px; transition: background-color .16s ease, color .16s ease, transform .16s ease; }
+.platform .platform-sidebar nav button:hover { transform: translateX(2px); }
+.platform .platform-sidebar nav button[aria-current] { border-color: #f16a2255; background: #ffffff19; box-shadow: inset 3px 0 var(--private-lime); }
+.platform-main { max-width: 1600px; padding-top: clamp(28px, 4vw, 54px); }
+.platform-title h1 { font-size: clamp(30px, 3vw, 42px); font-weight: 700; letter-spacing: -.055em; }
+.platform-title p { line-height: 1.7; }
+.platform-card { padding: clamp(20px, 2.4vw, 30px); border-color: var(--private-line); border-radius: 16px; background: #fff; box-shadow: 0 8px 24px #2d183b0a; }
+.platform-card h2 { font-size: 20px; font-weight: 650; letter-spacing: -.035em; }
+.platform-list-heading { align-items: center; margin-bottom: 18px; }
+.platform-list-heading h2 { margin: 0; }
+.platform-list-heading p { margin-top: 5px; }
+.platform-toolbar { align-items: end; gap: 12px; margin: 18px 0; padding: 14px; border: 1px solid var(--private-line); border-radius: 12px; background: #fcfafc; }
+.platform-filter { min-width: 170px; font-size: 10px; font-weight: 650; }
+.platform-search { min-width: 220px; }
+.platform :is(.platform-search input, .platform-filter select, .platform-field input, .platform-field select, .platform-field textarea, .platform-attendance select) { min-height: 42px; border-color: #e3dbe7; border-radius: 9px; background-color: #fff; transition: border-color .16s ease, box-shadow .16s ease; }
+.platform :is(input, select, textarea):focus-visible { border-color: var(--private-forest); outline: 0; box-shadow: 0 0 0 3px #60347720; }
+.platform-list > li { margin-top: 10px; padding: 18px 20px; border: 1px solid var(--private-line); border-radius: 12px; background: #fff; box-shadow: 0 3px 12px #2d183b06; transition: border-color .16s ease, box-shadow .16s ease, transform .16s ease; }
+.platform-list > li:hover { transform: translateY(-1px); border-color: #d8c8e1; box-shadow: 0 8px 20px #2d183b0b; }
+.platform-list h3 { font-size: 17px; font-weight: 650; letter-spacing: -.025em; }
+.platform-list p { font-size: 12px; line-height: 1.55; }
+.platform-table-wrap { border: 1px solid var(--private-line); border-radius: 12px; background: #fff; }
+.platform-table caption { padding: 16px 18px; color: var(--private-deep); }
+.platform-table th, .platform-table td { padding: 13px 16px; border-color: #f0eaf1; }
+.platform-table thead th { position: sticky; top: 0; z-index: 1; background: #faf7fb; color: var(--private-muted); font-size: 9px; font-weight: 700; letter-spacing: .09em; }
+.platform-table tbody tr { transition: background-color .14s ease; }
+.platform-table tbody tr:hover { background: #fcf9fd; }
+.platform-finance-metrics article { border-color: var(--private-line); border-radius: 14px; background: #fff; box-shadow: 0 6px 18px #2d183b08; }
+.platform-finance-metrics strong { font-family: var(--font-sans, Arial, sans-serif); font-weight: 700; letter-spacing: -.045em; }
+.platform-summary { border-color: #e2d5e9; border-radius: 12px; background: #f7f2fa; }
+.platform-status { border: 1px solid transparent; }
+.platform-status.is-active { border-color: #cbe4d1; }
+.platform :is(button, a):focus-visible { outline: 3px solid var(--private-lime); outline-offset: 3px; }
+
+@media (max-width: 760px) {
+  .platform-sidebar { background: linear-gradient(155deg, var(--private-forest), var(--private-deep) 76%); }
+  .platform .platform-sidebar nav button { transform: none; }
+  .platform .platform-sidebar nav button:hover { transform: none; }
+  .platform-toolbar { align-items: stretch; padding: 12px; }
+  .platform-filter, .platform-search { min-width: 0; }
+  .platform-list > li { padding: 16px; }
+  .admin-private-shell .dashboard-welcome { align-items: flex-start; flex-direction: column; gap: 8px; }
+  .admin-private-shell .dashboard-page { padding-inline: 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .private-navigation-panel nav :is(a, button), .platform .platform-sidebar nav button, .platform-list > li { transition: none; }
+  .private-navigation-panel nav :is(a, button):hover, .platform .platform-sidebar nav button:hover, .platform-list > li:hover { transform: none; }
+}
