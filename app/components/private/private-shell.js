@@ -51,6 +51,8 @@ export function PrivateShell({ areaLabel = "Área reservada", children, classNam
     }
   }
 
+  const navigationGroups = [...new Set((items||[]).map(item=>item.group||"A sua área"))].map(group=>({group,items:(items||[]).filter(item=>(item.group||"A sua área")===group)}));
+
   return <div className={`private-shell ${className}`}>
     <aside ref={sidebar} className={`private-sidebar${open ? " is-menu-open" : ""}`} onBlur={(event) => {
       if (open && !event.currentTarget.contains(event.relatedTarget)) setOpen(false);
@@ -68,7 +70,7 @@ export function PrivateShell({ areaLabel = "Área reservada", children, classNam
       {active && <p className="private-mobile-location"><span>Está em</span> <strong>{items?.find(item => item.key === active)?.label || "A sua área"}</strong></p>}
       {items?.length > 0 && <div id="private-navigation" className="private-navigation-panel">
         <p className="private-nav-label">{navLabel}</p>
-        <nav className={items.some(item => item.href) ? "admin-sidebar-menu" : undefined} aria-label="Navegação principal" role={items.some(item => !item.href) ? "tablist" : undefined} aria-orientation={items.some(item => !item.href) ? "vertical" : undefined} onKeyDown={handleNavigationKeyDown}>{items.map(item => item.href ? <a key={item.key} href={item.href} className={cn(buttonVariants({ variant: "ghost" }), "private-nav-link", active === item.key && "active")} aria-current={active === item.key ? "page" : undefined} data-section={item.key} onClick={() => activate(item)}><span aria-hidden="true">{item.icon}</span>{item.label}</a> : <Button key={item.key} id={`area-tab-${item.key}`} type="button" role="tab" aria-controls="conteudo" aria-selected={active === item.key} tabIndex={active === item.key ? 0 : -1} variant="ghost" className="private-nav-button" onClick={() => activate(item)}><span aria-hidden="true">{item.icon}</span>{item.label}</Button>)}</nav>
+        <nav className={items.some(item => item.href) ? "admin-sidebar-menu" : undefined} aria-label="Navegação principal" role={items.some(item => !item.href) ? "tablist" : undefined} aria-orientation={items.some(item => !item.href) ? "vertical" : undefined} onKeyDown={handleNavigationKeyDown}>{navigationGroups.map(({group,items:groupItems})=><div className="private-nav-group" role={items.some(item=>!item.href)?"group":"presentation"} aria-label={items.some(item=>!item.href)?group:undefined} key={group}><p className="private-nav-group-label" aria-hidden="true">{group}</p>{groupItems.map(item => item.href ? <a key={item.key} href={item.href} className={cn(buttonVariants({ variant: "ghost" }), "private-nav-link", active === item.key && "active")} aria-current={active === item.key ? "page" : undefined} data-section={item.key} onClick={() => activate(item)}><span aria-hidden="true">{item.icon}</span>{item.label}</a> : <Button key={item.key} id={`area-tab-${item.key}`} type="button" role="tab" aria-controls="conteudo" aria-selected={active === item.key} tabIndex={active === item.key ? 0 : -1} variant="ghost" className="private-nav-button" onClick={() => activate(item)}><span aria-hidden="true">{item.icon}</span>{item.label}</Button>)}</div>)}</nav>
         <div className="private-sidebar-footer">{footer}{!className.includes("platform-shell") && <a href="/">Voltar ao website <span aria-hidden="true">↗</span></a>}</div>
       </div>}
     </aside>

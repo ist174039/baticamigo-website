@@ -2,17 +2,13 @@ import { randomBytes } from "node:crypto";
 import { cert, getApps, initializeApp } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
 import { getFirestore } from "firebase-admin/firestore";
+import {bootstrapAdminEmails} from "../../../../lib/platform/access.mjs";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const projectId = "baticamigo-c0384";
-const bootstrapAdmins = () => new Set(
-  (process.env.FIREBASE_ADMIN_EMAILS || "carlos.gomes@baticamigo.pt")
-    .split(",")
-    .map((email) => email.trim().toLowerCase())
-    .filter(Boolean),
-);
+const bootstrapAdmins = () => bootstrapAdminEmails();
 
 class ApiError extends Error {
   constructor(status, message, code) {

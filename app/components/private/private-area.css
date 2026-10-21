@@ -38,6 +38,8 @@
 .private-navigation-panel { display: flex; flex: 1; min-height: 0; flex-direction: column; }
 .private-nav-label { margin: 10px 8px 6px; color: hsl(var(--primary-foreground) / .65); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .12em; }
 .private-navigation-panel nav { display: grid; gap: 4px; }
+.private-nav-group { display: grid; gap: 3px; margin: 0 0 12px; }
+.private-nav-group-label { margin: 11px 11px 4px; color: hsl(var(--primary-foreground) / .56); font-size: 9px; font-weight: 750; letter-spacing: .11em; line-height: 1.3; text-transform: uppercase; }
 .private-navigation-panel nav button { display: flex; width: 100%; min-height: 44px; align-items: center; gap: 11px; padding: 9px 11px; border: 0; border-radius: var(--radius); background: transparent; color: hsl(var(--primary-foreground) / .84); text-align: left; font: inherit; cursor: pointer; }
 .private-navigation-panel nav a { display: flex; min-height: 44px; align-items: center; gap: 11px; padding: 9px 11px; border-radius: var(--radius); color: hsl(var(--primary-foreground) / .84); font-size: 12px; text-decoration: none; }
 .private-navigation-panel nav a:hover { background: hsl(var(--primary-foreground) / .1); }
@@ -201,8 +203,13 @@
 .user-manager-heading p:last-child { margin: 0; color: var(--private-muted); font-size: 13px; }
 .user-manager-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin: 20px 0 12px; }
 .user-manager-toolbar .platform-search { max-width: 460px; }
+.user-manager-filters { display: grid; grid-template-columns: auto repeat(3, minmax(140px, 190px)) auto; align-items: end; gap: 12px; margin: 12px 0 18px; padding: 14px 16px; border: 1px solid var(--private-line); border-radius: 13px; background: #fcfafc; }
+.user-manager-filters > label { display: grid; gap: 5px; min-width: 0; color: var(--private-muted); font-size: 10px; font-weight: 650; }
+.user-manager-filters select { width: 100%; min-height: 38px; }
+.user-manager-filter-label { display: flex; align-items: center; gap: 7px; padding-bottom: 10px; color: var(--private-forest); font-size: 11px; font-weight: 700; white-space: nowrap; }
+.user-manager-filters > button { justify-self: end; margin-bottom: 1px; }
 .user-manager-count, .user-manager-secondary { display: block; color: var(--private-muted); font-size: 11px; }
-.user-manager-table { min-width: 760px; }
+.user-manager-table { min-width: 690px; }
 .user-manager .user-manager-table { width: 100%; }
 .user-manager-card { overflow: hidden; }
 .user-manager-table-wrap { width: 100%; overflow-x: auto; overscroll-behavior-inline: contain; }
@@ -211,8 +218,9 @@
 .user-manager-table td strong { color: var(--private-deep); font-size: 13px; }
 .user-manager-table .user-manager-secondary { margin-top: 4px; }
 .user-manager-badges { display: flex; flex-wrap: wrap; gap: 5px; max-width: 390px; }
-.user-manager-actions { display: flex; flex-wrap: wrap; justify-content: flex-start; gap: 6px; min-width: 230px; max-width: 320px; }
+.user-manager-actions { display: flex; flex-wrap: wrap; justify-content: flex-start; gap: 6px; min-width: 170px; max-width: 260px; }
 .user-manager-actions button { min-height: 34px; border-radius: 9px; }
+.user-manager-details-button { white-space: nowrap; }
 .user-manager-details-button { border-color: #e7ddec; background: #fcf9fd; color: var(--private-forest); font-weight: 650; }
 .user-manager-details-button:hover { background: #f4edf7; }
 .user-manager-table tbody tr { transition: background-color .16s ease; }
@@ -220,6 +228,12 @@
 .user-manager-role-options, .user-manager-profile-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2px 14px; margin: 16px 0; padding: 14px; border: 1px solid var(--private-line); border-radius: 12px; }
 .user-manager-role-options legend, .user-manager-profile-options legend { padding: 0 6px; color: var(--private-deep); font-size: 12px; font-weight: 700; }
 .user-manager-role-options .platform-check, .user-manager-profile-options .platform-check { margin: 0; }
+.user-manager-module-options { display: grid; gap: 10px; margin: 16px 0; padding: 14px; border: 1px solid var(--private-line); border-radius: 12px; }
+.user-manager-module-options legend { padding: 0 6px; color: var(--private-deep); font-size: 12px; font-weight: 700; }
+.user-manager-module-group { padding: 11px 0; border-top: 1px solid #eee8f0; }
+.user-manager-module-group h3 { margin: 0 0 9px; color: var(--private-forest); font-size: 11px; }
+.user-manager-module-group > div { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 14px; }
+.user-manager-module-options .platform-check { margin: 0; }
 .user-manager-create-profile { margin: 12px 0; font-weight: 700; }
 .user-manager-confirm { width: min(480px, calc(100% - 28px)); }
 .user-manager-confirm .platform-editor { padding: 26px; }
@@ -230,7 +244,8 @@
 @media (max-width: 700px) { .area-login-page { display: block; min-height: 100svh; padding: 18px; background: radial-gradient(ellipse at 10% 0%, #eee6f8 0, transparent 38%), var(--private-paper); } .area-login-page .login-panel { min-height: calc(100svh - 36px); padding: 24px 0; } .area-login-page .login-brand { margin-bottom: 18px; } .area-login-page .login-card { padding: clamp(24px, 7vw, 34px); border-radius: 18px; } .area-login-page .login-aside { display: none; } .area-login-page .login-heading h1 { font-size: clamp(40px, 11vw, 50px); } }
 @media (max-width: 380px) { .area-login-page { padding: 12px; } .area-login-page .login-panel { min-height: calc(100svh - 24px); } .area-login-page .login-card { padding: 23px 19px; } .area-login-page .login-form-options { align-items: flex-start; flex-direction: column; } }
 @media (max-width: 760px) { .platform-dialog { width: calc(100% - 20px); max-height: 92dvh; } .platform-dialog > .platform-editor { max-height: 92dvh; padding: 18px; } .platform-dialog .platform-list-heading { top: -18px; margin: -18px -18px 16px; padding: 18px; } }
-@media (max-width: 760px) { .user-manager-heading { align-items: stretch; flex-direction: column; } .user-manager-toolbar { align-items: stretch; flex-direction: column; } .user-manager-role-options, .user-manager-profile-options { grid-template-columns: 1fr; } .user-manager-actions { justify-content: flex-start; } }
+@media (max-width: 900px) { .user-manager-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); } .user-manager-filter-label { grid-column: 1/-1; padding: 0; } .user-manager-filters > button { justify-self: start; } }
+@media (max-width: 760px) { .user-manager-heading { align-items: stretch; flex-direction: column; } .user-manager-toolbar { align-items: stretch; flex-direction: column; } .user-manager-filters { grid-template-columns: 1fr; } .user-manager-filter-label { grid-column: auto; } .user-manager-role-options, .user-manager-profile-options { grid-template-columns: 1fr; } .user-manager-module-group > div { grid-template-columns: 1fr; } .user-manager-actions { justify-content: flex-start; } }
 @media (max-width: 900px) { .platform-metrics { gap: 10px; } .platform .platform-metrics > button { min-height: 142px; padding: 16px; } }
 @media (max-width: 620px) { .platform-metrics { grid-template-columns: 1fr; } .platform .platform-metrics > button { min-height: 112px; } }
 @media (prefers-reduced-motion: reduce) { .area-login-page .login-submit { transition: none; } }

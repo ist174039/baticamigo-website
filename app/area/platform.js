@@ -2,7 +2,7 @@
 
 /* eslint-disable @next/next/no-html-link-for-pages -- Full document navigation resets legacy Firebase scripts when crossing between home, admin and the private area. */
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/app/components/ui/button";
 import { Checkbox } from "@/app/components/ui/checkbox";
 import { Input } from "@/app/components/ui/input";
@@ -18,6 +18,7 @@ import AreaNavigation from "./navigation";
 import AreaUserManager from "./user-manager";
 import {Records, Progress, Reports, Finance} from "./modules";
 import { lisbonDateTimeInput, lisbonDateTimeToIso } from "../../lib/platform/time.mjs";
+import {canAccessArea,defaultAreasForRoles} from "../../lib/platform/access.mjs";
 
 const roleNames = { admin: "Administração", coordinator: "Coordenação", student: "Aluno", guardian: "Encarregado", tutor: "Explicador", volunteer: "Voluntário", member: "Sócio" };
 const kindNames = { student: "Aluno", guardian: "Encarregado", tutor: "Explicador", member: "Sócio" };
@@ -63,7 +64,7 @@ export default function Platform() {
   const [editorKind, setEditorKind] = useState("student");
   const revision = useRef(0);
   const notice = useRef(null);
-  const roles = data.account?.roles || (data.account?.role ? [data.account.role] : []);
+  const roles = useMemo(()=>data.account?.roles || (data.account?.role ? [data.account.role] : []),[data.account?.roles,data.account?.role]);
   const manager = roles.some((role) => ["admin", "coordinator"].includes(role));
   const admin = roles.includes("admin");
   const students = data.profiles.filter((profile) => profile.kind === "student");
@@ -195,12 +196,27 @@ export default function Platform() {
   const teaching = manager || roles.some(role => ["tutor", "volunteer"].includes(role));
   const hasStudents = data.profiles.some(profile => profile.kind === "student");
   const educational = manager || hasStudents || teaching;
+  const navigationCandidates=[
+    ["overview","Visão geral"],
+    ...(educational?[["sessions",manager?"Sessões e presenças":"As minhas sessões"]]:[]),
+    ["profiles",admin?"Utilizadores":manager?"Pessoas e sócios":"Os meus perfis"],
+    ...((hasStudents||manager)?[["assignment","Trabalhos"],["material","Materiais"],["assessment","Avaliações"],["progress","Evolução"],["justification","Justificações"]]:[]),
+    ...((admin||roles.includes("member"))?[["finance",admin?"Quotas e doações":"As minhas quotas"]]:[]),
+    ["document","Documentos"],["message","Mensagens"],["notifications","Avisos"],
+    ...(manager?[["reports","Relatórios"]]:[]),
+  ];
+  const accountConfigured=Boolean(data.account);
+  const configuredModules=data.account?.modules;
+  const allowedModules=useMemo(()=>accountConfigured?(configuredModules??defaultAreasForRoles(roles)):[],[accountConfigured,configuredModules,roles]);
+  const navigationItems=user&&data.account?navigationCandidates.filter(([key])=>canAccessArea({...data.account,modules:allowedModules},key)).map(([key,label])=>({key,label})): [{key:"overview",label:"Iniciar sessão"}];
+  const accountUid=data.account?.uid;
+  useEffect(()=>{if(user&&accountUid&&!allowedModules.includes(tab))setTab(allowedModules.includes('overview')?'overview':allowedModules[0]||'overview');},[user,accountUid,allowedModules,tab]);
   const visibleProfiles = data.profiles.filter((profile) => (profileKind === "all" || profile.kind === profileKind) && `${profile.name} ${profile.email || ""} ${profile.memberNumber || ""} ${profile.subjects || ""} ${kindNames[profile.kind]}`.toLocaleLowerCase("pt-PT").includes(profileQuery.toLocaleLowerCase("pt-PT")));
   const upcoming = [...data.sessions].filter((session) => session.status === "scheduled" && new Date(session.endsAt) >= new Date()).sort((a, b) => a.startsAt.localeCompare(b.startsAt));
   const visibleSessions = [...data.sessions].filter((session) => (!sessionStudent || session.studentIds.includes(sessionStudent)) && (sessionFilter === "all" || (sessionFilter === "upcoming" ? session.status === "scheduled" && new Date(session.endsAt) >= new Date() : sessionFilter === "past" ? session.status !== "cancelled" && new Date(session.endsAt) < new Date() : session.status === "cancelled")) && `${session.title} ${profileName(session.tutorId)} ${session.room || ""} ${sessionNames[session.status] || session.status}`.toLocaleLowerCase("pt-PT").includes(sessionQuery.toLocaleLowerCase("pt-PT"))).sort((a, b) => a.startsAt.localeCompare(b.startsAt));
   return <div className="platform">
     <a className="platform-skip" href="#conteudo">Saltar para o conteúdo</a>
-    <AreaNavigation items={user && data.account ? [["overview", "Visão geral", "◫"], ...(educational ? [["sessions", manager ? "Sessões e presenças" : "As minhas sessões", "▦"]] : []), ["profiles", admin ? "Utilizadores" : manager ? "Pessoas e sócios" : "Os meus perfis", "◎"], ...((hasStudents || manager) ? [["assignment", "Trabalhos", "▤"], ["material", "Materiais", "▧"], ["assessment", "Avaliações", "✎"], ["progress", "Evolução", "↗"], ["justification", "Justificações", "✓"]] : []), ...((admin || roles.includes("member")) ? [["finance", admin ? "Quotas e doações" : "As minhas quotas", "€"]] : []), ["document", "Documentos", "▱"], ["message", "Mensagens", "✉"], ["notifications", "Avisos", "◉"], ...(manager ? [["reports", "Relatórios", "▥"]] : [])] : [["overview", "Iniciar sessão", "◎"]]} active={tab} onNavigate={navigate} admin={admin}>
+    <AreaNavigation items={navigationItems} active={tab} onNavigate={navigate} admin={admin}>
     <main id="conteudo" role="tabpanel" aria-labelledby={`area-tab-${tab}`} tabIndex={-1} className="platform-main">
       <header className={`platform-title${user && tab !== "overview" ? " platform-title-secondary" : ""}`}><div><h1>{!user ? "Bem-vindo à sua área" : tab === "overview" ? educational ? "O apoio começa aqui." : "A sua associação, mais perto." : tab === "sessions" ? "Sessões e presenças" : tab === "profiles" ? admin ? "Gestão de utilizadores" : manager ? "Pessoas" : "Os meus perfis" : moduleTitles[tab] || "Gestão de acessos"}</h1><p>{!user ? "Entre para acompanhar sessões, horários e presenças." : tab === "profiles" && admin ? "Consulte dados, perfis e acessos das pessoas associadas." : manager ? "Organize as pessoas e acompanhe cada sessão." : educational ? "Consulte os seus horários e acompanhe as suas presenças." : "Acompanhe a sua situação associativa, documentos e mensagens."}</p></div></header>
       {user && <div className="platform-userbar"><span>{user.email} · {roles.map((role) => roleNames[role] || role).join(", ")}</span><Button disabled={busy} variant="outline" onClick={() => { setPasswordError(""); setPasswordMessage(""); setPasswordDialogOpen(true); }}>Alterar palavra-passe</Button><Button disabled={busy} variant="outline" onClick={() => action(async () => { revision.current += 1; setData(empty); await signOut(platformAuth()); }, "Sessão terminada.")}>Terminar sessão</Button></div>}

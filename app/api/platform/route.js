@@ -1,6 +1,7 @@
 import {readModules,writeModule} from '../../../lib/platform/modules-server';
 import {context,collection,audit,json,failure} from '../../../lib/platform/server';
 import {assert,id,profileInput,sessionInput,accountInput,manages,hasRole,profileIds,canReadStudent,canAttend,overlaps,attendanceVersion} from '../../../lib/platform/domain.mjs';
+import {canAccessArea} from '../../../lib/platform/access.mjs';
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
 const rows=(snapshot)=>snapshot.docs.map(d=>({...d.data(),id:d.id}));
@@ -54,7 +55,10 @@ export async function GET(request) {
     for(const tutorId of new Set(sessions.map(s=>s.tutorId))) if(!profiles.some(p=>p.id===tutorId)) { const tutor=await collection(db,'profiles').doc(id(tutorId)).get(); if(tutor.exists) profiles.push({id:tutor.id,kind:'tutor',name:tutor.data().name,active:tutor.data().active}); }
     const modules=await readModules(db,account,profiles,sessions,storage);
     const attendance=await readAttendance(db,sessions);
-    return json({...modules,account,profiles:[...new Map(profiles.map(p=>[p.id,p])).values()],sessions,attendance});
+    const uniqueProfiles=[...new Map(profiles.map(p=>[p.id,p])).values()];
+    const visibleProfiles=canAccessArea(account,'profiles')?uniqueProfiles:uniqueProfiles.map(({id,kind,name,active,schoolYear,ageBand,subjects,membershipStatus,memberNumber})=>({id,kind,name,active,schoolYear,ageBand,subjects,membershipStatus,memberNumber}));
+    const visibleSessions=canAccessArea(account,'sessions')?sessions:canAccessArea(account,'reports')?sessions.map(({id,studentIds,tutorId,startsAt,endsAt,status})=>({id,studentIds,tutorId,startsAt,endsAt,status})):[];
+    return json({...modules,account,profiles:visibleProfiles,sessions:visibleSessions,attendance:canAccessArea(account,'sessions')?attendance:[]});
   } catch(error) { return failure(error); }
 }
 export async function POST(request) {
@@ -96,14 +100,14 @@ export async function POST(request) {
       return json({saved:true});
     }
     if(body.action==='save-profile') {
-      assert(manages(account),'Sem permissão.',403); const value=profileInput(body.profile); const ref=value.id ? collection(db,'profiles').doc(value.id) : collection(db,'profiles').doc(); delete value.id;
+      assert(manages(account)&&canAccessArea(account,'profiles'),'Sem permissão.',403); const value=profileInput(body.profile); const ref=value.id ? collection(db,'profiles').doc(value.id) : collection(db,'profiles').doc(); delete value.id;
       await db.runTransaction(async tx=>{ const previous=await tx.get(ref); assert(!previous.exists || previous.data().kind===value.kind,'Não pode alterar o tipo de perfil.'); for(const guardian of value.guardianIds) {const p=await tx.get(collection(db,'profiles').doc(guardian)); assert(p.exists && p.data().kind==='guardian' && p.data().active,'Encarregado inválido.');} value.accountUid=previous.exists ? previous.data().accountUid || '' : '';
         const history=previous.exists ? previous.data().membershipHistory || [] : [];
         if(value.kind==='member' && (!previous.exists || previous.data().membershipStatus!==value.membershipStatus)) history.push({status:value.membershipStatus,at:new Date().toISOString(),actorUid:account.uid});
         tx.set(ref,{...value,...(value.kind==='member' ? {membershipHistory:history.slice(-100)} : {})}); audit(tx,db,account,body.action,ref.id); }); return json({saved:true,id:ref.id});
     }
     if(body.action==='create-session' || body.action==='update-session') {
-      assert(manages(account),'Sem permissão.',403); const value=sessionInput(body.session); const ref=body.action==='create-session' ? collection(db,'sessions').doc() : collection(db,'sessions').doc(id(body.id));
+      assert(manages(account)&&canAccessArea(account,'sessions'),'Sem permissão.',403); const value=sessionInput(body.session); const ref=body.action==='create-session' ? collection(db,'sessions').doc() : collection(db,'sessions').doc(id(body.id));
       if(body.action==='update-session') {assert(Number.isInteger(body.version) && body.version>0); assert(['scheduled','cancelled'].includes(body.status)); value.status=body.status; value.version=body.version+1;}
       await db.runTransaction(async tx=>{ const previous=await tx.get(ref); if(body.action==='update-session') assert(previous.exists && previous.data().version===body.version,'A sessão foi alterada. Atualize os dados.',409);
         const people=await tx.getAll(...[value.tutorId,...value.studentIds].map(p=>collection(db,'profiles').doc(p))); assert(people[0].exists && people[0].data().kind==='tutor' && people[0].data().active,'Explicador inválido.'); assert(people.slice(1).every(p=>p.exists && p.data().kind==='student' && p.data().active),'Aluno inválido.');
@@ -112,7 +116,7 @@ export async function POST(request) {
         const existing=await tx.get(collection(db,'sessions').where('endsAt','>',value.startsAt).limit(501)); assert(existing.size<=500,'Intervalo demasiado abrangente.',409); assert(!rows(existing).some(s=>s.id!==ref.id && overlaps(s,value)),'Conflito de horário de aluno, explicador ou sala.',409);
         tx.set(lock,{updatedAt:Date.now()}); tx.set(ref,value); audit(tx,db,account,body.action,ref.id); }); return json({saved:true,id:ref.id});
     }
-    const sessionId=id(body.sessionId),studentId=id(body.studentId); assert(['present','absent','excused'].includes(body.status),'Presença inválida.');
+    assert(canAccessArea(account,'sessions'),'Este menu não está disponível para esta conta.',403);const sessionId=id(body.sessionId),studentId=id(body.studentId); assert(['present','absent','excused'].includes(body.status),'Presença inválida.');
     await db.runTransaction(async tx=>{ const session=await tx.get(collection(db,'sessions').doc(sessionId)); assert(session.exists,'Sessão inexistente.',404); assert(canAttend(account,session.data()),'Sem permissão para registar presenças.',403); assert(session.data().status==='scheduled' && session.data().studentIds.includes(studentId),'Aluno ou sessão inválidos.'); assert(Date.parse(session.data().startsAt)<=Date.now(),'A sessão ainda não começou.'); const ref=collection(db,'attendance').doc(`${sessionId}:${studentId}`); const old=await tx.get(ref); const version=attendanceVersion(old.data(),body.version); tx.set(ref,{sessionId,studentId,status:body.status,version}); audit(tx,db,account,body.action,ref.id); }); return json({saved:true});
   } catch(error) { return failure(error); }
 }

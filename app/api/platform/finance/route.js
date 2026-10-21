@@ -1,6 +1,7 @@
 import {context,collection,json,failure,audit} from '../../../../lib/platform/server';
 import {assert,hasRole,profileIds} from '../../../../lib/platform/domain.mjs';
 import {dueInput,paymentInput,donationInput,lisbonToday,movementId} from '../../../../lib/platform/finance.mjs';
+import {canAccessArea} from '../../../../lib/platform/access.mjs';
 
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
@@ -13,6 +14,7 @@ function snapshot(data) { const keys=['memberId','periodType','period','amountCe
 export async function GET(request) {
   try {
     const {db,account}=await context(request);
+    assert(canAccessArea(account,'finance'),'Este menu não está disponível para esta conta.',403);
     const admin=hasRole(account,'admin');
     const memberIds=profileIds(account);
     assert(admin||(hasRole(account,'member')&&memberIds.length>0),'Sem acesso à gestão financeira.',403);
@@ -37,6 +39,7 @@ export async function GET(request) {
 export async function POST(request) {
   try {
     const {db,account}=await context(request);manager(account);
+    assert(canAccessArea(account,'finance'),'Este menu não está disponível para esta conta.',403);
     const value=await body(request);assert(typeof value.action==='string','Operação inválida.');
     if(value.action==='create-due') {
       assert(Object.keys(value).every(key=>['action','due'].includes(key)),'Campo não permitido.');
