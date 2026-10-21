@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { browserSessionPersistence, onAuthStateChanged, sendPasswordResetEmail, setPersistence, signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { platformAuth } from "../../lib/firebase-client";
-import Image from "next/image";
+import AreaNavigation from "./navigation";
 import {Records, Progress, Reports} from "./modules";
 import { lisbonDateTimeInput, lisbonDateTimeToIso } from "../../lib/platform/time.mjs";
 
@@ -89,6 +89,9 @@ export default function Platform() {
     const unsubscribe = onAuthStateChanged(platformAuth(), async (currentUser) => {
       const current = ++revision.current;
       setUser(currentUser);
+      setTab("overview");
+      setProfileEditorOpen(false);
+      setSessionEditorOpen(false);
       setData(empty);
       setError("");
       setMessage("");
@@ -201,13 +204,8 @@ export default function Platform() {
   return <div className="platform">
     <a className="platform-skip" href="#conteudo">Saltar para o conteúdo</a>
     <div className="platform-workspace">
-    <aside className="platform-sidebar">
-      <a className="platform-brand" href="/"><Image src="/images/logo.png" alt="" width={56} height={48}/><span>BaticAmigo<small>Área reservada</small></span></a>
-      <p className="platform-nav-label">A sua área</p>
-      <nav aria-label="Navegação principal">{(user && data.account ? [["overview", "Visão geral", "◫"], ...(educational ? [["sessions", manager ? "Sessões e presenças" : "As minhas sessões", "▦"]] : []), ["profiles", manager ? "Pessoas e sócios" : "Os meus perfis", "◎"], ...((hasStudents || manager) ? [["assignment", "Trabalhos", "▤"], ["material", "Materiais", "▧"], ["assessment", "Avaliações", "✎"], ["progress", "Evolução", "↗"], ["justification", "Justificações", "✓"]] : []), ["document", "Documentos", "▱"], ["message", "Mensagens", "✉"], ["notifications", "Avisos", "◉"], ...(manager ? [["reports", "Relatórios", "▥"]] : []), ...(admin ? [["access", "Acessos", "⌘"]] : [])] : [["overview", "Iniciar sessão", "◎"]]).map(([key, label, icon]) => <button key={key} aria-current={tab === key ? "page" : undefined} onClick={() => navigate(key)}><span aria-hidden="true">{icon}</span>{label}</button>)}</nav>
-      <div className="platform-sidebar-footer">{admin && <a href="/admin/dashboard">Administração do website <span aria-hidden="true">↗</span></a>}<a href="/">Voltar ao website <span aria-hidden="true">↗</span></a><p>Mais perto.<br/>Mais juntos.</p></div>
-    </aside>
-    <main id="conteudo" className="platform-main">
+    <AreaNavigation items={user && data.account ? [["overview", "Visão geral", "◫"], ...(educational ? [["sessions", manager ? "Sessões e presenças" : "As minhas sessões", "▦"]] : []), ["profiles", manager ? "Pessoas e sócios" : "Os meus perfis", "◎"], ...((hasStudents || manager) ? [["assignment", "Trabalhos", "▤"], ["material", "Materiais", "▧"], ["assessment", "Avaliações", "✎"], ["progress", "Evolução", "↗"], ["justification", "Justificações", "✓"]] : []), ["document", "Documentos", "▱"], ["message", "Mensagens", "✉"], ["notifications", "Avisos", "◉"], ...(manager ? [["reports", "Relatórios", "▥"]] : []), ...(admin ? [["access", "Acessos", "⌘"]] : [])] : [["overview", "Iniciar sessão", "◎"]]} active={tab} onNavigate={navigate} admin={admin}/>
+    <main id="conteudo" tabIndex={-1} className="platform-main">
       <header className="platform-title"><div><p className="platform-eyebrow">BaticAmigo · Área reservada</p><h1>{!user ? "Bem-vindo à sua área" : tab === "overview" ? educational ? "O apoio começa aqui." : "A sua associação, mais perto." : tab === "sessions" ? "Sessões e presenças" : tab === "profiles" ? manager ? "Pessoas" : "Os meus perfis" : moduleTitles[tab] || "Gestão de acessos"}</h1><p>{!user ? "Entre para acompanhar sessões, horários e presenças." : manager ? "Organize as pessoas e acompanhe cada sessão." : educational ? "Consulte os seus horários e acompanhe as suas presenças." : "Acompanhe a sua situação associativa, documentos e mensagens."}</p></div></header>
       {user && <div className="platform-userbar"><span>{user.email} · {roles.map((role) => roleNames[role] || role).join(", ")}</span><button disabled={busy} onClick={() => action(async () => { revision.current += 1; setData(empty); await signOut(platformAuth()); }, "Sessão terminada.")}>Terminar sessão</button></div>}
       <div ref={notice} tabIndex={-1} className="platform-notices">{error && <p className="platform-error" role="alert">{error}</p>}{message && <p className="platform-success" role="status">{message}</p>}</div>

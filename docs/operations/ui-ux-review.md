@@ -22,3 +22,9 @@
 ## Validação que permanece necessária
 
 Testar em browser real a 320/375/768/1440 px, zoom 200–400%, teclado, leitor de ecrã, contraste e foco; testar com aluno, encarregado, explicador, coordenação, sócio e admin. Confirmar tarefas sem assistência e rever linguagem com representantes dos perfis. Nenhum resultado destes testes foi inventado. Os testes HTTP e em emulador verificam renderização, headers, API e autorização, não aparência final ou experiência humana.
+
+## Navegação mobile da área — 21/10/2026
+
+Substituída a faixa horizontal de módulos por cabeçalho compacto fixo e menu expansível. O módulo atual fica identificado; as opções aparecem em duas colunas, ou uma em ecrãs muito estreitos. A escolha fecha o menu, leva o conteúdo para o início e coloca o foco no main; Escape fecha o menu e devolve o foco ao botão. Os links para o website/admin ficam dentro do menu. A navegação mantém as permissões por perfil e regressa à visão geral quando a conta muda.
+
+Verificação: lint sem cache e compilação de produção. Os estados de abertura/fecho e a adaptação mobile foram revistos no código; não foi realizado teste visual/interativo em browser nesta execução.
