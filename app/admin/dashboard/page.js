@@ -31,7 +31,7 @@ export default function AdminDashboardPage() {
         <div dangerouslySetInnerHTML={{ __html: markup }} />
       </main>
       <AdminTablePagination />
-      <AdminFirebaseScripts page="dashboard" />
+      <AdminFirebaseScripts />
     </PrivateShell>
   );
 }

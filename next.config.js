@@ -16,7 +16,11 @@ const nextConfig = {
     ];
   },
   async redirects() {
-    return [{ source: "/admin", destination: "/admin/login", permanent: false }];
+    return [
+      { source: "/admin", destination: "/platform/login?destination=admin", permanent: false },
+      { source: "/admin/login", destination: "/platform/login?destination=admin", permanent: true },
+      { source: "/area/login", destination: "/platform/login", permanent: true },
+    ];
   },
   images: {
     remotePatterns: [

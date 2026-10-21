@@ -136,7 +136,7 @@
 .login-aside-note>span { background: var(--private-lime); color: var(--private-deep); }
 .login-form input:focus { border-color: var(--private-forest); box-shadow: 0 0 0 3px hsl(var(--ring) / .2); }
 
-/* /area/login follows the same split-panel sign-in pattern as /admin/login. */
+/* The platform provides one sign-in entry for the website and association area. */
 .area-login-page { display: grid; grid-template-columns: minmax(0, 1.04fr) minmax(390px, .96fr); min-height: 100svh; overflow: hidden; background: var(--private-paper); color: var(--private-deep); }
 .area-login-page .login-panel { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; min-width: 0; padding: 46px clamp(24px, 6vw, 88px); }
 .area-login-page .login-brand { display: flex; width: min(100%, 440px); align-items: center; gap: 12px; margin: 0 0 24px; color: var(--private-deep); text-decoration: none; }
@@ -190,6 +190,20 @@
 .area-login-page .admin-error-message { border-color: #efc3b6; background: #fff4f0; color: #8f3927; }
 .area-login-page .admin-status-message { border-color: #c8ddc7; background: #f2f8f0; color: #355f35; }
 .area-login-page .area-login-checking { color: var(--private-muted); font-size: 13px; }
+.area-login-page .login-verification-link { justify-self: start; margin-top: -8px; padding: 0; border: 0; background: none; color: var(--private-forest); font: inherit; font-size: 11px; font-weight: 700; text-align: left; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.area-login-page .workspace-picker { display: grid; gap: 18px; }
+.area-login-page .workspace-picker .login-heading { margin-bottom: 2px; }
+.area-login-page .workspace-choice-grid { display: grid; gap: 12px; }
+.area-login-page .workspace-choice-link { color: inherit; text-decoration: none; }
+.area-login-page .workspace-choice-card { display: grid; grid-template-columns: 42px minmax(0, 1fr); align-items: center; gap: 8px 13px; padding: 18px; border-color: var(--private-line); border-radius: 14px; box-shadow: 0 5px 16px #25163208; transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease; }
+.area-login-page .workspace-choice-link:hover .workspace-choice-card { transform: translateY(-2px); border-color: #c7add4; box-shadow: 0 12px 26px #25163212; }
+.area-login-page .workspace-choice-link:focus-visible { border-radius: 14px; outline: 3px solid #62b5ff; outline-offset: 3px; }
+.area-login-page .workspace-choice-icon { display: grid; width: 42px; height: 42px; grid-row: span 2; place-items: center; border-radius: 12px; background: #f3edf7; color: var(--private-forest); }
+.area-login-page .workspace-choice-copy { display: grid; gap: 5px; }
+.area-login-page .workspace-choice-copy strong { color: var(--private-deep); font-size: 13px; }
+.area-login-page .workspace-choice-copy small { color: var(--private-muted); font-size: 11px; line-height: 1.45; }
+.area-login-page .workspace-choice-action { display: flex; align-items: center; gap: 6px; grid-column: 2; color: var(--private-forest); font-size: 11px; font-weight: 750; }
+.area-login-page .workspace-signout { width: 100%; min-height: 42px; color: var(--private-deep); }
 
 /* Form dialogs keep create/edit flows focused and responsive. */
 .platform-dialog { width: min(720px, calc(100% - 28px)); max-width: none; max-height: min(88dvh, 900px); margin: auto; padding: 0; overflow: visible; border: 0; background: transparent; color: inherit; }
@@ -242,7 +256,7 @@
 .user-manager-confirm .platform-actions { justify-content: flex-end; }
 @media (max-width: 880px) { .area-login-page { grid-template-columns: minmax(0, 1fr) minmax(300px, .82fr); } .area-login-page .login-panel { padding-inline: clamp(20px, 4vw, 44px); } .area-login-page .login-aside { padding: 42px 34px; } .area-login-page .login-aside h2 { font-size: clamp(44px, 6vw, 64px); } }
 @media (max-width: 700px) { .area-login-page { display: block; min-height: 100svh; padding: 18px; background: radial-gradient(ellipse at 10% 0%, #eee6f8 0, transparent 38%), var(--private-paper); } .area-login-page .login-panel { min-height: calc(100svh - 36px); padding: 24px 0; } .area-login-page .login-brand { margin-bottom: 18px; } .area-login-page .login-card { padding: clamp(24px, 7vw, 34px); border-radius: 18px; } .area-login-page .login-aside { display: none; } .area-login-page .login-heading h1 { font-size: clamp(40px, 11vw, 50px); } }
-@media (max-width: 380px) { .area-login-page { padding: 12px; } .area-login-page .login-panel { min-height: calc(100svh - 24px); } .area-login-page .login-card { padding: 23px 19px; } .area-login-page .login-form-options { align-items: flex-start; flex-direction: column; } }
+@media (max-width: 380px) { .area-login-page { padding: 12px; } .area-login-page .login-panel { min-height: calc(100svh - 24px); } .area-login-page .login-card { padding: 23px 19px; } .area-login-page .login-form-options { align-items: flex-start; flex-direction: column; } .area-login-page .workspace-choice-card { padding: 14px; } }
 @media (max-width: 760px) { .platform-dialog { width: calc(100% - 20px); max-height: 92dvh; } .platform-dialog > .platform-editor { max-height: 92dvh; padding: 18px; } .platform-dialog .platform-list-heading { top: -18px; margin: -18px -18px 16px; padding: 18px; } }
 @media (max-width: 900px) { .user-manager-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); } .user-manager-filter-label { grid-column: 1/-1; padding: 0; } .user-manager-filters > button { justify-self: start; } }
 @media (max-width: 760px) { .user-manager-heading { align-items: stretch; flex-direction: column; } .user-manager-toolbar { align-items: stretch; flex-direction: column; } .user-manager-filters { grid-template-columns: 1fr; } .user-manager-filter-label { grid-column: auto; } .user-manager-role-options, .user-manager-profile-options { grid-template-columns: 1fr; } .user-manager-module-group > div { grid-template-columns: 1fr; } .user-manager-actions { justify-content: flex-start; } }

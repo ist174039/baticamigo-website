@@ -2,7 +2,7 @@ import { randomBytes } from "node:crypto";
 import { cert, getApps, initializeApp } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
 import { getFirestore } from "firebase-admin/firestore";
-import {bootstrapAdminEmails,isActivePlatformAdmin} from "../../../../lib/platform/access.mjs";
+import {adminAuthorization,bootstrapAdminEmails,isActivePlatformAdmin} from "../../../../lib/platform/access.mjs";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -85,15 +85,13 @@ async function requireAdmin(request) {
   } catch {
     throw new ApiError(401, "A sessão expirou. Inicie sessão novamente.");
   }
-  if (bootstrapAdmins().has(String(decoded.email || "").toLowerCase()) && decoded.email_verified !== true) {
-    throw new ApiError(403, "Confirme o email da conta antes de gerir utilizadores.");
-  }
   const platformAccountSnapshot=await getFirestore(auth.app).collection("platform_accounts").doc(decoded.uid).get();
   const platformAccount=platformAccountSnapshot.exists?platformAccountSnapshot.data():null;
-  const platformAdmin=isActivePlatformAdmin(platformAccount);
-  if (!isAdmin(decoded)&&!platformAdmin) throw new ApiError(403, "A sua conta não tem acesso à gestão de utilizadores.");
+  const authorization=adminAuthorization(decoded,platformAccount);
+  if (authorization.verificationRequired) throw new ApiError(403, "Confirme o email da conta antes de gerir utilizadores.");
+  if (!authorization.authorized) throw new ApiError(403, "A sua conta não tem acesso à gestão de utilizadores.");
   let refreshToken = false;
-  if (platformAdmin||bootstrapAdmins().has(String(decoded.email || "").toLowerCase())) {
+  if (isActivePlatformAdmin(platformAccount)||bootstrapAdmins().has(String(decoded.email || "").toLowerCase())) {
     const account = await auth.getUser(decoded.uid);
     if (account.customClaims?.admin !== true) {
       await auth.setCustomUserClaims(decoded.uid, { ...account.customClaims, admin: true, role: "admin" });
@@ -138,7 +136,7 @@ function passwordResetContinueUrl() {
     || (vercelHost ? `https://${vercelHost}` : "https://baticamigo-website.vercel.app");
   let url;
   try {
-    url = new URL("/admin/login", configured);
+    url = new URL("/platform/login", configured);
   } catch {
     throw new ApiError(503, "O endereço público da aplicação não está configurado corretamente.", "admin/invalid-public-url");
   }

@@ -74,7 +74,7 @@ async function validateLinks(tx, db, uid, roles, ids, newProfile) {
 
 function publicUrl() {
   const host = process.env.NEXT_PUBLIC_APP_URL?.trim() || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL.trim()}` : "https://baticamigo-website.vercel.app");
-  const url = new URL("/area/login", host);
+  const url = new URL("/platform/login", host);
   assert(url.protocol === "https:" && !url.username && !url.password, "O endereço público tem de usar HTTPS.", 503);
   return url.toString();
 }

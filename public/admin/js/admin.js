@@ -17,7 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const access = await fetch("/api/admin/users?check=1", { headers: { Authorization: `Bearer ${token}` }, cache: "no-store" })
         if (access.status === 401 || access.status === 403) {
           await auth.signOut()
-          window.location.href = "/admin/login?access=denied"
+          window.location.href = "/platform/login?access=denied"
           return
         }
         if (!access.ok) throw new Error("Falha ao validar as permissões da conta.")
@@ -48,7 +48,7 @@ document.addEventListener("DOMContentLoaded", () => {
       loadContactSettings()
     } else {
       // Redirecionar para a página de login se não estiver autenticado
-      window.location.href = "/admin/login"
+      window.location.href = "/platform/login"
     }
   })
 
@@ -158,7 +158,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("logout-btn").addEventListener("click", async () => {
     try {
       await auth.signOut()
-      window.location.href = "/admin/login"
+      window.location.href = "/platform/login"
     } catch (error) {
       console.error("Erro ao fazer logout:")
       alert("Erro ao fazer logout. Tente novamente.")

@@ -30,7 +30,7 @@ function loadScript(src, module = false) {
   return promise;
 }
 
-export default function AdminFirebaseScripts({ page }) {
+export default function AdminFirebaseScripts() {
   useEffect(() => {
     let cancelled = false;
     async function start() {
@@ -38,7 +38,7 @@ export default function AdminFirebaseScripts({ page }) {
       await Promise.all(scripts.slice(1).map((src) => loadScript(src)));
       if (cancelled) return;
       await loadScript("/admin/js/firebaseConfig.js", true);
-      await loadScript(`/admin/js/${page === "login" ? "auth" : "admin"}.js`, true);
+      await loadScript("/admin/js/admin.js", true);
       if (!cancelled) document.dispatchEvent(new Event("DOMContentLoaded"));
     }
     start().catch((error) => {
@@ -53,6 +53,6 @@ export default function AdminFirebaseScripts({ page }) {
     return () => {
       cancelled = true;
     };
-  }, [page]);
+  }, []);
   return null;
 }
