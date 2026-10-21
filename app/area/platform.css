@@ -9,11 +9,11 @@
 .platform-brand img {width:56px;height:48px;object-fit:contain}
 .platform-brand small {display:block;color:#c4b6e2;font-size:10px;font-weight:500;margin-top:5px;letter-spacing:.08em;text-transform:uppercase}
 .platform-nav-label {padding:22px 12px 4px;color:#c4b6e2;font-size:10px;text-transform:uppercase;letter-spacing:.15em}
-.platform button {min-height:44px;padding:10px 16px;border:1px solid #ddd5e4;border-radius:99px;background:#fff;color:#594272;font:600 12px "DM Sans",sans-serif;cursor:pointer;transition:background .15s,border-color .15s}
-.platform button:hover:not(:disabled) {background:#f5effb;border-color:#bda9d9}
+.platform button {cursor:pointer;transition:background .15s,border-color .15s}
+.platform button:hover:not(:disabled) {border-color:var(--platform-forest)}
 .platform button:disabled {opacity:.6;cursor:wait}
 .platform button.platform-primary {background:var(--platform-forest);color:white;border-color:var(--platform-forest)}
-.platform button.platform-primary:hover:not(:disabled) {background:#53349f}
+.platform button.platform-primary:hover:not(:disabled) {background:var(--platform-deep)}
 .platform-sidebar nav {display:grid;gap:5px}
 .platform .platform-sidebar nav button {display:flex;align-items:center;gap:12px;width:100%;border:0;border-radius:11px;text-align:left;background:transparent;color:#d5d0de;padding:13px;font-size:13px}
 .platform .platform-sidebar nav button[aria-current],.platform .platform-sidebar nav button:hover {background:#ffffff17;color:#fff}
