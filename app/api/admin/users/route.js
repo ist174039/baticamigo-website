@@ -2,7 +2,7 @@ import { randomBytes } from "node:crypto";
 import { cert, getApps, initializeApp } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
 import { getFirestore } from "firebase-admin/firestore";
-import {bootstrapAdminEmails} from "../../../../lib/platform/access.mjs";
+import {bootstrapAdminEmails,isActivePlatformAdmin} from "../../../../lib/platform/access.mjs";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -88,9 +88,12 @@ async function requireAdmin(request) {
   if (bootstrapAdmins().has(String(decoded.email || "").toLowerCase()) && decoded.email_verified !== true) {
     throw new ApiError(403, "Confirme o email da conta antes de gerir utilizadores.");
   }
-  if (!isAdmin(decoded)) throw new ApiError(403, "A sua conta não tem acesso à gestão de utilizadores.");
+  const platformAccountSnapshot=await getFirestore(auth.app).collection("platform_accounts").doc(decoded.uid).get();
+  const platformAccount=platformAccountSnapshot.exists?platformAccountSnapshot.data():null;
+  const platformAdmin=isActivePlatformAdmin(platformAccount);
+  if (!isAdmin(decoded)&&!platformAdmin) throw new ApiError(403, "A sua conta não tem acesso à gestão de utilizadores.");
   let refreshToken = false;
-  if (bootstrapAdmins().has(String(decoded.email || "").toLowerCase())) {
+  if (platformAdmin||bootstrapAdmins().has(String(decoded.email || "").toLowerCase())) {
     const account = await auth.getUser(decoded.uid);
     if (account.customClaims?.admin !== true) {
       await auth.setCustomUserClaims(decoded.uid, { ...account.customClaims, admin: true, role: "admin" });
