@@ -17,7 +17,6 @@ return body
       <li class="admin-nav-group admin-nav-group-people">Comunidade</li>
       <li><a href="#membros-section" data-section="membros"><i class="fas fa-users"></i>Membros</a></li>
       <li><a href="#parceiros-section" data-section="parceiros"><i class="fas fa-handshake"></i>Parceiros</a></li>
-      <li><a href="#utilizadores-section" data-section="utilizadores"><i class="fas fa-user-shield"></i>Utilizadores</a></li>
       <li class="admin-nav-group admin-nav-group-settings">Site</li>
       <li><a href="#contacto-section" data-section="contacto"><i class="fas fa-address-card"></i>Contacto do site</a></li>
       <li><a href="#perfil-section" data-section="perfil"><i class="fas fa-user-circle"></i>Meu perfil</a></li>
@@ -66,40 +65,6 @@ return body
                         <div><label for="contact-instagram">Link do Instagram</label><input id="contact-instagram" name="instagram" type="url" value="https://www.instagram.com/aba2022cultura/" required></div>
                         <div class="admin-settings-footer"><p id="contact-settings-status" role="status" aria-live="polite"></p><button id="save-contact-settings" class="admin-btn primary-btn" type="submit">Guardar alterações</button></div>
                       </form>
-                    </section>
-                </div>
-                $1`
-  )
-  .replace(
-    /(<div id="contacto-section" class="admin-section">)/,
-    `<div id="utilizadores-section" class="admin-section">
-                    <section class="admin-card" aria-labelledby="admin-users-title">
-                      <div class="admin-card-header">
-                        <div class="admin-card-heading"><span class="admin-card-kicker">Acesso ao painel</span><h3 id="admin-users-title">Contas administrativas</h3></div>
-                        <div class="admin-card-actions"><button id="admin-users-open-form" class="admin-btn primary-btn" type="button">Adicionar utilizador <span aria-hidden="true">＋</span></button></div>
-                      </div>
-                      <div class="admin-users-content">
-                        <p class="admin-users-note">Cada conta criada recebe acesso administrativo ao painel. Envie a ligação de recuperação ao novo utilizador para definir a palavra-passe.</p>
-                        <form id="admin-users-create-form" class="admin-users-create-form" hidden>
-                          <div><label for="admin-users-name">Nome</label><input id="admin-users-name" name="displayName" type="text" maxlength="100" autocomplete="name" required></div>
-                          <div><label for="admin-users-email">Email</label><input id="admin-users-email" name="email" type="email" maxlength="254" autocomplete="email" required></div>
-                          <div class="admin-users-form-actions"><button class="admin-btn primary-btn" type="submit">Criar conta</button><button id="admin-users-cancel-form" class="admin-btn secondary-btn" type="button">Cancelar</button></div>
-                        </form>
-                        <div id="admin-users-link-result" class="admin-users-link-result" role="status" aria-live="polite" hidden>
-                          <strong id="admin-users-link-title"></strong><p>Partilhe esta ligação com a pessoa para definir uma palavra-passe. A ligação é apresentada apenas nesta sessão.</p>
-                          <div><input id="admin-users-link" type="url" readonly aria-label="Ligação de recuperação"><button id="admin-users-copy-link" class="admin-btn secondary-btn" type="button">Copiar ligação</button></div>
-                        </div>
-                        <div class="admin-users-toolbar">
-                          <label class="admin-table-search"><span>Pesquisar nesta página</span><input id="admin-users-search" type="search" placeholder="Nome ou email" autocomplete="off"></label>
-                          <span id="admin-users-page-count" class="admin-pagination-count" aria-live="polite"></span>
-                        </div>
-                        <p id="admin-users-status" class="admin-users-status" role="status" aria-live="polite"></p>
-                        <div class="admin-table-container"><table class="admin-table admin-users-table">
-                          <thead><tr><th>Utilizador</th><th>Acesso</th><th>Último acesso</th><th>Ações</th></tr></thead>
-                          <tbody id="admin-users-table-body"><tr><td colspan="4">A carregar contas…</td></tr></tbody>
-                        </table></div>
-                        <div class="admin-users-pagination"><span id="admin-users-page-label" class="admin-pagination-page" aria-live="polite">Página 1</span><div class="admin-pagination-actions"><button id="admin-users-previous" type="button" disabled>Anterior</button><button id="admin-users-next" type="button" disabled>Seguinte</button></div></div>
-                      </div>
                     </section>
                 </div>
                 $1`

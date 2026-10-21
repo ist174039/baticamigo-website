@@ -16,6 +16,7 @@ test('admin panels are independent so hidden Contacto cannot hide members or par
     }
     stack.push({id,classes});
   }
-  for(const id of ['membros-section','parceiros-section','contacto-section','utilizadores-section','perfil-section']) assert.ok(panels.includes(id));
+  for(const id of ['membros-section','parceiros-section','contacto-section','perfil-section']) assert.ok(panels.includes(id));
+  assert.equal(panels.includes('utilizadores-section'),false,'User access management belongs to /area, not the website CMS.');
   assert.equal(new Set(panels).size,panels.length,'Panel IDs must remain unique');
 });

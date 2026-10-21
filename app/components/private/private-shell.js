@@ -69,7 +69,7 @@ export function PrivateShell({ areaLabel = "Área reservada", children, classNam
       {items?.length > 0 && <div id="private-navigation" className="private-navigation-panel">
         <p className="private-nav-label">{navLabel}</p>
         <nav className={items.some(item => item.href) ? "admin-sidebar-menu" : undefined} aria-label="Navegação principal" role={items.some(item => !item.href) ? "tablist" : undefined} aria-orientation={items.some(item => !item.href) ? "vertical" : undefined} onKeyDown={handleNavigationKeyDown}>{items.map(item => item.href ? <a key={item.key} href={item.href} className={cn(buttonVariants({ variant: "ghost" }), "private-nav-link", active === item.key && "active")} aria-current={active === item.key ? "page" : undefined} data-section={item.key} onClick={() => activate(item)}><span aria-hidden="true">{item.icon}</span>{item.label}</a> : <Button key={item.key} id={`area-tab-${item.key}`} type="button" role="tab" aria-controls="conteudo" aria-selected={active === item.key} tabIndex={active === item.key ? 0 : -1} variant="ghost" className="private-nav-button" onClick={() => activate(item)}><span aria-hidden="true">{item.icon}</span>{item.label}</Button>)}</nav>
-        <div className="private-sidebar-footer">{footer}<a href="/">Voltar ao website <span aria-hidden="true">↗</span></a></div>
+        <div className="private-sidebar-footer">{footer}{!className.includes("platform-shell") && <a href="/">Voltar ao website <span aria-hidden="true">↗</span></a>}</div>
       </div>}
     </aside>
     <div className="private-content">

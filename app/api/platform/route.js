@@ -29,7 +29,7 @@ async function readAttendance(db,sessions) {
 }
 export async function GET(request) {
   try {
-    const {db,account}=await context(request);
+    const {db,account,storage}=await context(request);
     let profiles=[],sessions=[];
     if(manages(account)) { [profiles,sessions]=await Promise.all([bounded(collection(db,'profiles')),bounded(collection(db,'sessions'))]); }
     else if(profileIds(account).length) {
@@ -52,7 +52,7 @@ export async function GET(request) {
     }
     // Only expose names of the tutors already present on this account's sessions.
     for(const tutorId of new Set(sessions.map(s=>s.tutorId))) if(!profiles.some(p=>p.id===tutorId)) { const tutor=await collection(db,'profiles').doc(id(tutorId)).get(); if(tutor.exists) profiles.push({id:tutor.id,kind:'tutor',name:tutor.data().name,active:tutor.data().active}); }
-    const modules=await readModules(db,account,profiles,sessions);
+    const modules=await readModules(db,account,profiles,sessions,storage);
     const attendance=await readAttendance(db,sessions);
     return json({...modules,account,profiles:[...new Map(profiles.map(p=>[p.id,p])).values()],sessions,attendance});
   } catch(error) { return failure(error); }
