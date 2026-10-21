@@ -451,3 +451,16 @@ body{background:var(--paper)}
   .partner-section .partner-grid .partner-logo img{max-width:96px;max-height:72px}
   .people-section .people-grid .member-info,.partner-section .partner-grid .partner-info{padding:12px}
 }
+/* Shared keyboard and low-motion baseline for public and admin surfaces. */
+.app-body :is(a,button,input,select,textarea,[tabindex]):focus-visible{outline:3px solid #ad5017;outline-offset:4px}
+.contact-privacy-note{font-size:12px;line-height:1.6;color:#62576e;margin:16px 0}
+@media(prefers-reduced-motion:reduce){.app-body *,.app-body *::before,.app-body *::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+
+/* Keep collection cards in one real column on phones, including featured and later cards. */
+@media(max-width:700px){
+  .dynamic-section .collection-grid{grid-template-columns:minmax(0,1fr);gap:18px;min-width:0;width:100%}
+  .dynamic-section .collection-grid>:is(.event-card,.program-card,.agenda-card,.news-card){grid-column:1/-1;display:flex;flex-direction:column;min-width:0;width:100%;max-width:100%;transform:none}
+  .dynamic-section .collection-grid :is(.event-image,.program-image,.agenda-image,.news-image){min-width:0;width:100%;max-width:100%;overflow:hidden}
+  .dynamic-section .collection-grid :is(.event-info,.program-info,.agenda-info,.news-info){min-width:0;width:100%;overflow-wrap:anywhere}
+  .dynamic-section .collection-heading-copy,.dynamic-section .collection-search-wrap{min-width:0;max-width:100%}
+}

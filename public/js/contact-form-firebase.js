@@ -1,6 +1,5 @@
 // Script para envio de email do formulário de contato usando Firebase
 document.addEventListener("DOMContentLoaded", () => {
-  console.log("Inicializando formulário de contato com Firebase...")
 
   // Verificar se o Firebase está inicializado
   if (typeof firebase === "undefined") {
@@ -21,11 +20,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
   contactForm.addEventListener("submit", async (event) => {
     event.preventDefault()
-    console.log("Formulário enviado")
 
     if (validateForm()) {
-      console.log("Formulário validado com sucesso")
 
+      const submit = contactForm.querySelector('button[type="submit"]')
+      if (submit.disabled) return
+      submit.disabled = true
+      contactForm.setAttribute("aria-busy", "true")
       try {
         const db = firebase.firestore()
 
@@ -44,14 +45,16 @@ document.addEventListener("DOMContentLoaded", () => {
           lido: false,
         })
 
-        console.log("Mensagem enviada com sucesso")
         messageSuccess.style.display = "block"
         messageError.style.display = "none"
         clearForm()
       } catch (error) {
-        console.error("Erro ao enviar mensagem:", error)
+        console.error("Erro ao enviar mensagem:")
         messageError.style.display = "block"
         messageSuccess.style.display = "none"
+      } finally {
+        submit.disabled = false
+        contactForm.removeAttribute("aria-busy")
       }
     }
   })
@@ -73,7 +76,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const email = document.forms["contactForm"]["email"].value
     const subject = document.forms["contactForm"]["subject"].value
     const message = document.forms["contactForm"]["message"].value
-    const emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
     if (!validString(name)) {
       document.getElementById("name-error").style.display = "block"

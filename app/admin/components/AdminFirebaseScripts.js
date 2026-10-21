@@ -3,17 +3,15 @@
 import { useEffect } from "react";
 
 const scripts = [
-  "https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js",
-  "https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js",
-  "https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js",
-  "https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js",
+  "https://www.gstatic.com/firebasejs/13.0.0/firebase-app-compat.js",
+  "https://www.gstatic.com/firebasejs/13.0.0/firebase-auth-compat.js",
+  "https://www.gstatic.com/firebasejs/13.0.0/firebase-firestore-compat.js",
+  "https://www.gstatic.com/firebasejs/13.0.0/firebase-storage-compat.js",
 ];
 
 // The admin area can mount twice in React Strict Mode. Keep script loading
 // shared at module scope so Firebase is initialized once per document.
 const scriptLoads = new Map();
-const initializedPages = new Set();
-
 function loadScript(src, module = false) {
   if (scriptLoads.has(src)) return scriptLoads.get(src);
 
@@ -42,10 +40,7 @@ export default function AdminFirebaseScripts({ page }) {
       await loadScript("/admin/js/firebaseConfig.js", true);
       await loadScript(`/admin/js/${page === "login" ? "auth" : "admin"}.js`, true);
       if (page === "dashboard") await loadScript("/admin/js/admin-users.js", true);
-      if (!cancelled && !initializedPages.has(page)) {
-        initializedPages.add(page);
-        document.dispatchEvent(new Event("DOMContentLoaded"));
-      }
+      if (!cancelled) document.dispatchEvent(new Event("DOMContentLoaded"));
     }
     start().catch((error) => {
       console.error("Erro ao iniciar administração:", error);

@@ -93,12 +93,10 @@ document.addEventListener("DOMContentLoaded", () => {
         // Tratamento de erros específicos
         switch (error.code) {
           case "auth/user-not-found":
-            showError("Usuário não encontrado. Verifique seu email.")
-            break
           case "auth/wrong-password":
           case "auth/invalid-credential":
           case "auth/invalid-login-credentials":
-            showError("Senha incorreta. Tente novamente.")
+            showError("Não foi possível iniciar sessão. Verifique os dados e tente novamente.")
             break
           case "auth/invalid-email":
             showError("Email inválido. Verifique o formato.")
@@ -141,7 +139,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         switch (error.code) {
           case "auth/user-not-found":
-            showError("Usuário não encontrado. Verifique seu email.")
+            showStatus("Se existir uma conta elegível, receberá instruções no email indicado.")
             break
           case "auth/invalid-email":
             showError("Email inválido. Verifique o formato.")

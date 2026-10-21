@@ -1,5 +1,7 @@
 "use client";
 
+/* eslint-disable @next/next/no-html-link-for-pages -- These links intentionally reload the document to initialize the legacy Firebase page lifecycle. */
+
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { Button } from "@/app/components/ui/button";

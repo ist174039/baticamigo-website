@@ -133,6 +133,43 @@ function serializeUser(user) {
   };
 }
 
+function passwordResetContinueUrl() {
+  const vercelHost = process.env.VERCEL_URL?.trim();
+  const configured = process.env.NEXT_PUBLIC_APP_URL?.trim()
+    || (vercelHost ? `https://${vercelHost}` : "https://baticamigo-website.vercel.app");
+  let url;
+  try {
+    url = new URL("/admin/login", configured);
+  } catch {
+    throw new ApiError(503, "O endereço público da aplicação não está configurado corretamente.", "admin/invalid-public-url");
+  }
+  if (url.protocol !== "https:" || url.username || url.password) {
+    throw new ApiError(503, "O endereço público da aplicação tem de usar HTTPS.", "admin/invalid-public-url");
+  }
+  return url.toString();
+}
+
+async function clearPlatformAccess(auth, uid) {
+  const db = getFirestore(auth.app);
+  const accountRef = db.collection("accounts").doc(uid);
+  await db.runTransaction(async (transaction) => {
+    const accountSnapshot = await transaction.get(accountRef);
+    const accountProfileIds = accountSnapshot.exists && Array.isArray(accountSnapshot.data().profileIds)
+      ? accountSnapshot.data().profileIds
+      : [];
+    const linkedQuery = db.collection("profiles").where("accountUid", "==", uid);
+    const linkedSnapshot = await transaction.get(linkedQuery);
+    const profileRefs = new Map(accountProfileIds.map((profileId) => [profileId, db.collection("profiles").doc(profileId)]));
+    for (const profile of linkedSnapshot.docs) profileRefs.set(profile.id, profile.ref);
+    const profileSnapshots = [];
+    for (const profileRef of profileRefs.values()) profileSnapshots.push(await transaction.get(profileRef));
+    for (const profile of profileSnapshots) {
+      if (profile.exists && profile.data().accountUid === uid) transaction.update(profile.ref, { accountUid: "" });
+    }
+    if (accountSnapshot.exists) transaction.delete(accountRef);
+  });
+}
+
 async function listAllUsers(auth) {
   const users = [];
   let pageToken;
@@ -174,7 +211,7 @@ export async function POST(request) {
       if (!uid) throw new ApiError(400, "Selecione uma conta válida.");
       const target = await auth.getUser(uid);
       const link = await auth.generatePasswordResetLink(target.email, {
-        url: "https://baticamigo-website.vercel.app/admin/login",
+        url: passwordResetContinueUrl(),
         handleCodeInApp: false,
       });
       return json({ resetLink: link });
@@ -194,7 +231,7 @@ export async function POST(request) {
     });
     await auth.setCustomUserClaims(createdUser.uid, { admin: true, role: "admin" });
     const resetLink = await auth.generatePasswordResetLink(email, {
-      url: "https://baticamigo-website.vercel.app/admin/login",
+      url: passwordResetContinueUrl(),
       handleCodeInApp: false,
     });
     return json({ user: serializeUser(await auth.getUser(createdUser.uid)), resetLink }, 201);
@@ -244,6 +281,7 @@ export async function DELETE(request) {
       const activeAdmins = (await listAllUsers(auth)).filter((user) => !user.disabled && isAdmin({ email: user.email, admin: user.customClaims?.admin }));
       if (activeAdmins.length <= 1) throw new ApiError(400, "Não pode remover a última conta administrativa ativa.");
     }
+    await clearPlatformAccess(auth, targetUid);
     await auth.deleteUser(targetUid);
     return json({ deleted: true });
   } catch (error) {

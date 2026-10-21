@@ -1,3 +1,4 @@
+import {readModules,writeModule} from '../../../lib/platform/modules-server';
 import {context,collection,audit,json,failure} from '../../../lib/platform/server';
 import {assert,id,profileInput,sessionInput,accountInput,manages,hasRole,profileIds,canReadStudent,canAttend,overlaps,attendanceVersion} from '../../../lib/platform/domain.mjs';
 export const runtime='nodejs';
@@ -49,8 +50,11 @@ export async function GET(request) {
       });
       sessions=sessions.map(s=>canAttend(account,s) ? s : {...s,studentIds:s.studentIds.filter(student=>studentIds.includes(student))});
     }
+    // Only expose names of the tutors already present on this account's sessions.
+    for(const tutorId of new Set(sessions.map(s=>s.tutorId))) if(!profiles.some(p=>p.id===tutorId)) { const tutor=await collection(db,'profiles').doc(id(tutorId)).get(); if(tutor.exists) profiles.push({id:tutor.id,kind:'tutor',name:tutor.data().name,active:tutor.data().active}); }
+    const modules=await readModules(db,account,profiles,sessions);
     const attendance=await readAttendance(db,sessions);
-    return json({account,profiles:[...new Map(profiles.map(p=>[p.id,p])).values()],sessions,attendance});
+    return json({...modules,account,profiles:[...new Map(profiles.map(p=>[p.id,p])).values()],sessions,attendance});
   } catch(error) { return failure(error); }
 }
 export async function POST(request) {
@@ -58,6 +62,7 @@ export async function POST(request) {
     const {db,account,auth}=await context(request);
     const body=await readJson(request);
     assert(body && typeof body==='object' && !Array.isArray(body));
+    if(body.action==='save-record') return await writeModule(db,account,body);
     const allowed={ 'save-profile':['action','profile'], 'save-account':['action','account'], 'create-session':['action','session'], 'update-session':['action','id','version','session','status'], 'set-attendance':['action','sessionId','studentId','status','version'] };
     assert(allowed[body.action] && Object.keys(body).every(k=>allowed[body.action].includes(k)),'Operação inválida.');
     if(body.action==='save-account') {
@@ -68,7 +73,7 @@ export async function POST(request) {
         const lock=collection(db,'locks').doc('accounts'); await tx.get(lock);
         const linked=[]; for(const profileId of value.profileIds) { const p=await tx.get(collection(db,'profiles').doc(profileId)); assert(p.exists && p.data().active===true,'Perfil inexistente ou inativo.'); assert(!p.data().accountUid || p.data().accountUid===value.uid,'Perfil associado a outra conta.'); linked.push({id:profileId,data:p.data()}); const used=await tx.get(collection(db,'accounts').where('profileIds','array-contains',profileId).limit(2)); assert(used.docs.every(d=>d.id===value.uid),'Perfil já associado a outra conta.'); }
         const represented=(role)=>role==='volunteer' ? linked.some(p=>p.data.kind==='tutor') : linked.some(p=>p.data.kind===role);
-        assert(linked.every(p=>value.roles.includes(p.data.kind) || (p.data.kind==='tutor' && value.roles.includes('volunteer'))) && value.roles.filter(r=>['student','guardian','tutor','volunteer'].includes(r)).every(represented),'Os papéis devem corresponder aos perfis.');
+        assert(linked.every(p=>value.roles.includes(p.data.kind) || (p.data.kind==='tutor' && value.roles.includes('volunteer'))) && value.roles.filter(r=>['student','guardian','tutor','volunteer','member'].includes(r)).every(represented),'Os papéis devem corresponder aos perfis.');
         const targetRef=collection(db,'accounts').doc(value.uid); const previous=await tx.get(targetRef);
         const previousIds=previous.exists ? profileIds(previous.data()) : [];
         const removedIds=previousIds.filter(profileId=>!value.profileIds.includes(profileId));
@@ -92,7 +97,10 @@ export async function POST(request) {
     }
     if(body.action==='save-profile') {
       assert(manages(account),'Sem permissão.',403); const value=profileInput(body.profile); const ref=value.id ? collection(db,'profiles').doc(value.id) : collection(db,'profiles').doc(); delete value.id;
-      await db.runTransaction(async tx=>{ const previous=await tx.get(ref); assert(!previous.exists || previous.data().kind===value.kind,'Não pode alterar o tipo de perfil.'); for(const guardian of value.guardianIds) {const p=await tx.get(collection(db,'profiles').doc(guardian)); assert(p.exists && p.data().kind==='guardian' && p.data().active,'Encarregado inválido.');} value.accountUid=previous.exists ? previous.data().accountUid || '' : ''; tx.set(ref,value); audit(tx,db,account,body.action,ref.id); }); return json({saved:true,id:ref.id});
+      await db.runTransaction(async tx=>{ const previous=await tx.get(ref); assert(!previous.exists || previous.data().kind===value.kind,'Não pode alterar o tipo de perfil.'); for(const guardian of value.guardianIds) {const p=await tx.get(collection(db,'profiles').doc(guardian)); assert(p.exists && p.data().kind==='guardian' && p.data().active,'Encarregado inválido.');} value.accountUid=previous.exists ? previous.data().accountUid || '' : '';
+        const history=previous.exists ? previous.data().membershipHistory || [] : [];
+        if(value.kind==='member' && (!previous.exists || previous.data().membershipStatus!==value.membershipStatus)) history.push({status:value.membershipStatus,at:new Date().toISOString(),actorUid:account.uid});
+        tx.set(ref,{...value,...(value.kind==='member' ? {membershipHistory:history.slice(-100)} : {})}); audit(tx,db,account,body.action,ref.id); }); return json({saved:true,id:ref.id});
     }
     if(body.action==='create-session' || body.action==='update-session') {
       assert(manages(account),'Sem permissão.',403); const value=sessionInput(body.session); const ref=body.action==='create-session' ? collection(db,'sessions').doc() : collection(db,'sessions').doc(id(body.id));

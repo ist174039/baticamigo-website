@@ -1,3 +1,4 @@
+import {escapeHtml, safeMediaUrl} from "/shared/safe-content.mjs";
 import { auth, db, storage, } from './firebaseConfig.js';
 document.addEventListener("DOMContentLoaded", () => {
   // Atualizar a importação no topo do arquivo
@@ -23,7 +24,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const accessResult = await access.json()
         if (accessResult.refreshToken) await user.getIdToken(true)
       } catch (error) {
-        console.error("Não foi possível validar o acesso administrativo:", error)
+        console.error("Não foi possível validar o acesso administrativo:")
         const errorBox = document.getElementById("admin-init-error")
         if (errorBox) {
           errorBox.textContent = `Não foi possível validar as permissões administrativas (${error.code || "erro de ligação"}). Atualize a página ou tente novamente mais tarde.`
@@ -78,7 +79,7 @@ document.addEventListener("DOMContentLoaded", () => {
       document.getElementById("profile-avatar").textContent = initials(name)
       setProfileStatus("profile-settings-status", "Nome atualizado com sucesso.")
     } catch (error) {
-      console.error("Erro ao atualizar o perfil:", error)
+      console.error("Erro ao atualizar o perfil:")
       setProfileStatus("profile-settings-status", "Não foi possível atualizar o perfil. Tente novamente.", true)
     } finally {
       button.disabled = false
@@ -99,7 +100,7 @@ document.addEventListener("DOMContentLoaded", () => {
       await auth.sendPasswordResetEmail(email)
       setProfileStatus("profile-password-status", `Ligação de recuperação enviada para ${email}.`)
     } catch (error) {
-      console.error("Erro ao enviar recuperação da palavra-passe:", error)
+      console.error("Erro ao enviar recuperação da palavra-passe:")
       setProfileStatus("profile-password-status", "Não foi possível enviar a ligação. Tente novamente mais tarde.", true)
     } finally {
       button.disabled = false
@@ -117,7 +118,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (typeof settings[field] === "string" && settings[field]) form.elements[field].value = settings[field]
       }
     } catch (error) {
-      console.error("Erro ao carregar as informações de contacto:", error)
+      console.error("Erro ao carregar as informações de contacto:")
       setContactSettingsStatus("Não foi possível carregar as informações guardadas.", true)
     }
   }
@@ -145,7 +146,7 @@ document.addEventListener("DOMContentLoaded", () => {
       await db.collection("site_config").doc("contact").set(values, { merge: true })
       setContactSettingsStatus("Informações guardadas com sucesso.")
     } catch (error) {
-      console.error("Erro ao guardar as informações de contacto:", error)
+      console.error("Erro ao guardar as informações de contacto:")
       setContactSettingsStatus("Não foi possível guardar. Verifique a ligação e as permissões do Firestore.", true)
     } finally {
       button.disabled = false
@@ -159,7 +160,7 @@ document.addEventListener("DOMContentLoaded", () => {
       await auth.signOut()
       window.location.href = "/admin/login"
     } catch (error) {
-      console.error("Erro ao fazer logout:", error)
+      console.error("Erro ao fazer logout:")
       alert("Erro ao fazer logout. Tente novamente.")
     }
   })
@@ -229,19 +230,42 @@ document.addEventListener("DOMContentLoaded", () => {
   })
 
   // Funções para abrir/fechar modais
+  let modalTrigger = null
   function openModal(modalId) {
-    document.getElementById(modalId).classList.add("active")
+    const modal = document.getElementById(modalId)
+    modalTrigger = document.activeElement
+    modal.classList.add("active")
+    modal.setAttribute("role", "dialog")
+    modal.setAttribute("aria-modal", "true")
+    const heading = modal.querySelector("h3, h2")
+    if (heading) { if (!heading.id) heading.id = modalId + "-heading"; modal.setAttribute("aria-labelledby", heading.id) }
+    const close = modal.querySelector(".admin-modal-close")
+    if (close) { close.setAttribute("aria-label", "Fechar janela"); close.setAttribute("role", "button"); close.tabIndex = 0 }
+    modal.querySelector("input:not([type=hidden]), select, textarea, button, [tabindex='0']")?.focus()
   }
 
   function closeModal(modalId) {
-    document.getElementById(modalId).classList.remove("active")
+    const modal = document.getElementById(modalId)
+    modal.classList.remove("active")
+    modalTrigger?.focus()
   }
+  document.addEventListener("keydown", (event) => {
+    const modal = document.querySelector(".admin-modal.active")
+    if (!modal) return
+    if (event.key === "Escape") { event.preventDefault(); closeModal(modal.id); return }
+    if (event.key !== "Tab") return
+    const controls = [...modal.querySelectorAll('a[href],button,input,select,textarea,[tabindex="0"]')].filter(element => !element.disabled && element.type !== "hidden" && element.getClientRects().length)
+    const first = controls[0], last = controls.at(-1)
+    if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus() }
+    else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus() }
+  })
 
   // Fechar modais ao clicar no botão de fechar
   document.querySelectorAll(".admin-modal-close").forEach((btn) => {
+    btn.addEventListener("keydown", (event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); btn.click() } })
     btn.addEventListener("click", () => {
       const modal = btn.closest(".admin-modal")
-      modal.classList.remove("active")
+      closeModal(modal.id)
     })
   })
 
@@ -249,7 +273,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll(".admin-modal").forEach((modal) => {
     modal.addEventListener("click", (e) => {
       if (e.target === modal) {
-        modal.classList.remove("active")
+        closeModal(modal.id)
       }
     })
   })
@@ -412,13 +436,13 @@ document.addEventListener("DOMContentLoaded", () => {
       const row = document.createElement("tr");
 
       row.innerHTML = `
-        <td>${evento.nome}</td>
-        <td>${evento.tipo}</td>
-        <td>${formatDate(evento.data)}</td>
-        <td>${evento.destaque ? "Sim" : "Não"}</td>
+        <td>${escapeHtml(evento.nome)}</td>
+        <td>${escapeHtml(evento.tipo)}</td>
+        <td>${escapeHtml(formatDate(evento.data))}</td>
+        <td>${escapeHtml(evento.destaque ? "Sim" : "Não")}</td>
         <td class="admin-table-actions">
-          <button class="edit-btn" data-id="${doc.id}"><i class="fas fa-edit"></i></button>
-          <button class="delete-btn" data-id="${doc.id}"><i class="fas fa-trash-alt"></i></button>
+          <button aria-label="Editar registo" class="edit-btn" data-id="${escapeHtml(doc.id)}"><i class="fas fa-edit"></i></button>
+          <button aria-label="Eliminar registo" class="delete-btn" data-id="${escapeHtml(doc.id)}"><i class="fas fa-trash-alt"></i></button>
         </td>
       `;
 
@@ -439,12 +463,12 @@ document.addEventListener("DOMContentLoaded", () => {
       const row = document.createElement("tr")
 
       row.innerHTML = `
-                <td>${programa.nome}</td>
-                <td>${formatDate(programa.data_inicio)} - ${formatDate(programa.data_fim)}</td>
-                <td>${programa.patrocinadores ? programa.patrocinadores.join(", ") : ""}</td>
+                <td>${escapeHtml(programa.nome)}</td>
+                <td>${escapeHtml(formatDate(programa.data_inicio))} - ${escapeHtml(formatDate(programa.data_fim))}</td>
+                <td>${escapeHtml(programa.patrocinadores ? programa.patrocinadores.join(", ") : "")}</td>
                 <td class="admin-table-actions">
-                    <button class="edit-btn" data-id="${doc.id}"><i class="fas fa-edit"></i></button>
-                    <button class="delete-btn" data-id="${doc.id}"><i class="fas fa-trash-alt"></i></button>
+                    <button aria-label="Editar registo" class="edit-btn" data-id="${escapeHtml(doc.id)}"><i class="fas fa-edit"></i></button>
+                    <button aria-label="Eliminar registo" class="delete-btn" data-id="${escapeHtml(doc.id)}"><i class="fas fa-trash-alt"></i></button>
                 </td>
             `
 
@@ -465,13 +489,13 @@ document.addEventListener("DOMContentLoaded", () => {
       const row = document.createElement("tr");
 
       row.innerHTML = `
-        <td>${item.nome}</td>
-        <td>${item.tipo}</td>
-        <td>${formatDate(item.data_inicio)} - ${formatDate(item.data_fim)}</td>
-        <td>${item.destaque ? "Sim" : "Não"}</td>
+        <td>${escapeHtml(item.nome)}</td>
+        <td>${escapeHtml(item.tipo)}</td>
+        <td>${escapeHtml(formatDate(item.data_inicio))} - ${escapeHtml(formatDate(item.data_fim))}</td>
+        <td>${escapeHtml(item.destaque ? "Sim" : "Não")}</td>
         <td class="admin-table-actions">
-          <button class="edit-btn" data-id="${doc.id}"><i class="fas fa-edit"></i></button>
-          <button class="delete-btn" data-id="${doc.id}"><i class="fas fa-trash-alt"></i></button>
+          <button aria-label="Editar registo" class="edit-btn" data-id="${escapeHtml(doc.id)}"><i class="fas fa-edit"></i></button>
+          <button aria-label="Eliminar registo" class="delete-btn" data-id="${escapeHtml(doc.id)}"><i class="fas fa-trash-alt"></i></button>
         </td>
       `;
 
@@ -492,12 +516,12 @@ document.addEventListener("DOMContentLoaded", () => {
       const row = document.createElement("tr")
 
       row.innerHTML = `
-                <td>${noticia.titulo}</td>
-                <td>${formatDate(noticia.data)}</td>
-                <td>${noticia.destaque ? "Sim" : "Não"}</td>
+                <td>${escapeHtml(noticia.titulo)}</td>
+                <td>${escapeHtml(formatDate(noticia.data))}</td>
+                <td>${escapeHtml(noticia.destaque ? "Sim" : "Não")}</td>
                 <td class="admin-table-actions">
-                    <button class="edit-btn" data-id="${doc.id}"><i class="fas fa-edit"></i></button>
-                    <button class="delete-btn" data-id="${doc.id}"><i class="fas fa-trash-alt"></i></button>
+                    <button aria-label="Editar registo" class="edit-btn" data-id="${escapeHtml(doc.id)}"><i class="fas fa-edit"></i></button>
+                    <button aria-label="Eliminar registo" class="delete-btn" data-id="${escapeHtml(doc.id)}"><i class="fas fa-trash-alt"></i></button>
                 </td>
             `
 
@@ -525,11 +549,11 @@ document.addEventListener("DOMContentLoaded", () => {
       const row = document.createElement("tr")
 
       row.innerHTML = `
-                <td>${membro.nome}</td>
-                <td>${membro.cargo}</td>
+                <td>${escapeHtml(membro.nome)}</td>
+                <td>${escapeHtml(membro.cargo)}</td>
                 <td class="admin-table-actions">
-                    <button class="edit-btn" data-id="${doc.id}"><i class="fas fa-edit"></i></button>
-                    <button class="delete-btn" data-id="${doc.id}"><i class="fas fa-trash-alt"></i></button>
+                    <button aria-label="Editar registo" class="edit-btn" data-id="${escapeHtml(doc.id)}"><i class="fas fa-edit"></i></button>
+                    <button aria-label="Eliminar registo" class="delete-btn" data-id="${escapeHtml(doc.id)}"><i class="fas fa-trash-alt"></i></button>
                 </td>
             `
 
@@ -557,11 +581,11 @@ document.addEventListener("DOMContentLoaded", () => {
       const row = document.createElement("tr")
 
       row.innerHTML = `
-                <td>${parceiro.nome}</td>
-                <td>${parceiro.website || "-"}</td>
+                <td>${escapeHtml(parceiro.nome)}</td>
+                <td>${escapeHtml(parceiro.website || "-")}</td>
                 <td class="admin-table-actions">
-                    <button class="edit-btn" data-id="${doc.id}"><i class="fas fa-edit"></i></button>
-                    <button class="delete-btn" data-id="${doc.id}"><i class="fas fa-trash-alt"></i></button>
+                    <button aria-label="Editar registo" class="edit-btn" data-id="${escapeHtml(doc.id)}"><i class="fas fa-edit"></i></button>
+                    <button aria-label="Eliminar registo" class="delete-btn" data-id="${escapeHtml(doc.id)}"><i class="fas fa-trash-alt"></i></button>
                 </td>
             `
 
@@ -601,8 +625,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const previewContainer = document.getElementById("evento-imagem-preview")
         previewContainer.innerHTML = `
           <div class="admin-file-preview-item">
-            <img src="${evento.imagem}" alt="Imagem do evento">
-            <button type="button" class="remove-btn" data-field="imagem"><i class="fas fa-times"></i></button>
+            <img src="${safeMediaUrl(evento.imagem)}" alt="Imagem do evento">
+            <button type="button" class="remove-btn" aria-label="Remover ficheiro" data-field="imagem"><i class="fas fa-times"></i></button>
           </div>
         `
 
@@ -622,8 +646,8 @@ document.addEventListener("DOMContentLoaded", () => {
             const previewItem = document.createElement("div")
             previewItem.className = "admin-file-preview-item"
             previewItem.innerHTML = `
-              <img src="${imagem.url}" alt="Imagem da galeria">
-              <button type="button" class="remove-btn"><i class="fas fa-times"></i></button>
+              <img src="${safeMediaUrl(imagem.url)}" alt="Imagem da galeria">
+              <button type="button" class="remove-btn" aria-label="Remover ficheiro"><i class="fas fa-times"></i></button>
             `
             imagensPreviewContainer.appendChild(previewItem)
 
@@ -644,8 +668,8 @@ document.addEventListener("DOMContentLoaded", () => {
             const previewItem = document.createElement("div")
             previewItem.className = "admin-file-preview-item"
             previewItem.innerHTML = `
-              <video src="${video.url}" controls></video>
-              <button type="button" class="remove-btn"><i class="fas fa-times"></i></button>
+              <video src="${safeMediaUrl(video.url)}" controls></video>
+              <button type="button" class="remove-btn" aria-label="Remover ficheiro"><i class="fas fa-times"></i></button>
             `
             videosPreviewContainer.appendChild(previewItem)
 
@@ -662,7 +686,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // Abrir o modal
       openModal("evento-modal")
     } catch (error) {
-      console.error("Erro ao carregar evento:", error)
+      console.error("Erro ao carregar evento:")
       alert("Erro ao carregar dados do evento. Tente novamente.")
     }
   }
@@ -693,7 +717,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // Abrir o modal
       openModal("programa-modal")
     } catch (error) {
-      console.error("Erro ao carregar programa:", error)
+      console.error("Erro ao carregar programa:")
       alert("Erro ao carregar dados do programa. Tente novamente.")
     }
   }
@@ -730,8 +754,8 @@ document.addEventListener("DOMContentLoaded", () => {
             const previewItem = document.createElement("div")
             previewItem.className = "admin-file-preview-item"
             previewItem.innerHTML = `
-              <img src="${imagem.url}" alt="Imagem da galeria">
-              <button type="button" class="remove-btn"><i class="fas fa-times"></i></button>
+              <img src="${safeMediaUrl(imagem.url)}" alt="Imagem da galeria">
+              <button type="button" class="remove-btn" aria-label="Remover ficheiro"><i class="fas fa-times"></i></button>
             `
             imagensPreviewContainer.appendChild(previewItem)
 
@@ -752,8 +776,8 @@ document.addEventListener("DOMContentLoaded", () => {
             const previewItem = document.createElement("div")
             previewItem.className = "admin-file-preview-item"
             previewItem.innerHTML = `
-              <video src="${video.url}" controls></video>
-              <button type="button" class="remove-btn"><i class="fas fa-times"></i></button>
+              <video src="${safeMediaUrl(video.url)}" controls></video>
+              <button type="button" class="remove-btn" aria-label="Remover ficheiro"><i class="fas fa-times"></i></button>
             `
             videosPreviewContainer.appendChild(previewItem)
 
@@ -770,7 +794,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // Abrir o modal
       openModal("agenda-modal")
     } catch (error) {
-      console.error("Erro ao carregar item de agenda:", error)
+      console.error("Erro ao carregar item de agenda:")
       alert("Erro ao carregar dados do item de agenda. Tente novamente.")
     }
   }
@@ -798,8 +822,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const previewContainer = document.getElementById("noticia-imagem-preview")
         previewContainer.innerHTML = `
                     <div class="admin-file-preview-item">
-                        <img src="${noticia.imagem}" alt="Imagem da notícia">
-                        <button type="button" class="remove-btn" data-field="imagem"><i class="fas fa-times"></i></button>
+                        <img src="${safeMediaUrl(noticia.imagem)}" alt="Imagem da notícia">
+                        <button type="button" class="remove-btn" aria-label="Remover ficheiro" data-field="imagem"><i class="fas fa-times"></i></button>
                     </div>
                 `
 
@@ -815,7 +839,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // Abrir o modal
       openModal("noticia-modal")
     } catch (error) {
-      console.error("Erro ao carregar notícia:", error)
+      console.error("Erro ao carregar notícia:")
       alert("Erro ao carregar dados da notícia. Tente novamente.")
     }
   }
@@ -841,8 +865,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const previewContainer = document.getElementById("membro-imagem-preview")
         previewContainer.innerHTML = `
                     <div class="admin-file-preview-item">
-                        <img src="${membro.imagem}" alt="Foto do membro">
-                        <button type="button" class="remove-btn" data-field="imagem"><i class="fas fa-times"></i></button>
+                        <img src="${safeMediaUrl(membro.imagem)}" alt="Foto do membro">
+                        <button type="button" class="remove-btn" aria-label="Remover ficheiro" data-field="imagem"><i class="fas fa-times"></i></button>
                     </div>
                 `
 
@@ -858,7 +882,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // Abrir o modal
       openModal("membro-modal")
     } catch (error) {
-      console.error("Erro ao carregar membro:", error)
+      console.error("Erro ao carregar membro:")
       alert("Erro ao carregar dados do membro. Tente novamente.")
     }
   }
@@ -884,8 +908,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const previewContainer = document.getElementById("parceiro-logo-preview")
         previewContainer.innerHTML = `
                     <div class="admin-file-preview-item">
-                        <img src="${parceiro.logo}" alt="Logo do parceiro">
-                        <button type="button" class="remove-btn" data-field="logo"><i class="fas fa-times"></i></button>
+                        <img src="${safeMediaUrl(parceiro.logo)}" alt="Logo do parceiro">
+                        <button type="button" class="remove-btn" aria-label="Remover ficheiro" data-field="logo"><i class="fas fa-times"></i></button>
                     </div>
                 `
 
@@ -901,7 +925,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // Abrir o modal
       openModal("parceiro-modal")
     } catch (error) {
-      console.error("Erro ao carregar parceiro:", error)
+      console.error("Erro ao carregar parceiro:")
       alert("Erro ao carregar dados do parceiro. Tente novamente.")
     }
   }
@@ -933,7 +957,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // Abrir o modal
       openModal("mensagem-modal")
     } catch (error) {
-      console.error("Erro ao carregar mensagem:", error)
+      console.error("Erro ao carregar mensagem:")
       alert("Erro ao carregar dados da mensagem. Tente novamente.")
     }
   }
@@ -947,7 +971,7 @@ document.addEventListener("DOMContentLoaded", () => {
       alert("Evento excluído com sucesso!")
       loadData()
     } catch (error) {
-      console.error("Erro ao excluir evento:", error)
+      console.error("Erro ao excluir evento:")
       alert("Erro ao excluir evento. Tente novamente.")
     }
   }
@@ -960,7 +984,7 @@ document.addEventListener("DOMContentLoaded", () => {
       alert("Programa excluído com sucesso!")
       loadData()
     } catch (error) {
-      console.error("Erro ao excluir programa:", error)
+      console.error("Erro ao excluir programa:")
       alert("Erro ao excluir programa. Tente novamente.")
     }
   }
@@ -973,7 +997,7 @@ document.addEventListener("DOMContentLoaded", () => {
       alert("Item de agenda excluído com sucesso!")
       loadData()
     } catch (error) {
-      console.error("Erro ao excluir item de agenda:", error)
+      console.error("Erro ao excluir item de agenda:")
       alert("Erro ao excluir item de agenda. Tente novamente.")
     }
   }
@@ -986,7 +1010,7 @@ document.addEventListener("DOMContentLoaded", () => {
       alert("Notícia excluída com sucesso!")
       loadData()
     } catch (error) {
-      console.error("Erro ao excluir notícia:", error)
+      console.error("Erro ao excluir notícia:")
       alert("Erro ao excluir notícia. Tente novamente.")
     }
   }
@@ -999,7 +1023,7 @@ document.addEventListener("DOMContentLoaded", () => {
       alert("Membro excluído com sucesso!")
       loadData()
     } catch (error) {
-      console.error("Erro ao excluir membro:", error)
+      console.error("Erro ao excluir membro:")
       alert("Erro ao excluir membro. Tente novamente.")
     }
   }
@@ -1012,7 +1036,7 @@ document.addEventListener("DOMContentLoaded", () => {
       alert("Parceiro excluído com sucesso!")
       loadData()
     } catch (error) {
-      console.error("Erro ao excluir parceiro:", error)
+      console.error("Erro ao excluir parceiro:")
       alert("Erro ao excluir parceiro. Tente novamente.")
     }
   }
@@ -1025,7 +1049,7 @@ document.addEventListener("DOMContentLoaded", () => {
       alert("Mensagem excluída com sucesso!")
       loadData()
     } catch (error) {
-      console.error("Erro ao excluir mensagem:", error)
+      console.error("Erro ao excluir mensagem:")
       alert("Erro ao excluir mensagem. Tente novamente.")
     }
   }
@@ -1063,13 +1087,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
           if (file.type.startsWith("image/")) {
             previewItem.innerHTML = `
-                            <img src="${e.target.result}" alt="Preview">
-                            <button type="button" class="remove-btn"><i class="fas fa-times"></i></button>
+                            <img src="${safeMediaUrl(e.target.result)}" alt="Preview">
+                            <button type="button" class="remove-btn" aria-label="Remover ficheiro"><i class="fas fa-times"></i></button>
                         `
           } else if (file.type.startsWith("video/")) {
             previewItem.innerHTML = `
-                            <video src="${e.target.result}" controls></video>
-                            <button type="button" class="remove-btn"><i class="fas fa-times"></i></button>
+                            <video src="${safeMediaUrl(e.target.result)}" controls></video>
+                            <button type="button" class="remove-btn" aria-label="Remover ficheiro"><i class="fas fa-times"></i></button>
                         `
           }
 
@@ -1123,14 +1147,13 @@ document.addEventListener("DOMContentLoaded", () => {
         "state_changed",
         (snapshot) => {
           const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-          console.log(`Upload progress (${path}):`, progress);
 
           if (progressBar) {
             progressBar.style.width = progress + "%";
           }
         },
         (error) => {
-          console.error("Erro no upload:", error);
+          console.error("Erro no upload:");
           reject(error);
         },
         async () => {
@@ -1207,7 +1230,7 @@ document.addEventListener("DOMContentLoaded", () => {
       closeModal("evento-modal");
       loadData();
     } catch (error) {
-      console.error("Erro ao salvar evento:", error);
+      console.error("Erro ao salvar evento:");
       alert("Erro ao salvar evento. Tente novamente.");
     }
   });
@@ -1251,7 +1274,7 @@ document.addEventListener("DOMContentLoaded", () => {
       closeModal("programa-modal")
       loadData()
     } catch (error) {
-      console.error("Erro ao salvar programa:", error)
+      console.error("Erro ao salvar programa:")
       alert("Erro ao salvar programa. Tente novamente.")
     }
   })
@@ -1326,7 +1349,7 @@ document.addEventListener("DOMContentLoaded", () => {
       closeModal("agenda-modal");
       loadData();
     } catch (error) {
-      console.error("Erro ao salvar item de agenda:", error);
+      console.error("Erro ao salvar item de agenda:");
       alert("Erro ao salvar item de agenda. Tente novamente.");
     }
   });
@@ -1384,7 +1407,7 @@ document.addEventListener("DOMContentLoaded", () => {
       closeModal("noticia-modal")
       loadData()
     } catch (error) {
-      console.error("Erro ao salvar notícia:", error)
+      console.error("Erro ao salvar notícia:")
       alert("Erro ao salvar notícia. Tente novamente.")
     }
   })
@@ -1438,7 +1461,7 @@ document.addEventListener("DOMContentLoaded", () => {
       closeModal("membro-modal")
       loadData()
     } catch (error) {
-      console.error("Erro ao salvar membro:", error)
+      console.error("Erro ao salvar membro:")
       alert("Erro ao salvar membro. Tente novamente.")
     }
   })
@@ -1492,7 +1515,7 @@ document.addEventListener("DOMContentLoaded", () => {
       closeModal("parceiro-modal")
       loadData()
     } catch (error) {
-      console.error("Erro ao salvar parceiro:", error)
+      console.error("Erro ao salvar parceiro:")
       alert("Erro ao salvar parceiro. Tente novamente.")
     }
   })
