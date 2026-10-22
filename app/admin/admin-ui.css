@@ -93,6 +93,18 @@
 .admin-table-search input:focus-visible,.admin-page-size select:focus-visible,.profile-security-content .admin-btn:focus-visible{outline:3px solid var(--admin-orange);outline-offset:2px}
 @media(max-width:700px){.admin-settings-grid{grid-template-columns:1fr}}
 @media(max-width:520px){.admin-settings-form{padding:18px 16px}.profile-security-content{padding:18px 16px}.admin-user-info{align-items:center;flex-direction:row!important;gap:7px}.admin-user-avatar{width:34px;height:34px}.admin-user-identity strong,.admin-user-identity small{max-width:145px}.admin-logout-btn{padding:9px 11px}.admin-table-tools,.admin-pagination-summary{align-items:stretch;flex-direction:column}.admin-table-search input{width:100%}.admin-pagination-actions{align-self:flex-end}}
+.admin-shell .admin-user-menu{position:relative;margin-left:auto}
+.admin-shell .admin-user-menu>summary{display:flex;align-items:center;gap:9px;padding:5px 10px 5px 5px;border:1px solid var(--private-line);border-radius:999px;background:#fff;color:var(--private-deep);cursor:pointer;list-style:none;font:600 12px var(--font-sans,Arial,sans-serif)}
+.admin-shell .admin-user-menu>summary::-webkit-details-marker{display:none}
+.admin-shell .admin-user-menu>summary:hover,.admin-shell .admin-user-menu[open]>summary{border-color:var(--private-forest);background:#faf7fc}
+.admin-shell .admin-user-avatar{display:grid;width:34px;height:34px;place-items:center;border-radius:50%;background:#f4edf8;color:var(--private-forest);font-size:12px;font-weight:750}
+.admin-shell .admin-user-menu-panel{position:absolute;z-index:40;top:calc(100% + 8px);right:0;display:grid;width:min(300px,calc(100vw - 32px));gap:4px;padding:9px;border:1px solid var(--private-line);border-radius:14px;background:white;box-shadow:0 16px 40px #2d183b24}
+.admin-shell .admin-user-menu-panel>.admin-user-identity{display:grid;gap:4px;padding:10px 11px 13px;border-bottom:1px solid var(--private-line)}
+.admin-shell .admin-user-menu-panel .admin-user-identity strong{color:var(--private-deep);font-size:13px}
+.admin-shell .admin-user-menu-panel .admin-user-identity small{color:var(--private-muted);font-size:11px;overflow-wrap:anywhere}
+.admin-shell .admin-user-menu-action,.admin-shell .admin-user-menu-panel .admin-logout-btn{width:100%;margin:0;padding:10px 11px;border:0;border-radius:8px;background:transparent;color:var(--private-deep);cursor:pointer;font:500 12px var(--font-sans,Arial,sans-serif);text-align:left}
+.admin-shell .admin-user-menu-action:hover,.admin-shell .admin-user-menu-panel .admin-logout-btn:hover{background:#f7f2f8;color:var(--private-forest)}
+.admin-shell #admin-user-menu-status{margin:0;padding:0 11px;color:var(--private-muted);font-size:10px;line-height:1.5;overflow-wrap:anywhere}
 .admin-shell .admin-modal-close:focus-visible{outline:3px solid #f28a4b;outline-offset:3px}
 .admin-shell .admin-table-actions button{min-width:44px;min-height:44px}
 .admin-shell .admin-empty-row td{padding:34px 18px;color:var(--private-muted);font-size:12px;text-align:center}

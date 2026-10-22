@@ -33,6 +33,11 @@ function loadScript(src, module = false) {
 export default function AdminFirebaseScripts() {
   useEffect(() => {
     let cancelled = false;
+    const closeAccountMenu = (event) => {
+      const menu = document.querySelector(".admin-user-menu");
+      if (menu && !menu.contains(event.target)) menu.open = false;
+    };
+    document.addEventListener("pointerdown", closeAccountMenu);
     async function start() {
       await loadScript(scripts[0]);
       await Promise.all(scripts.slice(1).map((src) => loadScript(src)));
@@ -52,6 +57,7 @@ export default function AdminFirebaseScripts() {
     });
     return () => {
       cancelled = true;
+      document.removeEventListener("pointerdown", closeAccountMenu);
     };
   }, []);
   return null;

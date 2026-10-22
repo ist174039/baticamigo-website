@@ -27,11 +27,15 @@
             <div class="admin-content">
                 <div class="admin-header">
                     <h2 id="section-title">Eventos</h2>
-                    <div class="admin-user-info">
-                        <span class="admin-user-avatar" id="user-avatar" aria-hidden="true">BA</span>
-                        <span class="admin-user-identity"><strong id="user-name">Administrador</strong><small id="user-email"></small></span>
-                        <button id="logout-btn" class="admin-logout-btn">Sair</button>
-                    </div>
+                    <details class="admin-user-menu">
+                        <summary aria-label="Abrir opções da conta"><span class="admin-user-avatar" id="user-avatar" aria-hidden="true">BA</span><span class="admin-user-menu-label">A minha conta</span></summary>
+                        <div class="admin-user-menu-panel" role="menu">
+                            <span class="admin-user-identity"><strong id="user-name">Administrador</strong><small id="user-email"></small></span>
+                            <button id="admin-user-reset-password" class="admin-user-menu-action" type="button" role="menuitem">Alterar palavra-passe</button>
+                            <p id="admin-user-menu-status" role="status" aria-live="polite"></p>
+                            <button id="logout-btn" class="admin-logout-btn" type="button" role="menuitem">Terminar sessão</button>
+                        </div>
+                    </details>
                 </div>
                 
                 <!-- Eventos Section -->

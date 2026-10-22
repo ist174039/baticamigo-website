@@ -10,7 +10,7 @@ import { Label } from "@/app/components/ui/label";
 import { NativeSelect } from "@/app/components/ui/native-select";
 import { Textarea } from "@/app/components/ui/textarea";
 import { Dialog } from "@/app/components/ui/dialog";
-import { Eye } from "lucide-react";
+import { Eye, UserRound } from "lucide-react";
 
 import { onAuthStateChanged, signOut, updatePassword, reauthenticateWithCredential, EmailAuthProvider } from "firebase/auth";
 import { platformAuth } from "../../lib/firebase-client";
@@ -45,6 +45,7 @@ export default function Platform() {
   const [data, setData] = useState(empty);
   const [busy, setBusy] = useState(false);
   const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [passwordError, setPasswordError] = useState("");
   const [passwordMessage, setPasswordMessage] = useState("");
   const [message, setMessage] = useState("");
@@ -78,6 +79,20 @@ export default function Platform() {
       requestAnimationFrame(() => document.querySelector(".platform-dialog[open]")?.querySelector("input, select, textarea")?.focus());
     }
   }, [profileEditorOpen, sessionEditorOpen, attendanceEditing, editing?.id, editingSession?.id]);
+
+  useEffect(()=>{
+    if(!accountMenuOpen)return;
+    const closeMenu=event=>{if(!event.target.closest(".platform-account-menu-wrap"))setAccountMenuOpen(false);};
+    const closeOnEscape=event=>{if(event.key==="Escape")setAccountMenuOpen(false);};
+    document.addEventListener("pointerdown",closeMenu);
+    document.addEventListener("keydown",closeOnEscape);
+    return()=>{document.removeEventListener("pointerdown",closeMenu);document.removeEventListener("keydown",closeOnEscape);};
+  },[accountMenuOpen]);
+  useEffect(()=>{
+    const closeMenus=event=>document.querySelectorAll(".platform-action-menu[open]").forEach(menu=>{if(!menu.contains(event.target))menu.open=false;});
+    document.addEventListener("pointerdown",closeMenus);
+    return()=>document.removeEventListener("pointerdown",closeMenus);
+  },[]);
 
   function navigate(next) {
     setTab(next);
@@ -239,7 +254,7 @@ export default function Platform() {
         eyebrow={user ? "Área reservada" : "Associação BaticAmigo"}
         title={!user ? "Bem-vindo à sua área" : tab === "overview" ? educational ? "O apoio começa aqui." : "A sua associação, mais perto." : tab === "sessions" ? "Sessões e presenças" : tab === "profiles" ? admin ? "Gestão de utilizadores" : manager ? "Pessoas" : "Os meus perfis" : moduleTitles[tab] || "Gestão de acessos"}
         description={!user ? "Entre para acompanhar sessões, horários e presenças." : pageDescriptions[tab] || "Consulte a informação disponível para o seu perfil."}
-        action={user && <><div className="platform-user-identity"><span className="platform-user-email">{user.email}</span><span className="platform-user-role">{roles.map((role) => roleNames[role] || role).join(", ")}</span></div><div className="platform-user-actions"><Button disabled={busy} variant="outline" onClick={() => { setPasswordError(""); setPasswordMessage(""); setPasswordDialogOpen(true); }}>Alterar palavra-passe</Button><Button disabled={busy} variant="outline" onClick={() => action(async () => { revision.current += 1; setData(empty); await signOut(platformAuth()); }, "Sessão terminada.")}>Terminar sessão</Button></div></>}
+        action={user && <div className="platform-account-menu-wrap"><Button type="button" variant="outline" className="platform-account-trigger" aria-label="Abrir opções da conta" aria-haspopup="menu" aria-expanded={accountMenuOpen} onClick={()=>setAccountMenuOpen(open=>!open)}><UserRound size={18}/><span>A minha conta</span><span className="platform-account-indicator" aria-hidden="true">{(user.displayName||user.email||"U").slice(0,1).toLocaleUpperCase("pt-PT")}</span></Button>{accountMenuOpen&&<div className="platform-account-menu" role="menu"><div className="platform-account-menu-identity"><strong>{user.displayName||"Conta BaticAmigo"}</strong><span>{user.email}</span><small>{roles.map((role)=>roleNames[role]||role).join(", ")}</small></div><Button type="button" variant="ghost" role="menuitem" disabled={busy} onClick={()=>{setAccountMenuOpen(false);setPasswordError("");setPasswordMessage("");setPasswordDialogOpen(true);}}>Alterar palavra-passe</Button><Button type="button" variant="ghost" role="menuitem" disabled={busy} onClick={()=>{setAccountMenuOpen(false);action(async()=>{revision.current+=1;setData(empty);await signOut(platformAuth());},"Sessão terminada.");}}>Terminar sessão</Button></div>}</div>}
       />
       {user && <Dialog open={passwordDialogOpen} onOpenChange={setPasswordDialogOpen} ariaLabel="Alterar palavra-passe" className="platform-dialog user-manager-confirm"><section className="platform-card platform-editor"><div className="platform-list-heading"><div><p className="platform-eyebrow">Segurança da conta</p><h2>Alterar palavra-passe</h2></div><Button type="button" variant="outline" onClick={() => setPasswordDialogOpen(false)}>Fechar</Button></div>{passwordError && <p className="platform-error" role="alert">{passwordError}</p>}{passwordMessage && <p className="platform-success" role="status">{passwordMessage}</p>}<form onSubmit={async (event) => { event.preventDefault(); const values = new FormData(event.currentTarget); const current = String(values.get("currentPassword") || ""); const next = String(values.get("newPassword") || ""); if (next.length < 12) { setPasswordError("Escolha uma palavra-passe com pelo menos 12 caracteres."); return; } setBusy(true); setPasswordError(""); setPasswordMessage(""); try { const credential = EmailAuthProvider.credential(platformAuth().currentUser.email, current); await reauthenticateWithCredential(platformAuth().currentUser, credential); await updatePassword(platformAuth().currentUser, next); setPasswordMessage("Palavra-passe alterada com sucesso."); event.currentTarget.reset(); } catch { setPasswordError("Não foi possível alterar a palavra-passe. Confirme a palavra-passe atual e tente novamente."); } finally { setBusy(false); } }}><fieldset disabled={busy}><Field label="Palavra-passe atual"><Input name="currentPassword" type="password" autoComplete="current-password" required /></Field><Field label="Nova palavra-passe"><Input name="newPassword" type="password" autoComplete="new-password" minLength={12} required /></Field><div className="platform-actions"><Button type="submit" className="platform-primary">{busy ? "A guardar…" : "Guardar nova palavra-passe"}</Button><Button type="button" variant="outline" onClick={() => setPasswordDialogOpen(false)}>Cancelar</Button></div></fieldset></form></section></Dialog>}
       <div ref={notice} tabIndex={-1} className="platform-notices">{error && <p className="platform-error" role="alert">{error}</p>}{message && <p className="platform-success" role="status">{message}</p>}</div>

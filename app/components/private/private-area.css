@@ -641,6 +641,15 @@
 .platform-user-role { color: var(--private-muted); font-size: 11px; }
 .platform-user-actions { display: flex; flex: 0 1 auto; flex-wrap: wrap; justify-content: flex-end; gap: 9px; }
 .platform-user-actions button { min-height: 40px; padding-inline: 15px; }
+.platform-account-menu-wrap { position: relative; }
+.platform-account-trigger { min-height: 42px; gap: 9px; padding: 0 10px 0 14px; border-radius: 12px; color: var(--private-deep); font-weight: 650; }
+.platform-account-trigger > svg { color: var(--private-forest); }
+.platform-account-indicator { display: grid; width: 27px; height: 27px; place-items: center; border-radius: 50%; background: #f4edf8; color: var(--private-forest); font-size: 12px; font-weight: 750; }
+.platform-account-menu { position: absolute; z-index: 35; top: calc(100% + 8px); right: 0; display: grid; width: min(300px, calc(100vw - 32px)); gap: 3px; padding: 8px; border: 1px solid var(--private-line); border-radius: 14px; background: white; box-shadow: 0 16px 40px #2d183b24; }
+.platform-account-menu-identity { display: grid; gap: 4px; padding: 11px 12px 13px; border-bottom: 1px solid var(--private-line); }
+.platform-account-menu-identity strong { color: var(--private-deep); font-size: 13px; }
+.platform-account-menu-identity span,.platform-account-menu-identity small { color: var(--private-muted); font-size: 11px; overflow-wrap: anywhere; }
+.platform-account-menu > button { justify-content: flex-start; min-height: 38px; padding-inline: 12px; color: var(--private-deep); }
 
 .platform-finance > .platform-card > .platform-list-heading { display: grid; justify-content: stretch; gap: 15px; margin-bottom: 18px; }
 .platform-finance > .platform-card > .platform-list-heading > div:first-child { width: 100%; min-width: 0; }
@@ -659,6 +668,17 @@
 .platform-progress-heading h2 { margin: 0; font-size: clamp(23px, 2.5vw, 30px); }
 .platform-progress-heading > div > p:last-child { margin: 8px 0 0; color: var(--private-muted); font-size: 13px; }
 .platform-progress-heading .platform-field { width: min(300px, 40%); margin: 0; }
+.platform-progress-filters { display: grid; grid-template-columns: repeat(4, minmax(150px, 1fr)); align-items: end; gap: 12px; padding: 16px; border: 1px solid var(--private-line); border-radius: 14px; background: #fcfafc; }
+.platform-progress-filters .platform-field { min-width: 0; margin: 0; }
+.platform-progress-filters > button { min-height: 40px; }
+.platform-action-menu { position: relative; }
+.platform-action-menu > summary { display: inline-flex; min-height: 40px; align-items: center; justify-content: center; gap: 7px; padding: 0 13px; border: 1px solid var(--private-line); border-radius: 10px; background: white; color: var(--private-deep); cursor: pointer; font: inherit; font-size: 12px; font-weight: 650; list-style: none; }
+.platform-action-menu > summary::-webkit-details-marker { display: none; }
+.platform-action-menu > summary:hover,.platform-action-menu[open] > summary { border-color: var(--private-forest); background: #faf7fc; }
+.platform-action-menu > div { position: absolute; z-index: 30; top: calc(100% + 7px); right: 0; display: grid; min-width: 210px; gap: 3px; padding: 6px; border: 1px solid var(--private-line); border-radius: 12px; background: white; box-shadow: 0 14px 34px #2d183b20; }
+.platform-action-menu > div > button { width: 100%; padding: 10px 12px; border: 0; border-radius: 8px; background: transparent; color: var(--private-deep); cursor: pointer; font: inherit; font-size: 12px; text-align: left; }
+.platform-action-menu > div > button:hover { background: #f7f2f8; }
+.platform-action-menu > div > button:disabled { opacity: .45; cursor: not-allowed; }
 .platform-progress-student { display: flex; align-items: center; gap: 15px; padding: 18px 20px; border: 1px solid var(--private-line); border-radius: 14px; background: linear-gradient(110deg, #faf7fc, #fff); }
 .platform-progress-avatar { display: grid; flex: 0 0 48px; width: 48px; height: 48px; place-items: center; border-radius: 15px; background: var(--private-forest); color: white; font-size: 15px; font-weight: 750; letter-spacing: .04em; }
 .platform-progress-student .platform-eyebrow { margin: 0 0 3px; font-size: 9px; }
@@ -703,6 +723,7 @@
   .platform-user-actions button { flex: 1 1 auto; }
   .platform-progress-heading { align-items: stretch; flex-direction: column; gap: 14px; }
   .platform-progress-heading .platform-field { width: 100%; }
+  .platform-progress-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .platform-progress-metrics { grid-template-columns: 1fr; gap: 9px; }
   .platform-progress-metrics article { grid-template-columns: 1fr auto; gap: 5px 12px; min-height: 0; padding: 14px 16px; }
   .platform-progress-metrics article > strong { grid-column: 2; grid-row: 1 / span 2; align-self: center; }
@@ -713,6 +734,7 @@
   .platform-finance > .platform-card > .platform-list-heading .platform-record-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .platform-finance > .platform-card > .platform-list-heading .platform-record-actions button { min-width: 0; padding-inline: 8px; font-size: 11px; }
   .platform-progress-card { gap: 18px; padding: 18px; }
+  .platform-progress-filters { grid-template-columns: 1fr; padding: 13px; }
   .platform-progress-student { align-items: flex-start; padding: 14px; }
   .platform-progress-section-heading { align-items: flex-start; flex-direction: column; gap: 5px; }
   .platform-dialog .platform-record-details { grid-template-columns: 1fr; }

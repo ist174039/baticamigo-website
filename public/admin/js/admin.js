@@ -108,6 +108,26 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   })
 
+  document.getElementById("admin-user-reset-password")?.addEventListener("click", async (event) => {
+    const button = event.currentTarget
+    const status = document.getElementById("admin-user-menu-status")
+    const email = auth.currentUser?.email
+    if (!email || !status) return
+    button.disabled = true
+    button.textContent = "A enviar…"
+    status.textContent = ""
+    try {
+      await auth.sendPasswordResetEmail(email)
+      status.textContent = `Ligação de recuperação enviada para ${email}.`
+    } catch (error) {
+      console.error("Erro ao enviar recuperação da palavra-passe:")
+      status.textContent = "Não foi possível enviar a ligação. Tente novamente mais tarde."
+    } finally {
+      button.disabled = false
+      button.textContent = "Alterar palavra-passe"
+    }
+  })
+
   async function loadContactSettings() {
     const form = document.getElementById("contact-settings-form")
     if (!form) return
