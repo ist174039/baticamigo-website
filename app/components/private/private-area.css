@@ -318,7 +318,8 @@
 .user-manager-association-row > div:first-child { display: grid; gap: 4px; min-width: 0; }
 .user-manager-association-row > div:first-child strong { color: var(--private-deep); }
 .user-manager-association-row > div:first-child span, .user-manager-association-profiles > span { color: var(--private-muted); font-size: 12px; overflow-wrap: anywhere; }
-.user-manager-association-profiles { display: flex; flex-wrap: wrap; gap: 6px; }
+.user-manager-association-profiles { display: grid; gap: 6px; }
+.user-manager-association-profile { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
 .user-manager-association-row > button { justify-self: end; white-space: nowrap; }
 .user-manager-access-profile { min-width: 0; padding: 0 14px; border: 1px solid var(--private-line); border-radius: 12px; background: #fff; }
 .user-manager-access-profile[open] { padding-bottom: 14px; }
