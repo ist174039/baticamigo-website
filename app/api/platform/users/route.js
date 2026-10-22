@@ -1,6 +1,6 @@
 import { randomBytes } from "node:crypto";
 import { context, collection, audit, json, failure } from "../../../../lib/platform/server";
-import { assert, accountInput, hasRole, profileInput, profileIds } from "../../../../lib/platform/domain.mjs";
+import { assert, accountInput, hasRole, id, profileInput, profileIds, profileDependencyReasons } from "../../../../lib/platform/domain.mjs";
 import {areaModules,defaultAccessProfiles,effectiveAccountAreas,isBootstrapAdmin,validateAccessProfiles} from "../../../../lib/platform/access.mjs";
 import {canAccessArea} from "../../../../lib/platform/access.mjs";
 
@@ -95,9 +95,37 @@ async function requirePlatformAccount(db, uid) {
   return snapshot.data();
 }
 
+async function profileReferences(db, profileId, profile, tx) {
+  const queries = [
+    collection(db, "accounts").where("profileIds", "array-contains", profileId).limit(1),
+    collection(db, "profiles").where("guardianIds", "array-contains", profileId).limit(1),
+    collection(db, "sessions").where("tutorId", "==", profileId).limit(1),
+    collection(db, "sessions").where("studentIds", "array-contains", profileId).limit(1),
+    collection(db, "records").where("studentId", "==", profileId).limit(1),
+    collection(db, "attendance").where("studentId", "==", profileId).limit(1),
+    collection(db, "dues").where("memberId", "==", profileId).limit(1),
+  ];
+  const [accounts, dependents, tutorSessions, studentSessions, records, attendance, dues] = await Promise.all(queries.map(query => tx ? tx.get(query) : query.get()));
+  return profileDependencyReasons({
+    account: Boolean(profile.accountUid) || !accounts.empty,
+    dependents: !dependents.empty,
+    sessions: !tutorSessions.empty || !studentSessions.empty,
+    records: !records.empty,
+    attendance: !attendance.empty,
+    dues: !dues.empty,
+  });
+}
+
 export async function GET(request) {
   try {
     const { db, auth } = await adminContext(request);
+    const requestedProfileId = new URL(request.url).searchParams.get("profileId");
+    if (requestedProfileId) {
+      const profileId = id(requestedProfileId);
+      const profile = await collection(db, "profiles").doc(profileId).get();
+      assert(profile.exists, "Registo não encontrado.", 404);
+      return json({ profileId, dependencyReasons: await profileReferences(db, profileId, profile.data()) });
+    }
     const [firebaseUsers, accountsSnapshot, profilesSnapshot, accessSettingsSnapshot] = await Promise.all([
       listAuthUsers(auth),
       collection(db, "accounts").limit(501).get(),
@@ -219,6 +247,20 @@ export async function PATCH(request) {
   try {
     const { db, account, auth } = await adminContext(request);
     const body = await readJson(request);
+    if (body.action === "delete-profile") {
+      assert(Object.keys(body).every(key => ["action", "profileId"].includes(key)), "Campo não permitido.");
+      const profileId = id(body.profileId);
+      const profileRef = collection(db, "profiles").doc(profileId);
+      await db.runTransaction(async tx => {
+        const profile = await tx.get(profileRef);
+        assert(profile.exists, "Registo não encontrado.", 404);
+        const dependencyReasons = await profileReferences(db, profileId, profile.data(), tx);
+        assert(dependencyReasons.length === 0, `Este registo tem dados associados (${dependencyReasons.join(", ")}); só pode ser suspenso.`, 409);
+        tx.delete(profileRef);
+        audit(tx, db, account, "delete-platform-profile", profileId, { profileKind: profile.data().kind });
+      });
+      return json({ deleted: true });
+    }
     if(body.action==="update-access-profiles") {
       assert(Object.keys(body).every(key=>["action","accessProfiles"].includes(key)),"Campo não permitido.");
       const accessProfiles=validateAccessProfiles(body.accessProfiles);

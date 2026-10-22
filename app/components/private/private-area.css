@@ -321,6 +321,8 @@
 .user-manager-association-profiles { display: grid; gap: 6px; }
 .user-manager-association-profile { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
 .user-manager-association-row > button { justify-self: end; white-space: nowrap; }
+.user-manager-record-delete-confirm { margin-top: 18px; padding: 16px; border: 1px solid #efb8aa; border-radius: 12px; background: #fff8f6; }
+.user-manager-record-delete-confirm > p { color: #713b32; line-height: 1.5; }
 .user-manager-access-profile { min-width: 0; padding: 0 14px; border: 1px solid var(--private-line); border-radius: 12px; background: #fff; }
 .user-manager-access-profile[open] { padding-bottom: 14px; }
 .user-manager-access-profile > summary { display: flex; min-height: 48px; align-items: center; justify-content: space-between; gap: 12px; cursor: pointer; list-style: none; }

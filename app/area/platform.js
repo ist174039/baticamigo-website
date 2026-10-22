@@ -204,12 +204,13 @@ export default function Platform() {
     await action(async () => { await save(body); done(); }, "Registo guardado.");
   }
   const recordKinds = ["assignment", "material", "document", "message", "assessment", "justification"];
-  const moduleTitles = {assignment:"Trabalhos",material:"Materiais",document:"Documentos",message:"Mensagens",assessment:"Avaliações",justification:"Justificações",progress:"Evolução do aluno",reports:"Relatórios",notifications:"Avisos",finance:"Área financeira",access:"Perfis e permissões",account:"O meu perfil"};
+  const moduleTitles = {assignment:"Trabalhos",material:"Materiais",document:"Documentos",message:"Mensagens",assessment:"Avaliações",justification:"Justificações",progress:"Evolução do aluno",reports:"Relatórios",notifications:"Avisos",finance:"Área financeira",access:"Perfis e permissões",records:"Gestão de registos",account:"O meu perfil"};
   const pageDescriptions = {
     overview: "Acompanhe sessões, presenças e o percurso escolar num só lugar.",
     sessions: manager ? "Agenda, participantes e presenças num só lugar." : "Consulte os horários e acompanhe as presenças das sessões associadas ao seu perfil.",
     profiles: admin ? "Consulte pessoas, perfis, permissões e acessos da associação." : "Consulte e atualize os perfis associados à sua conta.",
     access: "Defina os perfis de acesso e os menus disponíveis para cada função na associação.",
+    records: "Crie e edite registos de pessoas, associe-os às contas e elimine apenas registos sem dados relacionados.",
     account: "Consulte as permissões e atualize os dados da sua conta.",
     assignment: "Consulte trabalhos, prazos e materiais partilhados com os alunos.",
     material: "Consulte materiais de apoio e recursos partilhados.",
@@ -230,6 +231,7 @@ export default function Platform() {
     ...(educational?[["sessions",manager?"Sessões e presenças":"As minhas sessões"]]:[]),
     ["profiles",admin?"Utilizadores":manager?"Pessoas e sócios":"Os meus perfis"],
     ...(admin?[["access","Perfis e permissões"]]:[]),
+    ...(admin?[["records","Registos"]]:[]),
     ...((hasStudents||manager)?[["assignment","Trabalhos"],["material","Materiais"],["assessment","Avaliações"],["progress","Evolução"],["justification","Justificações"]]:[]),
     ...((admin||roles.includes("member"))?[["finance","Área financeira"]]:[]),
     ["document","Documentos"],["message","Mensagens"],["notifications","Avisos"],
@@ -239,9 +241,9 @@ export default function Platform() {
   const accountConfigured=Boolean(data.account);
   const configuredModules=data.account?.modules;
   const allowedModules=useMemo(()=>accountConfigured?(configuredModules??defaultAreasForRoles(roles)):[],[accountConfigured,configuredModules,roles]);
-  const navigationItems=user&&data.account?navigationCandidates.filter(([key])=>key==="account"||key==="access"?admin:canAccessArea({...data.account,modules:allowedModules},key)).map(([key,label])=>({key,label})): [{key:"overview",label:"Iniciar sessão"}];
+  const navigationItems=user&&data.account?navigationCandidates.filter(([key])=>key==="account"||key==="access"||key==="records"?admin:canAccessArea({...data.account,modules:allowedModules},key)).map(([key,label])=>({key,label})): [{key:"overview",label:"Iniciar sessão"}];
   const accountUid=data.account?.uid;
-  useEffect(()=>{if(user&&accountUid&&tab!=="account"&&tab!=="access"&&!allowedModules.includes(tab))setTab(allowedModules.includes('overview')?'overview':allowedModules[0]||'overview');if(user&&accountUid&&(tab==="account"||tab==="access")&&!admin)setTab(allowedModules.includes('overview')?'overview':allowedModules[0]||'overview');},[user,accountUid,allowedModules,tab,admin]);
+  useEffect(()=>{if(user&&accountUid&&tab!=="account"&&tab!=="access"&&tab!=="records"&&!allowedModules.includes(tab))setTab(allowedModules.includes('overview')?'overview':allowedModules[0]||'overview');if(user&&accountUid&&(tab==="account"||tab==="access"||tab==="records")&&!admin)setTab(allowedModules.includes('overview')?'overview':allowedModules[0]||'overview');},[user,accountUid,allowedModules,tab,admin]);
   const visibleProfiles = data.profiles.filter((profile) => (profileKind === "all" || profile.kind === profileKind) && `${profile.name} ${profile.email || ""} ${profile.memberNumber || ""} ${profile.subjects || ""} ${kindNames[profile.kind]}`.toLocaleLowerCase("pt-PT").includes(profileQuery.toLocaleLowerCase("pt-PT")));
   const upcoming = [...data.sessions].filter((session) => session.status === "scheduled" && new Date(session.endsAt) >= new Date()).sort((a, b) => a.startsAt.localeCompare(b.startsAt));
   const completedSessions = data.sessions.filter(session => session.status === "scheduled" && Date.parse(session.endsAt) < Date.now());
@@ -264,6 +266,7 @@ export default function Platform() {
         {tab === "overview" && !educational && <section className="platform-card"><div className="platform-list-heading"><div><p className="platform-eyebrow">A sua ligação à BaticAmigo</p><h2>O meu espaço</h2></div></div>{data.profiles.filter(profile => profile.kind === "member").map(profile => <div className="platform-summary" key={profile.id}><h3>{profile.name}</h3><p>Sócio {profile.memberNumber || "com número por atribuir"} · {{active:"Ativo",pending:"Pendente",suspended:"Suspenso",left:"Cessou"}[profile.membershipStatus] || "Situação por confirmar"}</p></div>)}<p>Consulte a informação partilhada consigo ou envie uma mensagem à associação.</p><div className="platform-actions"><Button className="platform-primary" onClick={() => navigate("document")}>Os meus documentos</Button><Button onClick={() => navigate("message")}>Mensagens</Button><Button onClick={() => navigate("profiles")}>O meu perfil</Button></div></section>}
         {tab === "account" && admin && <AccountProfile user={user} roles={roles} profiles={data.profiles.filter(profile => (data.account?.profileIds || []).includes(profile.id))} displayName={accountName} onDisplayNameChange={setAccountName} onChangePassword={() => { setPasswordError(""); setPasswordMessage(""); setPasswordDialogOpen(true); }} />}
         {tab === "access" && admin && <AreaUserManager view="permissions" />}
+        {tab === "records" && admin && <AreaUserManager view="records" />}
         {recordKinds.includes(tab) && <Records key={tab} kind={tab} data={data} user={user} manager={manager} busy={busy} onSave={saveModule}/>}
         {tab === "finance" && (admin || roles.includes("member")) && <Finance key={user.uid} user={user}/>}
         {tab === "progress" && <Progress data={data} manager={manager}/>}

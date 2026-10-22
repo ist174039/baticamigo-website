@@ -1,9 +1,10 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {profileInput,sessionInput,accountInput,canReadStudent,canAttend,overlaps,manages,attendanceVersion} from '../../lib/platform/domain.mjs';
+import {profileInput,profileDependencyReasons,sessionInput,accountInput,canReadStudent,canAttend,overlaps,manages,attendanceVersion} from '../../lib/platform/domain.mjs';
 import {canAccessArea,isBootstrapAdmin,defaultAreasForRoles,restrictAreasForRoles,isActivePlatformAdmin} from '../../lib/platform/access.mjs';
 const session={title:'Matemática',studentIds:['s1'],tutorId:'t1',room:'A',startsAt:'2026-10-20T10:00:00Z',endsAt:'2026-10-20T11:00:00Z'};
 test('reject mass assignment, direct account links and malformed profile relationships',()=>{assert.throws(()=>profileInput({kind:'student',name:'Ana',admin:true})); assert.throws(()=>profileInput({kind:'student',name:'Ana',accountUid:'other-account'})); assert.throws(()=>profileInput({kind:'tutor',name:'Ana',guardianIds:['g1']}));});
+test('profile records can be deleted only when no account, family, learning or financial data refers to them',()=>{assert.deepEqual(profileDependencyReasons(),[]);assert.deepEqual(profileDependencyReasons({account:true,dependents:true,sessions:true,records:true,attendance:true,dues:true}),['Conta de acesso associada','Relações com outros perfis','Sessões associadas','Registos da plataforma associados','Presenças associadas','Quotas ou pagamentos associados']);});
 test('multi-role accounts validated and fail closed for unknown roles',()=>{assert.equal(manages(accountInput({uid:'u',roles:['tutor','coordinator'],active:true})),true); assert.throws(()=>accountInput({uid:'u',roles:['owner'],active:true}));});
 test('student and guardian access requires exact relationship',()=>{const student={id:'s1',guardianIds:['g1']}; assert.equal(canReadStudent({roles:['guardian'],profileId:'g1'},student),true); assert.equal(canReadStudent({roles:['guardian'],profileId:'g2'},student),false); assert.equal(canReadStudent({roles:['student'],profileId:'s2'},student),false);});
 test('tutors can attend only assigned sessions',()=>{assert.equal(canAttend({roles:['tutor'],profileId:'t1'},session),true); assert.equal(canAttend({roles:['tutor'],profileId:'t2'},session),false);});
