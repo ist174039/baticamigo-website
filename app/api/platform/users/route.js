@@ -1,7 +1,7 @@
 import { randomBytes } from "node:crypto";
 import { context, collection, audit, json, failure } from "../../../../lib/platform/server";
 import { assert, accountInput, hasRole, profileInput, profileIds } from "../../../../lib/platform/domain.mjs";
-import {defaultAreasForRoles,isBootstrapAdmin} from "../../../../lib/platform/access.mjs";
+import {areaModules,defaultAccessProfiles,effectiveAccountAreas,isBootstrapAdmin,validateAccessProfiles} from "../../../../lib/platform/access.mjs";
 import {canAccessArea} from "../../../../lib/platform/access.mjs";
 
 export const runtime = "nodejs";
@@ -64,11 +64,10 @@ async function validateLinks(tx, db, uid, roles, ids, newProfile) {
     assert(used.docs.every((doc) => doc.id === uid), "O perfil já está associado a outra conta.", 409);
     profiles.push({ id: profileId, data: snapshot.data(), ref });
   }
-  const represented = (role) => role === "volunteer"
-    ? profiles.some((profile) => profile.data.kind === "tutor")
-    : profiles.some((profile) => profile.data.kind === role);
-  assert(profiles.every((profile) => roles.includes(profile.data.kind) || (profile.data.kind === "tutor" && roles.includes("volunteer"))), "Os papéis têm de corresponder aos perfis.");
-  assert(roles.filter((role) => ["student", "guardian", "tutor", "volunteer", "member"].includes(role)).every(represented), "Associe um perfil correspondente a cada papel.");
+  const compatible = (profile) => roles.includes(profile.data.kind) || (profile.data.kind === "tutor" && roles.includes("volunteer"));
+  assert(profiles.every(compatible), "Os perfis associados têm de corresponder aos perfis de acesso escolhidos.");
+  // Volunteers and coordinators can be access profiles without a separate pupil/member/tutor record.
+  assert(roles.filter((role) => ["student", "guardian", "tutor", "member"].includes(role)).every(role=>profiles.some(profile=>profile.data.kind===role)), "Associe um perfil de pessoa correspondente a cada perfil de acesso.");
   return profiles;
 }
 
@@ -80,32 +79,43 @@ function publicUrl() {
 }
 
 function bootstrapAdmin(user) {
-  return isBootstrapAdmin(user.email,user.emailVerified);
+  return isBootstrapAdmin(user?.email,user?.emailVerified);
 }
 
 function isAdmin(account, user) {
-  return user?.customClaims?.admin === true || bootstrapAdmin(user) || (account?.active === true && (account.roles || [account.role]).includes("admin"));
+  return bootstrapAdmin(user) || (account?.active === true && (account.roles || [account.role]).includes("admin"));
+}
+
+async function requirePlatformAccount(db, uid) {
+  assert(uid && uid.length <= 128, "Selecione uma conta válida.");
+  const snapshot = await collection(db, "accounts").doc(uid).get();
+  assert(snapshot.exists, "Este utilizador ainda não tem acesso configurado à plataforma.", 404);
+  return snapshot.data();
 }
 
 export async function GET(request) {
   try {
     const { db, auth } = await adminContext(request);
-    const [firebaseUsers, accountsSnapshot, profilesSnapshot] = await Promise.all([
+    const [firebaseUsers, accountsSnapshot, profilesSnapshot, accessSettingsSnapshot] = await Promise.all([
       listAuthUsers(auth),
       collection(db, "accounts").limit(501).get(),
       collection(db, "profiles").limit(501).get(),
+      collection(db, "access_settings").doc("profiles").get(),
     ]);
     assert(accountsSnapshot.size <= 500 && profilesSnapshot.size <= 500, "Demasiados registos para listar. Contacte o suporte.", 409);
     const accounts = new Map(accountsSnapshot.docs.map((doc) => [doc.id, doc.data()]));
     const profiles = profilesSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    const accessProfiles=accessSettingsSnapshot.exists?validateAccessProfiles(accessSettingsSnapshot.data().profiles):defaultAccessProfiles;
+    assert(accessProfiles,"Configuração de perfis inválida.",503);
     const profileById = new Map(profiles.map((profile) => [profile.id, profile]));
     const linkedByUid = new Map();
     for (const profile of profiles) if (profile.accountUid) linkedByUid.set(profile.accountUid, [...(linkedByUid.get(profile.accountUid) || []), profile.id]);
     const users = firebaseUsers.map((user) => {
       const account = accounts.get(user.uid);
-      const legacyAdmin = user.customClaims?.admin === true || isBootstrapAdmin(user.email,user.emailVerified);
+      const bootstrap = isBootstrapAdmin(user.email,user.emailVerified);
       const linked = [...new Set([...(account ? profileIds(account) : []), ...(linkedByUid.get(user.uid) || [])])];
-      const roles = account?.roles || (account?.role ? [account.role] : legacyAdmin ? ["admin"] : [...new Set(linked.map((id) => profileById.get(id)?.kind).filter(Boolean))]);
+      const roles = account?.roles || (account?.role ? [account.role] : bootstrap ? ["admin"] : [...new Set(linked.map((id) => profileById.get(id)?.kind).filter(Boolean))]);
+      const resolvedAccess=effectiveAccountAreas(roles,account?.modules,accessProfiles,accessSettingsSnapshot.exists);
       return {
         uid: user.uid,
         email: user.email || "",
@@ -115,14 +125,15 @@ export async function GET(request) {
         createdAt: user.metadata.creationTime || null,
         lastSignInAt: user.metadata.lastSignInTime || null,
         roles,
-        modules: account?.modules ?? defaultAreasForRoles(roles),
+        modules:resolvedAccess.modules,
+        accessConfigurationInvalid:resolvedAccess.invalidLegacy,
         profileIds: linked,
         profiles: linked.map((id) => profileById.get(id)).filter(Boolean).map(({ id, kind, name, memberNumber, membershipStatus }) => ({ id, kind, name, memberNumber, membershipStatus })),
-        accessActive: account ? account.active === true : legacyAdmin,
+        accessActive: account ? account.active === true : bootstrap,
         suspended: account?.suspended === true || user.disabled,
       };
     });
-    return json({ users, profiles });
+    return json({ users, profiles, accessProfiles, areaModules });
   } catch (error) { return failure(error); }
 }
 
@@ -136,7 +147,9 @@ export async function POST(request) {
     const body = await readJson(request);
     if (body.action === "reset-password") {
       assert(Object.keys(body).every((key) => ["action", "uid", "delivery"].includes(key)), "Campo não permitido.");
-      const target = await auth.getUser(String(body.uid || "").trim());
+      const uid = String(body.uid || "").trim();
+      await requirePlatformAccount(db, uid);
+      const target = await auth.getUser(uid);
       assert(target.email, "A conta não tem endereço de email.");
       const resetLink = await auth.generatePasswordResetLink(target.email, { url: publicUrl(), handleCodeInApp: false });
       await db.runTransaction(async (tx) => { const lock = collection(db, "locks").doc("platform-admins"); await tx.get(lock); tx.set(lock, { updatedAt: Date.now() }); audit(tx, db, account, body.delivery === "invite" ? "send-platform-user-invite" : "reset-platform-user-password", target.uid); });
@@ -146,6 +159,7 @@ export async function POST(request) {
       assert(Object.keys(body).every((key) => ["action", "uid"].includes(key)), "Campo não permitido.");
       const uid = String(body.uid || "").trim();
       assert(uid && uid !== account.uid, "Não pode substituir a sua própria palavra-passe por esta ação.", 403);
+      await requirePlatformAccount(db, uid);
       const target = await auth.getUser(uid);
       const temporaryPassword = randomBytes(15).toString("base64url");
       await db.runTransaction(async (tx) => { const lock = collection(db, "locks").doc("platform-admins"); await tx.get(lock); tx.set(lock, { updatedAt: Date.now() }); audit(tx, db, account, "generate-platform-user-temporary-password", uid); });
@@ -157,7 +171,7 @@ export async function POST(request) {
       }
       return json({ email: target.email || "", temporaryPassword, sessionsRevoked });
     }
-    assert(Object.keys(body).every((key) => ["email", "displayName", "roles", "profileIds", "profile", "delivery", "modules"].includes(key)), "Campo não permitido.");
+    assert(Object.keys(body).every((key) => ["email", "displayName", "roles", "profileIds", "profile", "delivery"].includes(key)), "Campo não permitido.");
     assert(body.delivery === undefined || ["invite", "temporary"].includes(body.delivery), "Método de acesso inicial inválido.");
     const email = String(body.email || "").trim().toLowerCase();
     const displayName = String(body.displayName || "").trim();
@@ -171,7 +185,7 @@ export async function POST(request) {
     assert(body.profileIds === undefined || Array.isArray(body.profileIds), "Perfis inválidos.");
     const newProfileId = newProfileValue ? collection(db, "profiles").doc().id : null;
     const ids = [...(body.profileIds || []), ...(newProfileId ? [newProfileId] : [])];
-      const userInput = accountInput({ uid: "pending-user", roles: body.roles, profileIds: ids, active: true, modules: body.modules });
+      const userInput = accountInput({ uid: "pending-user", roles: body.roles, profileIds: ids, active: true });
     const temporaryPassword = body.delivery === "temporary" ? randomBytes(15).toString("base64url") : null;
     createdUser = await auth.createUser({ email, displayName, password: temporaryPassword || randomBytes(36).toString("base64url"), emailVerified: false, disabled: false });
     const resetLink = temporaryPassword ? null : await auth.generatePasswordResetLink(email, { url: publicUrl(), handleCodeInApp: false });
@@ -202,16 +216,27 @@ export async function PATCH(request) {
   try {
     const { db, account, auth } = await adminContext(request);
     const body = await readJson(request);
+    if(body.action==="update-access-profiles") {
+      assert(Object.keys(body).every(key=>["action","accessProfiles"].includes(key)),"Campo não permitido.");
+      const accessProfiles=validateAccessProfiles(body.accessProfiles);
+      assert(accessProfiles,"Configure menus válidos para cada perfil. O Administrador mantém acesso completo.");
+      await db.runTransaction(async tx=>{
+        const lock=collection(db,"locks").doc("platform-admins"); await tx.get(lock);
+        tx.set(collection(db,"access_settings").doc("profiles"),{profiles:accessProfiles,updatedAt:Date.now(),updatedBy:account.uid});
+        tx.set(lock,{updatedAt:Date.now()});
+        audit(tx,db,account,"update-platform-access-profiles","profiles");
+      });
+      return json({saved:true,accessProfiles});
+    }
     const uid = String(body.uid || "").trim();
     assert(uid && uid.length <= 128, "Selecione uma conta válida.");
     assert(uid !== account.uid, "Não pode alterar o seu próprio acesso.", 403);
     const target = await auth.getUser(uid);
 
     if (body.action === "update-access") {
-      assert(Object.keys(body).every((key) => ["action", "uid", "roles", "profileIds", "active", "modules"].includes(key)), "Campo não permitido.");
-      const value = accountInput({ uid, roles: body.roles, profileIds: body.profileIds, active: body.active, modules: body.modules });
+      assert(Object.keys(body).every((key) => ["action", "uid", "roles", "profileIds", "active"].includes(key)), "Campo não permitido.");
+      const value = accountInput({ uid, roles: body.roles, profileIds: body.profileIds, active: body.active });
       const bootstrap = bootstrapAdmin(target);
-      assert(!target.customClaims?.admin || value.roles.includes("admin"), "Esta conta mantém privilégios administrativos Firebase; conserve a permissão de administrador.", 409);
       assert(!bootstrap || value.roles.includes("admin"), "Esta conta é administradora de configuração; conserve a permissão de administrador.", 409);
       await db.runTransaction(async (tx) => {
         const lockRef = collection(db, "locks").doc("platform-admins");

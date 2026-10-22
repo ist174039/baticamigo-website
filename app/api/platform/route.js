@@ -1,6 +1,6 @@
 import {readModules,writeModule} from '../../../lib/platform/modules-server';
 import {context,collection,audit,json,failure} from '../../../lib/platform/server';
-import {assert,id,profileInput,sessionInput,accountInput,manages,hasRole,profileIds,canReadStudent,canAttend,overlaps,attendanceVersion} from '../../../lib/platform/domain.mjs';
+import {assert,id,profileInput,sessionInput,manages,hasRole,profileIds,canReadStudent,canAttend,overlaps,attendanceVersion} from '../../../lib/platform/domain.mjs';
 import {canAccessArea} from '../../../lib/platform/access.mjs';
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
@@ -63,42 +63,12 @@ export async function GET(request) {
 }
 export async function POST(request) {
   try {
-    const {db,account,auth}=await context(request);
+    const {db,account}=await context(request);
     const body=await readJson(request);
     assert(body && typeof body==='object' && !Array.isArray(body));
     if(body.action==='save-record') return await writeModule(db,account,body);
-    const allowed={ 'save-profile':['action','profile'], 'save-account':['action','account'], 'create-session':['action','session'], 'update-session':['action','id','version','session','status'], 'set-attendance':['action','sessionId','studentId','status','version'] };
+    const allowed={ 'save-profile':['action','profile'], 'create-session':['action','session'], 'update-session':['action','id','version','session','status'], 'set-attendance':['action','sessionId','studentId','status','version'] };
     assert(allowed[body.action] && Object.keys(body).every(k=>allowed[body.action].includes(k)),'Operação inválida.');
-    if(body.action==='save-account') {
-      assert(hasRole(account,'admin'),'Apenas administradores podem atribuir acessos.',403); const value=accountInput(body.account);
-      assert(value.uid!==account.uid,'Não pode alterar o seu próprio acesso.',403);
-      let target; try { target=await auth.getUser(value.uid); } catch { assert(false,'Conta Firebase inexistente.'); } assert(!target.disabled || !value.active,'Conta Firebase desativada.');
-      await db.runTransaction(async tx=>{
-        const lock=collection(db,'locks').doc('accounts'); await tx.get(lock);
-        const linked=[]; for(const profileId of value.profileIds) { const p=await tx.get(collection(db,'profiles').doc(profileId)); assert(p.exists && p.data().active===true,'Perfil inexistente ou inativo.'); assert(!p.data().accountUid || p.data().accountUid===value.uid,'Perfil associado a outra conta.'); linked.push({id:profileId,data:p.data()}); const used=await tx.get(collection(db,'accounts').where('profileIds','array-contains',profileId).limit(2)); assert(used.docs.every(d=>d.id===value.uid),'Perfil já associado a outra conta.'); }
-        const represented=(role)=>role==='volunteer' ? linked.some(p=>p.data.kind==='tutor') : linked.some(p=>p.data.kind===role);
-        assert(linked.every(p=>value.roles.includes(p.data.kind) || (p.data.kind==='tutor' && value.roles.includes('volunteer'))) && value.roles.filter(r=>['student','guardian','tutor','volunteer','member'].includes(r)).every(represented),'Os papéis devem corresponder aos perfis.');
-        const targetRef=collection(db,'accounts').doc(value.uid); const previous=await tx.get(targetRef);
-        const previousIds=previous.exists ? profileIds(previous.data()) : [];
-        const removedIds=previousIds.filter(profileId=>!value.profileIds.includes(profileId));
-        const removedRefs=removedIds.map(profileId=>collection(db,'profiles').doc(profileId));
-        const removedProfiles=removedRefs.length ? await tx.getAll(...removedRefs) : [];
-        if(previous.exists && previous.data().active===true && (previous.data().roles || [previous.data().role]).includes('admin') && (!value.active || !value.roles.includes('admin'))) {
-          const admins=collection(db,'accounts');
-          const [arrayAdmins,legacyAdmins]=await Promise.all([
-            tx.get(admins.where('roles','array-contains','admin').where('active','==',true).limit(10)),
-            tx.get(admins.where('role','==','admin').where('active','==',true).limit(10)),
-          ]);
-          const remaining=new Set([...arrayAdmins.docs,...legacyAdmins.docs].map(doc=>doc.id).filter(uid=>uid!==value.uid));
-          assert(remaining.size>0,'Não pode remover ou desativar a última conta administradora ativa.');
-        }
-        tx.set(lock,{updatedAt:Date.now()});
-        removedProfiles.forEach((profile,index)=>{ if(profile.exists && profile.data().accountUid===value.uid) tx.set(removedRefs[index],{...profile.data(),accountUid:''}); });
-        linked.forEach(profile=>tx.set(collection(db,'profiles').doc(profile.id),{...profile.data,accountUid:value.uid}));
-        tx.set(targetRef,value); audit(tx,db,account,body.action,value.uid);
-      });
-      return json({saved:true});
-    }
     if(body.action==='save-profile') {
       assert(manages(account)&&canAccessArea(account,'profiles'),'Sem permissão.',403); const value=profileInput(body.profile); const ref=value.id ? collection(db,'profiles').doc(value.id) : collection(db,'profiles').doc(); delete value.id;
       await db.runTransaction(async tx=>{ const previous=await tx.get(ref); assert(!previous.exists || previous.data().kind===value.kind,'Não pode alterar o tipo de perfil.'); for(const guardian of value.guardianIds) {const p=await tx.get(collection(db,'profiles').doc(guardian)); assert(p.exists && p.data().kind==='guardian' && p.data().active,'Encarregado inválido.');} value.accountUid=previous.exists ? previous.data().accountUid || '' : '';

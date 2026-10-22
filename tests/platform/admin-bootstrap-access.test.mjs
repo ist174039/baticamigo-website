@@ -39,9 +39,10 @@ test('an active persisted platform admin can reach /admin before verifying email
   assert.deepEqual(result,{authorized:true,verificationRequired:false});
 });
 
-test('a server-issued Firebase admin claim remains authoritative like it is in /area',()=>{
-  const result=adminAuthorization({email:'carlos.gomes@baticamigo.pt',email_verified:false,admin:true},null);
-  assert.deepEqual(result,{authorized:true,verificationRequired:false});
+test('a stale Firebase admin claim cannot grant access without a configured platform account',()=>{
+  const identity={uid:'legacy-admin',email:'legacy-admin@example.com',email_verified:true,admin:true};
+  assert.equal(resolvePlatformAccount(identity,null),null);
+  assert.deepEqual(adminAuthorization(identity,null),{authorized:false,verificationRequired:false});
 });
 
 test('an existing inactive or non-admin platform account overrides a stale admin claim',()=>{
@@ -50,7 +51,7 @@ test('an existing inactive or non-admin platform account overrides a stale admin
   }
 });
 
-test('bootstrap, stored-account and claim fallbacks are resolved identically for both panels',()=>{
+test('bootstrap and stored platform accounts are resolved consistently for both panels',()=>{
   const identity={uid:'owner-2',email:'carlos.gomes@baticamigo.pt',email_verified:true,admin:true};
   const bootstrapAccount=resolvePlatformAccount(identity,null);
   assert.equal(bootstrapAccount.superAdmin,true);
@@ -58,6 +59,7 @@ test('bootstrap, stored-account and claim fallbacks are resolved identically for
   const storedAccount={uid:'owner-2',active:true,roles:['member']};
   assert.equal(resolvePlatformAccount({...identity,email:'member@example.com'},storedAccount).roles[0],'member');
   assert.equal(adminAuthorization({...identity,email:'member@example.com'},storedAccount).authorized,false);
+  assert.equal(resolvePlatformAccount({...identity,email:'legacy-admin@example.com'},null),null);
 });
 
 test('bootstrap-only access still requires email verification and suspended admins remain blocked',()=>{
