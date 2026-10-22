@@ -301,6 +301,11 @@
 .user-manager-role-options legend, .user-manager-profile-options legend { padding: 0 6px; color: var(--private-deep); font-size: 12px; font-weight: 700; }
 .user-manager-role-options > p, .user-manager-profile-options > p { grid-column: 1 / -1; margin: 0 0 6px; }
 .user-manager-role-options .platform-check, .user-manager-profile-options .platform-check { margin: 0; }
+.user-manager-profile-draft { display: grid; gap: 10px; grid-column: 1 / -1; margin: 8px 0; padding: 14px; border: 1px solid #e7ddec; border-radius: 12px; background: #fcf9fd; }
+.user-manager-profile-draft > header { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--private-line); }
+.user-manager-profile-draft > header .platform-eyebrow { margin: 0 0 3px; }
+.user-manager-profile-draft > header h4 { margin: 0; color: var(--private-deep); font-size: 14px; }
+.user-manager-profile-draft > .user-manager-profile-options { margin: 4px 0; background: #fff; }
 .user-manager-module-options { display: grid; gap: 10px; margin: 16px 0; padding: 14px; border: 1px solid var(--private-line); border-radius: 12px; background: #fbf9fc; }
 .user-manager-module-options > h3 { margin: 0; color: var(--private-deep); font-size: 13px; }
 .user-manager-module-options > p { margin: 0; }

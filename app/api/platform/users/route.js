@@ -1,8 +1,9 @@
 import { randomBytes } from "node:crypto";
 import { context, collection, audit, json, failure } from "../../../../lib/platform/server";
-import { assert, accountInput, hasRole, id, profileInput, profileIds, profileDependencyReasons } from "../../../../lib/platform/domain.mjs";
+import { assert, accountInput, hasRole, id, profileInput, profileIds, profileDependencyReasons, profileKindMatchesRoles } from "../../../../lib/platform/domain.mjs";
 import {areaModules,defaultAccessProfiles,effectiveAccountAreas,isBootstrapAdmin,validateAccessProfiles} from "../../../../lib/platform/access.mjs";
 import {canAccessArea} from "../../../../lib/platform/access.mjs";
+import { validateLinks as validateUserLinks } from "../../../../lib/platform/user-links.mjs";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -49,27 +50,7 @@ async function listAuthUsers(auth) {
   return users;
 }
 
-async function validateLinks(tx, db, uid, roles, ids, newProfile) {
-  const profiles = [];
-  for (const profileId of ids) {
-    if (newProfile?.id === profileId) {
-      profiles.push({ id: profileId, data: newProfile.data });
-      continue;
-    }
-    const ref = collection(db, "profiles").doc(profileId);
-    const snapshot = await tx.get(ref);
-    assert(snapshot.exists && snapshot.data().active === true, "O perfil não existe ou está inativo.");
-    assert(!snapshot.data().accountUid || snapshot.data().accountUid === uid, "O perfil já está associado a outra conta.", 409);
-    const used = await tx.get(collection(db, "accounts").where("profileIds", "array-contains", profileId).limit(2));
-    assert(used.docs.every((doc) => doc.id === uid), "O perfil já está associado a outra conta.", 409);
-    profiles.push({ id: profileId, data: snapshot.data(), ref });
-  }
-  const compatible = (profile) => roles.includes(profile.data.kind) || (profile.data.kind === "tutor" && roles.includes("volunteer"));
-  assert(profiles.every(compatible), "Os perfis associados têm de corresponder aos perfis de acesso escolhidos.");
-  // Volunteers and coordinators can be access profiles without a separate pupil/member/tutor record.
-  assert(roles.filter((role) => ["student", "guardian", "tutor", "member"].includes(role)).every(role=>profiles.some(profile=>profile.data.kind===role)), "Associe um perfil de pessoa correspondente a cada perfil de acesso.");
-  return profiles;
-}
+export const validateLinks = (tx, db, uid, roles, ids, newProfiles = []) => validateUserLinks(tx, db, uid, roles, ids, newProfiles, collection);
 
 function publicUrl() {
   const host = process.env.NEXT_PUBLIC_APP_URL?.trim() || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL.trim()}` : "https://baticamigo-website.vercel.app");
@@ -202,7 +183,7 @@ export async function POST(request) {
       }
       return json({ email: target.email || "", temporaryPassword, sessionsRevoked });
     }
-    assert(Object.keys(body).every((key) => ["email", "displayName", "roles", "profileIds", "profile", "delivery"].includes(key)), "Campo não permitido.");
+    assert(Object.keys(body).every((key) => ["email", "displayName", "roles", "profileIds", "profile", "profilesToCreate", "delivery"].includes(key)), "Campo não permitido.");
     assert(body.delivery === undefined || ["invite", "temporary"].includes(body.delivery), "Método de acesso inicial inválido.");
     const email = String(body.email || "").trim().toLowerCase();
     const displayName = String(body.displayName || "").trim();
@@ -210,27 +191,36 @@ export async function POST(request) {
     assert(displayName.length > 0 && displayName.length <= 100, "O nome deve ter entre 1 e 100 caracteres.");
     assert(Array.isArray(body.roles) && body.roles.length > 0, "Selecione pelo menos uma permissão.");
 
-    const newProfileValue = body.profile ? profileInput(body.profile) : null;
-    assert(!newProfileValue?.id, "Um novo perfil não pode ter identificador existente.");
-    assert(!newProfileValue || newProfileValue.active, "Um perfil inativo não pode receber um novo acesso.");
     assert(body.profileIds === undefined || Array.isArray(body.profileIds), "Perfis inválidos.");
-    const newProfileId = newProfileValue ? collection(db, "profiles").doc().id : null;
-    const ids = [...(body.profileIds || []), ...(newProfileId ? [newProfileId] : [])];
-      const userInput = accountInput({ uid: "pending-user", roles: body.roles, profileIds: ids, active: true });
+    assert(body.profilesToCreate === undefined || Array.isArray(body.profilesToCreate), "Registos de pessoa inválidos.");
+    const profileInputs = [...(body.profilesToCreate || []), ...(body.profile ? [body.profile] : [])];
+    assert(profileInputs.length <= 10, "Pode criar até 10 registos de pessoa de cada vez.");
+    const userInput = accountInput({ uid: "pending-user", roles: body.roles, profileIds: body.profileIds || [], active: true });
+    // Profile IDs are generated before the transaction so the account and records can be linked atomically.
+    const createProfiles = profileInputs.map((value) => {
+      const data = profileInput(value);
+      assert(!data.id, "Um novo perfil não pode ter identificador existente.");
+      assert(data.active, "Um perfil inativo não pode receber um novo acesso.");
+      assert(profileKindMatchesRoles(data.kind, userInput.roles), `O perfil ${data.kind} não corresponde às permissões de acesso escolhidas.`);
+      const ref = collection(db, "profiles").doc();
+      const profileData = { ...data, accountUid: "", ...(data.kind === "member" ? { membershipHistory: [{ status: data.membershipStatus, at: new Date().toISOString(), actorUid: account.uid }] } : {}) };
+      return { id: ref.id, ref, data: profileData };
+    });
+    const ids = [...(body.profileIds || []), ...createProfiles.map((profile) => profile.id)];
+    const validatedUserInput = accountInput({ uid: "pending-user", roles: body.roles, profileIds: ids, active: true });
     const temporaryPassword = body.delivery === "temporary" ? randomBytes(15).toString("base64url") : null;
     createdUser = await auth.createUser({ email, displayName, password: temporaryPassword || randomBytes(36).toString("base64url"), emailVerified: false, disabled: false });
     const resetLink = temporaryPassword ? null : await auth.generatePasswordResetLink(email, { url: publicUrl(), handleCodeInApp: false });
     const linked = await db.runTransaction(async (tx) => {
       const accountRef = collection(db, "accounts").doc(createdUser.uid);
       assert(!(await tx.get(accountRef)).exists, "A conta já tem permissões configuradas.", 409);
-      const profileRef = newProfileId ? collection(db, "profiles").doc(newProfileId) : null;
-      const profileData = newProfileValue ? { ...newProfileValue, accountUid: createdUser.uid, ...(newProfileValue.kind === "member" ? { membershipHistory: [{ status: newProfileValue.membershipStatus, at: new Date().toISOString(), actorUid: account.uid }] } : {}) } : null;
-      const profiles = await validateLinks(tx, db, createdUser.uid, userInput.roles, ids, profileRef ? { id: newProfileId, data: profileData } : null);
+      const profilesToStore = createProfiles.map((profile) => ({ ...profile, data: { ...profile.data, accountUid: createdUser.uid } }));
+      const profiles = await validateLinks(tx, db, createdUser.uid, validatedUserInput.roles, ids, profilesToStore);
       for (const profile of profiles) {
-        if (profile.id === newProfileId) tx.create(profileRef, profileData);
+        if (profile.isNew) tx.create(profile.ref, profile.data);
         else tx.set(profile.ref, { ...profile.data, accountUid: createdUser.uid });
       }
-      tx.create(accountRef, { ...userInput, uid: createdUser.uid, suspended: false });
+      tx.create(accountRef, { ...validatedUserInput, uid: createdUser.uid, suspended: false });
       audit(tx, db, account, "create-platform-user", createdUser.uid);
       return profiles.map((profile) => profile.id);
     });
@@ -279,8 +269,27 @@ export async function PATCH(request) {
     const target = await auth.getUser(uid);
 
     if (body.action === "update-access") {
-      assert(Object.keys(body).every((key) => ["action", "uid", "roles", "profileIds", "active"].includes(key)), "Campo não permitido.");
-      const value = accountInput({ uid, roles: body.roles, profileIds: body.profileIds, active: body.active });
+      assert(Object.keys(body).every((key) => ["action", "uid", "roles", "profileIds", "profilesToCreate", "active"].includes(key)), "Campo não permitido.");
+      assert(body.profileIds === undefined || Array.isArray(body.profileIds), "Perfis inválidos.");
+      assert(body.profilesToCreate === undefined || (Array.isArray(body.profilesToCreate) && body.profilesToCreate.length <= 10), "Registos de pessoa inválidos.");
+      const inputs = (body.profilesToCreate || []).map(profileInput);
+      const newProfileRefs = inputs.map((data) => {
+        assert(!data.id, "Um novo perfil não pode ter identificador existente.");
+        assert(data.active, "Um perfil inativo não pode receber um novo acesso.");
+        assert(profileKindMatchesRoles(data.kind, body.roles || []), `O perfil ${data.kind} não corresponde às permissões de acesso escolhidas.`);
+        const ref = collection(db, "profiles").doc();
+        return {
+          id: ref.id,
+          ref,
+          data: {
+            ...data,
+            accountUid: uid,
+            ...(data.kind === "member" ? { membershipHistory: [{ status: data.membershipStatus, at: new Date().toISOString(), actorUid: account.uid }] } : {}),
+          },
+        };
+      });
+      const requestedIds = [...(body.profileIds || []), ...newProfileRefs.map((profile) => profile.id)];
+      const value = accountInput({ uid, roles: body.roles, profileIds: requestedIds, active: body.active });
       const bootstrap = bootstrapAdmin(target);
       assert(!bootstrap || value.roles.includes("admin"), "Esta conta é administradora de configuração; conserve a permissão de administrador.", 409);
       await db.runTransaction(async (tx) => {
@@ -288,7 +297,7 @@ export async function PATCH(request) {
         await tx.get(lockRef);
         const accountRef = collection(db, "accounts").doc(uid);
         const previous = await tx.get(accountRef);
-        const linked = await validateLinks(tx, db, uid, value.roles, value.profileIds);
+        const linked = await validateLinks(tx, db, uid, value.roles, value.profileIds, newProfileRefs);
         const previousIds = previous.exists ? profileIds(previous.data()) : [];
         const removed = previousIds.filter((profileId) => !value.profileIds.includes(profileId));
         const removedRefs = removed.map((profileId) => collection(db, "profiles").doc(profileId));
@@ -301,7 +310,10 @@ export async function PATCH(request) {
           assert(remaining, "Não pode remover ou desativar a última conta administradora ativa.", 409);
         }
         removedProfiles.forEach((profile, index) => { if (profile.exists && profile.data().accountUid === uid) tx.set(removedRefs[index], { ...profile.data(), accountUid: "" }); });
-        linked.forEach((profile) => tx.set(profile.ref, { ...profile.data, accountUid: uid }));
+        linked.forEach((profile) => {
+          if (profile.isNew) tx.create(profile.ref, profile.data);
+          else tx.set(profile.ref, { ...profile.data, accountUid: uid });
+        });
         tx.set(accountRef, { ...value, suspended: previous.data()?.suspended === true });
         tx.set(lockRef, { updatedAt: Date.now() });
         audit(tx, db, account, "update-platform-user-access", uid);
