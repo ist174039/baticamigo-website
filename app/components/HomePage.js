@@ -36,7 +36,7 @@ function SiteFooter() {
       </div>
       <a className="footer-back-top" href="#inicio" aria-label="Voltar ao início">↑</a>
     </div>
-    <div className="footer-bottom"><span>© {new Date().getFullYear()} Associação BaticAmigo</span><a href="/platform/login">Acesso administrativo <span aria-hidden="true">↗</span></a></div>
+    <div className="footer-bottom"><span>© {new Date().getFullYear()} Associação BaticAmigo</span></div>
   </footer>;
 }
 

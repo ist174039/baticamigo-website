@@ -59,7 +59,6 @@ export default function SiteHeader({ variant = "public" }) {
         <nav ref={navigationRef} id="primary-navigation" className={`site-nav${menuOpen ? " is-open" : ""}${variant === "area" ? " area-nav" : ""}`} aria-label="Navegação principal">
           {variant === "area" ? <a href="/">Website público</a> : <>
           {links.map(([label, id]) => <a key={id} href={`#${id}`} onClick={() => setMenuOpen(false)}>{label}</a>)}
-          <a href="/area" onClick={() => setMenuOpen(false)}>Área reservada</a>
           <a className="nav-cta" href="https://forms.gle/MtZwbpSMPdzeghZG8" target="_blank" rel="noreferrer" onClick={() => setMenuOpen(false)}>Junte-se a nós <span aria-hidden="true">↗</span></a>
           </>}
         </nav>

@@ -203,7 +203,8 @@
 .area-login-page .workspace-choice-copy strong { color: var(--private-deep); font-size: 13px; }
 .area-login-page .workspace-choice-copy small { color: var(--private-muted); font-size: 11px; line-height: 1.45; }
 .area-login-page .workspace-choice-action { display: flex; align-items: center; gap: 6px; grid-column: 2; color: var(--private-forest); font-size: 11px; font-weight: 750; }
-.area-login-page .workspace-signout { width: 100%; min-height: 42px; color: var(--private-deep); }
+.area-login-page .workspace-signout { justify-self: start; min-height: 42px; gap: 9px; padding-inline: 16px; border-color: #e6dce9; border-radius: 11px; background: #fff; color: var(--private-forest); box-shadow: 0 3px 10px #25163208; }
+.area-login-page .workspace-signout:hover:not(:disabled) { border-color: #cdb9d7; background: #f8f3fa; color: var(--private-deep); box-shadow: 0 6px 14px #25163210; }
 
 /* Form dialogs keep create/edit flows focused and responsive. */
 .platform-dialog { width: min(720px, calc(100% - 28px)); max-width: none; max-height: min(88dvh, 900px); margin: auto; padding: 0; overflow: visible; border: 0; background: transparent; color: inherit; }

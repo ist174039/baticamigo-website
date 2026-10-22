@@ -5,6 +5,8 @@ import {adminAuthorization,availablePlatformDestinations,bootstrapAdminEmails,is
 test('the unified login offers destinations according to active profile permissions',()=>{
   assert.deepEqual(availablePlatformDestinations({active:true,roles:['admin']}),['admin','area']);
   assert.deepEqual(availablePlatformDestinations({active:true,roles:['tutor'],modules:['overview','sessions']}),['area']);
+  // The API returns the server-validated active state with its normalized account.
+  assert.deepEqual(availablePlatformDestinations({active:true,role:'admin',roles:['admin'],modules:['overview']}),['admin','area']);
   assert.deepEqual(availablePlatformDestinations({active:false,roles:['admin']}),[]);
   assert.deepEqual(availablePlatformDestinations({active:true,suspended:true,roles:['admin']}),[]);
 });

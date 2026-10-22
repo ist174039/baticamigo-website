@@ -4,7 +4,7 @@
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { browserSessionPersistence, onAuthStateChanged, sendEmailVerification, sendPasswordResetEmail, setPersistence, signInWithEmailAndPassword, signOut } from "firebase/auth";
-import { ArrowUpRight, PanelsTopLeft, UsersRound } from "lucide-react";
+import { ArrowUpRight, LogOut, PanelsTopLeft, UsersRound } from "lucide-react";
 import { Button } from "@/app/components/ui/button";
 import { Card } from "@/app/components/ui/card";
 import { Input } from "@/app/components/ui/input";
@@ -161,7 +161,7 @@ export default function PlatformLogin() {
               </Card>
             </a>}
           </div>
-          <Button type="button" variant="outline" className="workspace-signout" disabled={busy} onClick={leaveSession}>Terminar sessão</Button>
+          <Button type="button" variant="outline" className="workspace-signout" disabled={busy} onClick={leaveSession}><LogOut size={16} aria-hidden="true" /><span>{busy ? "A terminar sessão…" : "Terminar sessão"}</span></Button>
         </> : <>
           <header className="login-heading">
             <span className="login-eyebrow">Comunidade BaticAmigo</span>
