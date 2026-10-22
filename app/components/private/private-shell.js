@@ -8,9 +8,10 @@ import { Input } from "@/app/components/ui/input";
 import { PanelLeftClose, PanelLeftOpen, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export function PrivateShell({ areaLabel = "Área reservada", children, className = "", navLabel = "A sua área", items, active, onNavigate, footer, user, logoutId, logoutLabel = "Sair" }) {
+export function PrivateShell({ areaLabel = "Área reservada", children, className = "", navLabel = "A sua área", items, active, onNavigate, footer, user, logoutId, logoutLabel = "Sair", accountMenu }) {
   const [open, setOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
+  const [sidebarPreferenceLoaded, setSidebarPreferenceLoaded] = useState(false);
   const [navigationQuery, setNavigationQuery] = useState("");
   const trigger = useRef(null);
   const sidebar = useRef(null);
@@ -24,11 +25,13 @@ export function PrivateShell({ areaLabel = "Área reservada", children, classNam
 
   useEffect(() => {
     setCollapsed(window.localStorage.getItem("baticamigo-sidebar-collapsed") === "true");
+    setSidebarPreferenceLoaded(true);
   }, []);
 
   useEffect(() => {
+    if (!sidebarPreferenceLoaded) return;
     window.localStorage.setItem("baticamigo-sidebar-collapsed", String(collapsed));
-  }, [collapsed]);
+  }, [collapsed, sidebarPreferenceLoaded]);
 
   useEffect(() => {
     if (!open) return undefined;
@@ -93,7 +96,7 @@ export function PrivateShell({ areaLabel = "Área reservada", children, classNam
       </div>}
     </aside>
     <div className="private-content">
-      {user && <header className="private-userbar"><div className="private-user-identity"><span className="private-user-avatar" id="user-avatar" aria-hidden="true">BA</span><span><strong id="user-name">{user.name || "Administrador"}</strong><small id="user-email">{user.email || ""}</small></span></div>{logoutId && <button id={logoutId} type="button" className="private-logout">{logoutLabel}</button>}</header>}
+      {(user || accountMenu) && <header className="private-userbar"><div className="private-user-identity">{user && <><span className="private-user-avatar" id="user-avatar" aria-hidden="true">BA</span><span><strong id="user-name">{user.name || "Administrador"}</strong><small id="user-email">{user.email || ""}</small></span></>}</div><div className="private-userbar-actions">{accountMenu}{logoutId && <button id={logoutId} type="button" className="private-logout">{logoutLabel}</button>}</div></header>}
       {children}
     </div>
   </div>;

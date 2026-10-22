@@ -52,8 +52,19 @@
 .private-sidebar-footer a:hover { background: hsl(var(--primary-foreground) / .1); color: white; }
 .private-sidebar-footer a > span:first-of-type { flex: 1; }
 .private-content { flex: 1; min-width: 0; }
-.private-userbar { display: flex; align-items: center; justify-content: flex-end; gap: 16px; min-height: 76px; margin: 0 clamp(20px, 4vw, 56px); border-bottom: 1px solid var(--private-line); }
+.private-userbar { display: flex; align-items: center; justify-content: flex-start; gap: 16px; min-height: 76px; margin: 0 clamp(20px, 4vw, 56px); border-bottom: 1px solid var(--private-line); }
 .private-user-identity { display: flex; align-items: center; gap: 10px; margin-right: auto; }
+.private-userbar-actions { display: flex; align-items: center; justify-content: flex-end; gap: 10px; }
+.private-account-menu { position: relative; display: flex; align-items: center; }
+.private-account-trigger { min-height: 42px; gap: 9px; border-color: var(--private-line); border-radius: 999px; background: white; color: var(--private-deep); }
+.private-account-trigger:hover,.private-account-menu:has([aria-expanded="true"]) .private-account-trigger { border-color: #cdb9d7; background: #faf7fc; }
+.private-account-avatar { display: grid; width: 28px; height: 28px; flex: 0 0 28px; place-items: center; border-radius: 50%; background: #f3edf7; color: var(--private-forest); font-size: 12px; font-weight: 750; }
+.private-account-menu-panel { position: absolute; top: calc(100% + 8px); right: 0; z-index: 60; display: grid; width: min(300px, calc(100vw - 32px)); gap: 4px; padding: 9px; border: 1px solid var(--private-line); border-radius: 14px; background: white; box-shadow: 0 16px 40px #2d183b24; }
+.private-account-menu-panel > button { width: 100%; justify-content: flex-start; }
+.private-account-menu-identity { display: grid; gap: 4px; padding: 10px 11px 13px; border-bottom: 1px solid var(--private-line); }
+.private-account-menu-identity strong { color: var(--private-deep); font-size: 13px; }
+.private-account-menu-identity :is(span,small) { color: var(--private-muted); font-size: 11px; overflow-wrap: anywhere; }
+.private-account-menu-panel :is(button,a):focus-visible { outline: 3px solid var(--private-blue); outline-offset: 2px; }
 .private-user-identity > span:last-child { display: grid; gap: 3px; }
 .private-user-identity strong { color: var(--private-deep); font-size: 13px; }
 .private-user-identity small { color: var(--private-muted); font-size: 11px; }
@@ -105,9 +116,31 @@
 .admin-private-shell .admin-dashboard { border: 0; border-radius: 0; box-shadow: none; background: transparent; }
 .admin-private-shell .admin-dashboard > .admin-sidebar { display: none !important; }
 .admin-private-shell .admin-dashboard > .admin-content { padding: 0; background: transparent; }
-.admin-private-shell .private-userbar { display: none; }
+.admin-private-shell .private-userbar { display: flex; }
 .admin-private-shell .dashboard-welcome { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; }
 .admin-private-shell .private-content :is(button,a):focus-visible { outline: 3px solid var(--private-blue); outline-offset: 3px; }
+.private-workspace-page { width: 100%; max-width: 1680px; margin: 0 auto; padding: clamp(28px, 4vw, 56px) clamp(24px, 4vw, 64px); text-align: left; }
+.private-workspace-page > .private-page-heading { width: 100%; margin: 0 0 28px; padding: 0 8px 24px; text-align: left; }
+.private-workspace-page .private-page-heading-copy { width: 100%; text-align: left; }
+.private-workspace-page .private-page-heading-actions { justify-content: flex-end; }
+.private-workspace-page .private-page-heading h1 { text-align: left; }
+.private-workspace-page .private-page-heading p { margin-inline: 0; text-align: left; }
+.private-nav-label,.private-nav-group-label { text-align: left; }
+.private-nav-group { justify-items: stretch; }
+.admin-private-shell .admin-user-menu { position: relative; margin-left: auto; }
+.admin-private-shell .admin-user-menu > summary { display: flex; align-items: center; gap: 9px; padding: 5px 10px 5px 5px; border: 1px solid var(--private-line); border-radius: 999px; background: #fff; color: var(--private-deep); cursor: pointer; list-style: none; font: 600 12px var(--font-sans, Arial, sans-serif); }
+.admin-private-shell .admin-user-menu > summary::-webkit-details-marker { display: none; }
+.admin-private-shell .admin-user-menu > summary:hover,.admin-private-shell .admin-user-menu[open] > summary { border-color: #cdb9d7; background: #faf7fc; }
+.admin-private-shell .admin-user-avatar { display: grid; width: 34px; height: 34px; place-items: center; border-radius: 50%; background: #f4edf8; color: var(--private-forest); font-size: 12px; font-weight: 750; }
+.admin-private-shell .admin-user-menu-panel { position: absolute; top: calc(100% + 8px); right: 0; z-index: 60; display: grid; width: min(300px, calc(100vw - 32px)); gap: 4px; padding: 9px; border: 1px solid var(--private-line); border-radius: 14px; background: white; box-shadow: 0 16px 40px #2d183b24; }
+.admin-private-shell .admin-user-menu-panel > .admin-user-identity { display: grid; gap: 4px; padding: 10px 11px 13px; border-bottom: 1px solid var(--private-line); }
+.admin-private-shell .admin-user-menu-panel .admin-user-identity strong { color: var(--private-deep); font-size: 13px; }
+.admin-private-shell .admin-user-menu-panel .admin-user-identity small { color: var(--private-muted); font-size: 11px; overflow-wrap: anywhere; }
+.admin-private-shell .admin-user-menu-panel :is(.admin-user-menu-action,.admin-logout-btn) { width: 100%; margin: 0; padding: 10px 11px; border: 0; border-radius: 8px; background: transparent; color: var(--private-deep); cursor: pointer; font: 500 12px var(--font-sans, Arial, sans-serif); text-align: left; }
+.admin-private-shell .admin-user-menu-panel :is(.admin-user-menu-action,.admin-logout-btn):hover { background: #f7f2f8; color: var(--private-forest); }
+.admin-private-shell .admin-modal { justify-content: flex-end; padding: 0; overflow: hidden; background: #21132dcc; backdrop-filter: blur(4px); }
+.admin-private-shell .admin-modal-content { width: min(560px, 100%); max-width: none; height: 100dvh; max-height: 100dvh; margin: 0 0 0 auto; padding: 0; overflow: auto; border-radius: 20px 0 0 20px; transform: translateX(18px); transition: transform .2s ease; }
+.admin-private-shell .admin-modal.active .admin-modal-content { transform: translateX(0); }
 
 .admin-shell { --admin-ink: hsl(var(--foreground)); --admin-forest: var(--private-forest); --admin-lime: var(--private-lime); --admin-paper: var(--private-paper); --admin-muted: var(--private-muted); --admin-line: var(--private-line); --admin-purple: var(--private-forest); --admin-orange: var(--private-lime); --admin-blue: var(--private-forest); --admin-display: var(--font-sans, Arial, sans-serif); --admin-body-font: var(--font-sans, Arial, sans-serif); }
 .app-body:has(.admin-shell), .admin-shell { background: var(--private-paper); }
@@ -206,10 +239,11 @@
 .area-login-page .workspace-signout { justify-self: start; min-height: 42px; gap: 9px; padding-inline: 16px; border-color: #e6dce9; border-radius: 11px; background: #fff; color: var(--private-forest); box-shadow: 0 3px 10px #25163208; }
 .area-login-page .workspace-signout:hover:not(:disabled) { border-color: #cdb9d7; background: #f8f3fa; color: var(--private-deep); box-shadow: 0 6px 14px #25163210; }
 
-/* Form dialogs keep create/edit flows focused and responsive. */
-.platform-dialog { width: min(720px, calc(100% - 28px)); max-width: none; max-height: min(88dvh, 900px); margin: auto; padding: 0; overflow: visible; border: 0; background: transparent; color: inherit; }
+/* Every authenticated form and detail opens from the right, preserving list context. */
+.platform-dialog { position: fixed; inset: 0 0 0 auto; width: min(560px, 100vw); max-width: none; height: 100dvh; max-height: none; margin: 0; padding: 0; overflow: auto; border: 0; background: transparent; color: inherit; transform: translateX(18px); opacity: 0; transition: transform .2s ease, opacity .2s ease; }
+.platform-dialog[open] { transform: translateX(0); opacity: 1; }
 .platform-dialog::backdrop { background: #21132dcc; backdrop-filter: blur(4px); }
-.platform-dialog > .platform-editor { max-height: min(88dvh, 900px); margin: 0; overflow: auto; padding: clamp(20px, 4vw, 32px); border-color: var(--private-line); border-radius: 20px; background: hsl(var(--card)); box-shadow: 0 24px 80px #170d2460; }
+.platform-dialog > .platform-editor { width: 100%; height: 100dvh; max-height: 100dvh; margin: 0; overflow: auto; padding: clamp(20px, 4vw, 32px); border-color: var(--private-line); border-radius: 20px 0 0 20px; background: hsl(var(--card)); box-shadow: -24px 0 80px #170d2460; }
 .platform-dialog .platform-list-heading { position: sticky; top: calc(-1 * clamp(20px, 4vw, 32px)); z-index: 1; margin: calc(-1 * clamp(20px, 4vw, 32px)) calc(-1 * clamp(20px, 4vw, 32px)) 20px; padding: clamp(20px, 4vw, 32px); border-bottom: 1px solid #f0eaf1; background: hsl(var(--card)); }
 .platform-dialog .platform-list-heading h2 { margin: 0; font-size: clamp(21px, 2.4vw, 27px); line-height: 1.2; }
 .platform-dialog :is(input, select, textarea):focus-visible { outline: 3px solid hsl(var(--ring)); outline-offset: 2px; }
@@ -308,6 +342,8 @@
   .private-sidebar-footer a { min-height: 42px; }
   .private-userbar { margin-inline: 18px; }
   .admin-private-shell .dashboard-page { padding: 20px 14px 40px; }
+  .private-workspace-page { padding: 20px 16px 40px; }
+  .private-workspace-page > .private-page-heading { padding-inline: 2px; }
 }
 
 @media (max-width: 350px) {
@@ -422,6 +458,7 @@
   .platform-list > li { padding: 16px; }
   .admin-private-shell .dashboard-welcome { align-items: flex-start; flex-direction: column; gap: 8px; }
   .admin-private-shell .dashboard-page { padding-inline: 16px; }
+  .private-workspace-page { padding-inline: 16px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .private-navigation-panel nav :is(a, button), .platform .platform-sidebar nav button, .platform-list > li { transition: none; }
@@ -730,8 +767,8 @@
   .platform-user-actions button { flex: 1 1 auto; }
   .platform-progress-heading { align-items: stretch; flex-direction: column; gap: 14px; }
   .platform-progress-heading .platform-field { width: 100%; }
-  .platform-context-sheet { width: 100vw; }
-  .platform-context-sheet > .platform-editor { border-radius: 0; }
+  .platform-context-sheet,.platform-dialog { width: 100vw; }
+  .platform-context-sheet > .platform-editor,.platform-dialog > .platform-editor { border-radius: 0; }
   .private-sidebar-collapse { display: none !important; }
   .platform-progress-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .platform-progress-metrics { grid-template-columns: 1fr; gap: 9px; }
