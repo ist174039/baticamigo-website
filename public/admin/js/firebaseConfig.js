@@ -11,15 +11,18 @@ const firebaseConfig = {
   measurementId: "G-75HE0LN9JF",
 }
 
-// Inicializar Firebase
-if (!firebase.apps.length) {
-  firebase.initializeApp(firebaseConfig)
-}
+// Use the same Firebase Auth persistence namespace as /platform/login.
+// The modular login client and this legacy compat dashboard are separate SDK
+// bundles, so both must use the same app name to observe the same signed-in
+// session in browser storage.
+const platformAppName = "baticamigo-platform-client"
+const platformApp = firebase.apps.find((app) => app.name === platformAppName)
+  || firebase.initializeApp(firebaseConfig, platformAppName)
 
 // Referências para os serviços do Firebase
-const auth = firebase.auth()
-const db = firebase.firestore()
-const storage = firebase.storage()
+const auth = platformApp.auth()
+const db = platformApp.firestore()
+const storage = platformApp.storage()
 
 // Configuração de idioma para português
 auth.useDeviceLanguage()

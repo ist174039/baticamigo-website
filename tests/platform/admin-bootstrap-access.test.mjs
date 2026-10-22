@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
 import {adminAuthorization,availablePlatformDestinations,bootstrapAdminEmails,isBootstrapAdmin,resolvePlatformAccount} from '../../lib/platform/access.mjs';
 
 test('the unified login offers destinations according to active profile permissions',()=>{
@@ -9,6 +10,17 @@ test('the unified login offers destinations according to active profile permissi
   assert.deepEqual(availablePlatformDestinations({active:true,role:'admin',roles:['admin'],modules:['overview']}),['admin','area']);
   assert.deepEqual(availablePlatformDestinations({active:false,roles:['admin']}),[]);
   assert.deepEqual(availablePlatformDestinations({active:true,suspended:true,roles:['admin']}),[]);
+});
+
+test('the admin dashboard shares the unified login Firebase Auth persistence namespace',()=>{
+  const loginClient=readFileSync(new URL('../../lib/firebase-client.js',import.meta.url),'utf8');
+  const adminClient=readFileSync(new URL('../../public/admin/js/firebaseConfig.js',import.meta.url),'utf8');
+  const appName=loginClient.match(/const name = "([^"]+)"/)?.[1];
+  assert.equal(appName,'baticamigo-platform-client');
+  assert.match(adminClient,new RegExp(`const platformAppName = "${appName}"`));
+  assert.match(adminClient,/platformApp\.auth\(\)/);
+  assert.match(adminClient,/platformApp\.firestore\(\)/);
+  assert.match(adminClient,/platformApp\.storage\(\)/);
 });
 
 test('the association bootstrap administrator email is normalized and requires verification',()=>{
