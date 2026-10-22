@@ -384,7 +384,29 @@
 .platform-status.is-active { border-color: #cbe4d1; }
 .platform :is(button, a):focus-visible { outline: 3px solid var(--private-lime); outline-offset: 3px; }
 
+/* Keep authenticated page headings aligned with the Manrope display style on the public home page. */
+.platform .platform-title h1,
+.admin-private-shell .dashboard-welcome h1 {
+  font-family: var(--display, var(--font-sans, Arial, sans-serif));
+  font-size: clamp(38px, 5vw, 64px);
+  font-weight: 700;
+  letter-spacing: -.075em;
+  line-height: 1;
+}
+.platform .platform-title h1 { margin: 0 0 10px; }
+.admin-private-shell .dashboard-welcome h1 { margin: 17px 0 9px; }
+.admin-private-shell .dashboard-welcome h1 em { color: var(--private-forest); font-style: normal; }
+.platform-shell .platform-main { width: 100%; max-width: 1680px; padding: clamp(24px, 4vw, 64px); margin: 0 auto; }
+.platform-shell .platform-title { margin-bottom: 28px; padding: 0 8px 24px; }
+.platform-shell .platform-title p { max-width: 64ch; font-size: 14px; line-height: 1.7; }
+.admin-private-shell .dashboard-page { max-width: 1680px; padding-inline: clamp(24px, 4vw, 64px); }
+.admin-private-shell .dashboard-welcome { margin-bottom: 28px; padding: 0 8px 24px; }
+
 @media (max-width: 760px) {
+  .platform-shell .platform-main { padding: 20px 14px 40px; }
+  .platform-shell .platform-title { padding-inline: 2px; }
+  .platform .platform-title h1,
+  .admin-private-shell .dashboard-welcome h1 { font-size: clamp(36px, 10vw, 48px); }
   .platform-sidebar { background: linear-gradient(155deg, var(--private-forest), var(--private-deep) 76%); }
   .platform .platform-sidebar nav button { transform: none; }
   .platform .platform-sidebar nav button:hover { transform: none; }

@@ -17,7 +17,7 @@ export default function AdminDashboardPage() {
     ["membros", "Membros", UsersRound], ["parceiros", "Parceiros", Handshake], ["contacto", "Contacto do site", ContactRound], ["perfil", "Meu perfil", Settings2],
   ].map(([key, label, Icon]) => ({ key, label, icon: <Icon size={17} strokeWidth={1.8} />, href: `#${key}-section` }));
   return (
-    <PrivateShell className="admin-private-shell" areaLabel="Administração" items={navigation} active="eventos" navLabel="Gestão">
+    <PrivateShell className="admin-private-shell" areaLabel="Administração" items={navigation} active="eventos" navLabel="Gestão" footer={<a href="/area"><PanelsTopLeft size={16} aria-hidden="true"/><span>Plataforma BaticAmigo</span><span aria-hidden="true">↗</span></a>}>
       <a className="skip-link" href="#conteudo-admin">Saltar para o conteúdo</a><main id="conteudo-admin" tabIndex={-1} className="dashboard-page">
         <header className="dashboard-welcome">
           <div>

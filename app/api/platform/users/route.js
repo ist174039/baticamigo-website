@@ -252,3 +252,50 @@ export async function PATCH(request) {
     return json({ suspended: disabled });
   } catch (error) { return failure(error); }
 }
+
+export async function DELETE(request) {
+  try {
+    const { db, account, auth } = await adminContext(request);
+    const body = await readJson(request);
+    assert(Object.keys(body).every((key) => key === "uid"), "Campo não permitido.");
+    const uid = String(body.uid || "").trim();
+    assert(uid && uid.length <= 128, "Selecione uma conta válida.");
+    assert(uid !== account.uid, "Não pode remover a sua própria conta.", 403);
+    const target = await auth.getUser(uid);
+    assert(!isBootstrapAdmin(target.email, true), "A conta administradora principal não pode ser removida.", 403);
+    const targetRef = collection(db, "accounts").doc(uid);
+    const linkedQuery = await collection(db, "profiles").where("accountUid", "==", uid).get();
+    await auth.updateUser(uid, { disabled: true });
+    try {
+      await auth.revokeRefreshTokens(uid);
+      await db.runTransaction(async (tx) => {
+        const lockRef = collection(db, "locks").doc("platform-admins");
+        await tx.get(lockRef);
+        const current = await tx.get(targetRef);
+        const ids = [...new Set([...(current.exists ? profileIds(current.data()) : []), ...linkedQuery.docs.map((doc) => doc.id)])];
+        const profileRefs = ids.map((id) => collection(db, "profiles").doc(id));
+        const profiles = profileRefs.length ? await tx.getAll(...profileRefs) : [];
+        if ((isAdmin(current.data(), target))) {
+          const [accounts, users] = await Promise.all([tx.get(collection(db, "accounts").where("active", "==", true)), listAuthUsers(auth)]);
+          const byId = new Map(users.filter((user) => user.uid !== uid).map((user) => [user.uid, user]));
+          const remaining = accounts.docs.some((doc) => doc.id !== uid && isAdmin(doc.data(), byId.get(doc.id)) && !byId.get(doc.id)?.disabled)
+            || users.some((user) => user.uid !== uid && !user.disabled && isAdmin(null, user));
+          assert(remaining, "Não pode remover a última conta administradora ativa.", 409);
+        }
+        profiles.forEach((profile, index) => { if (profile.exists && profile.data().accountUid === uid) tx.update(profileRefs[index], { accountUid: "" }); });
+        if (current.exists) tx.delete(targetRef);
+        tx.set(lockRef, { updatedAt: Date.now() });
+        audit(tx, db, account, "delete-platform-user", uid, { profileIds: ids });
+      });
+    } catch (error) {
+      try { await auth.updateUser(uid, { disabled: target.disabled }); } catch { /* Leave account disabled if compensation fails. */ }
+      throw error;
+    }
+    try {
+      await auth.deleteUser(uid);
+      return json({ deleted: true, profilesPreserved: true });
+    } catch {
+      return json({ deleted: true, profilesPreserved: true, authCleanupPending: true });
+    }
+  } catch (error) { return failure(error); }
+}
