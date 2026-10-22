@@ -343,7 +343,11 @@
 .user-manager-module-options legend { padding: 0 6px; color: var(--private-deep); font-size: 12px; font-weight: 700; }
 .user-manager-module-group { padding: 11px 0; border-top: 1px solid #eee8f0; }
 .user-manager-module-group h3 { margin: 0 0 9px; color: var(--private-forest); font-size: 11px; }
-.user-manager-module-group > div { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 14px; }
+.user-manager-module-group > div { display: flex; flex-wrap: wrap; gap: 7px; }
+.user-manager-account-profile-options { grid-template-columns: minmax(0, 1fr); }
+.user-manager-account-profile-options > div { grid-column: 1 / -1; min-width: 0; }
+.user-manager-account-profile-options .user-manager-profile-draft { width: 100%; }
+.user-manager-account-profile-options .user-manager-profile-draft > .user-manager-profile-options { grid-template-columns: minmax(0, 1fr); }
 .user-manager-module-options .platform-check { margin: 0; }
 .user-manager-create-profile { margin: 12px 0; font-weight: 700; }
 .user-manager-confirm { width: min(480px, calc(100% - 28px)); }
