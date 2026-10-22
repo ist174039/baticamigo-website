@@ -37,7 +37,7 @@ function AccessProfileOptions({value,onChange}) {
   return <div className="user-manager-access-profile-options">{Object.entries(roleLabels).map(([role,label])=>{const modules=value[role]||[];return <details key={role} className="user-manager-access-profile"><summary><strong>{label}</strong><span>{role==='admin'?"Acesso completo":`${modules.length} de ${areaModules.length} menus`}</span></summary>{role==='admin'?<p className="platform-hint">Acesso completo aos menus, reservado a administradores.</p>:<div>{areaGroups.map(group=><section key={group.label}><h4>{group.label}</h4>{group.modules.map(module=><label className="platform-check" key={module}><Checkbox checked={modules.includes(module)} disabled={module==='overview'} onChange={event=>onChange(role,module,event.target.checked)}/>{moduleLabels[module]}{module==='overview'&&<small>Sempre incluída</small>}</label>)}</section>)}</div>}</details>})}</div>;
 }
 
-export default function AreaUserManager() {
+export default function AreaUserManager({view="users"}={}) {
   const [users, setUsers] = useState([]);
   const [allProfiles, setAllProfiles] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -256,6 +256,17 @@ export default function AreaUserManager() {
     } catch (failure) { setError(failure.message); }
     finally { setBusy(false); }
   }
+
+  if(view==="permissions") return <div className="user-manager user-manager-access-page">
+    <Card className="user-manager-card">
+      <header className="user-manager-heading"><div><p className="platform-eyebrow">Configuração da associação</p><h2>Perfis e permissões</h2><p>Defina os menus que cada perfil pode consultar. Os utilizadores recebem a combinação dos menus dos perfis que lhes atribuir.</p></div></header>
+      {error&&<p className="platform-error" role="alert">{error}</p>}{message&&<p className="platform-success" role="status">{message}</p>}
+      <p className="platform-hint">As permissões sobre dados e ações continuam em vigor. O perfil Administrador mantém acesso completo.</p>
+      <p className="user-manager-access-warning">Ao guardar, esta configuração passa a definir os menus de todos os utilizadores. As escolhas antigas feitas conta a conta deixam de se aplicar.</p>
+      {loading?<p role="status">A carregar perfis e permissões…</p>:<AccessProfileOptions value={accessProfilesDraft} onChange={updateAccessProfile}/>}
+      <div className="platform-actions"><Button className="platform-primary" disabled={busy||loading} onClick={saveAccessSettings}>{busy?"A guardar…":"Guardar configuração"}</Button><Button variant="outline" disabled={busy||loading} onClick={()=>setAccessProfilesDraft(structuredClone(accessProfiles))}>Descartar alterações</Button></div>
+    </Card>
+  </div>;
 
   return <div className="user-manager">
     <Card className="user-manager-card">
