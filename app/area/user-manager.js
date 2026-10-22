@@ -18,7 +18,7 @@ import {areaGroups,areaModules,defaultAccessProfiles,defaultAreasForRoles} from 
 import {printReport} from "../../lib/platform/print-report.mjs";
 
 const roleLabels = { admin: "Administrador", coordinator: "Coordenação", student: "Aluno", guardian: "Pai / encarregado", tutor: "Explicador", volunteer: "Voluntário", member: "Sócio" };
-const profileLabels = { student: "Aluno", guardian: "Encarregado", tutor: "Explicador", member: "Sócio" };
+const profileLabels = { student: "Aluno", guardian: "Encarregado", tutor: "Explicador", member: "Sócio", coordinator: "Coordenador" };
 const membershipLabels = { active: "Sócio ativo", pending: "Sócio pendente", suspended: "Sócio suspenso", left: "Ex-sócio" };
 const moduleLabels={overview:"Visão geral",sessions:"Sessões e presenças",profiles:"Pessoas e perfis",assignment:"Trabalhos",material:"Materiais",assessment:"Avaliações",progress:"Evolução",justification:"Justificações",finance:"Quotas e doações",document:"Documentos",message:"Mensagens",notifications:"Avisos",reports:"Relatórios"};
 const blankForm = () => ({ displayName: "", email: "", roles: [], profileIds: [], active: true, profileKind: "student", createProfile: false });
