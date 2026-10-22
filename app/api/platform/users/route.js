@@ -83,7 +83,9 @@ function bootstrapAdmin(user) {
 }
 
 function isAdmin(account, user) {
-  return bootstrapAdmin(user) || (account?.active === true && (account.roles || [account.role]).includes("admin"));
+  if (bootstrapAdmin(user)) return true;
+  if (account) return account.active === true && account.suspended !== true && (account.roles || [account.role]).includes("admin");
+  return user?.customClaims?.admin === true;
 }
 
 async function requirePlatformAccount(db, uid) {
@@ -113,8 +115,9 @@ export async function GET(request) {
     const users = firebaseUsers.map((user) => {
       const account = accounts.get(user.uid);
       const bootstrap = isBootstrapAdmin(user.email,user.emailVerified);
+      const legacyAdmin = user.customClaims?.admin === true || bootstrap;
       const linked = [...new Set([...(account ? profileIds(account) : []), ...(linkedByUid.get(user.uid) || [])])];
-      const roles = account?.roles || (account?.role ? [account.role] : bootstrap ? ["admin"] : [...new Set(linked.map((id) => profileById.get(id)?.kind).filter(Boolean))]);
+      const roles = account?.roles || (account?.role ? [account.role] : legacyAdmin ? ["admin"] : [...new Set(linked.map((id) => profileById.get(id)?.kind).filter(Boolean))]);
       const resolvedAccess=effectiveAccountAreas(roles,account?.modules,accessProfiles,accessSettingsSnapshot.exists);
       return {
         uid: user.uid,
@@ -129,7 +132,7 @@ export async function GET(request) {
         accessConfigurationInvalid:resolvedAccess.invalidLegacy,
         profileIds: linked,
         profiles: linked.map((id) => profileById.get(id)).filter(Boolean).map(({ id, kind, name, memberNumber, membershipStatus }) => ({ id, kind, name, memberNumber, membershipStatus })),
-        accessActive: account ? account.active === true : bootstrap,
+        accessActive: account ? account.active === true : legacyAdmin,
         suspended: account?.suspended === true || user.disabled,
       };
     });

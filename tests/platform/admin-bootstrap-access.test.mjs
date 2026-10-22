@@ -39,10 +39,12 @@ test('an active persisted platform admin can reach /admin before verifying email
   assert.deepEqual(result,{authorized:true,verificationRequired:false});
 });
 
-test('a stale Firebase admin claim cannot grant access without a configured platform account',()=>{
+test('a Firebase-issued admin claim keeps legacy administrators active when no account document exists',()=>{
   const identity={uid:'legacy-admin',email:'legacy-admin@example.com',email_verified:true,admin:true};
-  assert.equal(resolvePlatformAccount(identity,null),null);
-  assert.deepEqual(adminAuthorization(identity,null),{authorized:false,verificationRequired:false});
+  const resolved=resolvePlatformAccount(identity,null);
+  assert.equal(resolved.active,true);
+  assert.deepEqual(resolved.roles,['admin']);
+  assert.deepEqual(adminAuthorization(identity,null),{authorized:true,verificationRequired:false});
 });
 
 test('an existing inactive or non-admin platform account overrides a stale admin claim',()=>{
@@ -59,7 +61,7 @@ test('bootstrap and stored platform accounts are resolved consistently for both 
   const storedAccount={uid:'owner-2',active:true,roles:['member']};
   assert.equal(resolvePlatformAccount({...identity,email:'member@example.com'},storedAccount).roles[0],'member');
   assert.equal(adminAuthorization({...identity,email:'member@example.com'},storedAccount).authorized,false);
-  assert.equal(resolvePlatformAccount({...identity,email:'legacy-admin@example.com'},null),null);
+  assert.equal(resolvePlatformAccount({...identity,email:'legacy-admin@example.com'},null).roles[0],'admin');
 });
 
 test('bootstrap-only access still requires email verification and suspended admins remain blocked',()=>{
