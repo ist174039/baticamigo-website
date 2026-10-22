@@ -12,6 +12,7 @@ test('admin dashboard script parses before attaching data and navigation handler
 
 test('admin panels are independent so hidden Contacto cannot hide members or partners',()=>{
   const markup=renderAdminMarkup(readFileSync(new URL('../../public/admin/dashboard.html',import.meta.url),'utf8'));
+  const dashboard=readFileSync(new URL('../../app/admin/dashboard/page.js',import.meta.url),'utf8');
   const stack=[], panels=[];
   for(const match of markup.matchAll(/<div\b[^>]*>|<\/div\s*>/gi)) {
     if(match[0].startsWith('</')) {stack.pop();continue;}
@@ -25,7 +26,8 @@ test('admin panels are independent so hidden Contacto cannot hide members or par
   }
   for(const id of ['membros-section','parceiros-section','contacto-section']) assert.ok(panels.includes(id));
   assert.equal(panels.includes('perfil-section'),false,'Personal account profile belongs to /area.');
-  assert.match(markup,/href="\/area\?tab=account"/,'The account menu links to the profile in /area.');
+  assert.doesNotMatch(markup,/id="shared-account-menu-slot"/,'The account menu no longer depends on a JavaScript handoff.');
+  assert.match(dashboard,/href="\/area\?tab=account"/,'The shared Admin account menu links to the profile in /area.');
   assert.equal(panels.includes('utilizadores-section'),false,'User access management belongs to /area, not the website CMS.');
   assert.equal(new Set(panels).size,panels.length,'Panel IDs must remain unique');
 });

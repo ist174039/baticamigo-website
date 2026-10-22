@@ -35,10 +35,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       // Usuário autenticado
-      const sharedAccountSlot = document.getElementById("shared-account-menu-slot")
-      const accountMenu = document.querySelector(".admin-user-menu")
-      if (sharedAccountSlot && accountMenu && !sharedAccountSlot.contains(accountMenu)) sharedAccountSlot.append(accountMenu)
-      if (sharedAccountSlot?.contains(accountMenu)) document.querySelector(".admin-private-shell")?.classList.add("has-shared-account-menu")
       const email = user.email || ""
       const displayName = user.displayName || email.split("@")[0] || "Administrador"
       document.getElementById("user-name").textContent = displayName

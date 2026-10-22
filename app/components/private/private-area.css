@@ -127,10 +127,8 @@
 .private-workspace-page .private-page-heading p { margin-inline: 0; text-align: left; }
 .private-nav-label,.private-nav-group-label { text-align: left; }
 .private-nav-group { justify-items: stretch; }
-.admin-private-shell .admin-header { position: sticky; top: 0; z-index: 45; display: flex; width: 100%; min-height: 76px; box-sizing: border-box; align-items: center; justify-content: flex-end; margin: 0; padding: 0 clamp(20px, 4vw, 56px); border-bottom: 1px solid var(--private-line); background: var(--private-paper); }
-.admin-private-shell .private-userbar { display: none; }
-.admin-private-shell.has-shared-account-menu .admin-header { display: none; }
-.admin-private-shell.has-shared-account-menu .private-userbar { display: flex; }
+.admin-private-shell .admin-header { display: none; }
+.admin-private-shell .private-userbar { display: flex; }
 .admin-private-shell .admin-user-menu { position: relative; margin-left: auto; }
 .admin-private-shell .admin-user-menu > summary { display: flex; min-height: 46px; align-items: center; justify-content: flex-start; gap: 9px; padding: 4px 13px 4px 5px; border: 1px solid var(--private-line); border-radius: 999px; background: #fff; color: var(--private-deep); cursor: pointer; list-style: none; font: 600 12px var(--font-sans, Arial, sans-serif); }
 .admin-private-shell .admin-user-menu > summary::-webkit-details-marker { display: none; }
@@ -994,4 +992,85 @@
   .private-userbar { gap: 8px; padding-inline: 16px; }
   .private-userbar-actions { flex: 0 1 auto; }
   .private-account-trigger { padding-inline: 8px; font-size: 11px; }
+}
+
+/* Keep the shared account bar visible while either workspace scrolls. */
+.private-content { position: relative; display: flex; min-height: 100vh; flex-direction: column; }
+.private-userbar { position: sticky; top: 0; z-index: 110; flex: 0 0 76px; align-self: stretch; border-bottom: 1px solid var(--private-line); background: var(--private-paper); box-shadow: 0 5px 18px #2d183b0a; }
+
+/* Keep every sidebar label legible against the shared purple navigation. */
+.private-sidebar :is(.private-nav-label,.private-nav-group-label,.private-nav-text,.private-nav-empty,.private-sidebar-footer a) { color: #fff !important; }
+.private-sidebar .private-nav-search input { color: #fff; }
+.private-sidebar .private-nav-search input::placeholder { color: #fff; opacity: .82; }
+.private-sidebar .private-nav-group-toggle { color: #fff; }
+.private-sidebar .private-nav-group-toggle .private-nav-group-label { color: #fff !important; }
+.private-sidebar .private-nav-group-toggle:hover,.private-sidebar .private-nav-group-toggle[aria-expanded="true"] { color: #fff; }
+
+/* Match the account control in Admin and Area, including the native summary variant. */
+.private-account-trigger { display: inline-flex; min-height: 46px; align-items: center; justify-content: flex-start; gap: 9px; padding: 4px 13px 4px 5px; border: 1px solid var(--private-line); border-radius: 999px; background: #fff; box-shadow: none; color: var(--private-deep); font: 600 12px var(--font-sans, Arial, sans-serif); text-decoration: none; }
+.private-account-trigger:hover,.private-account-menu:has([aria-expanded="true"]) .private-account-trigger { border-color: #cdb9d7; background: #faf7fc; color: var(--private-deep); }
+summary.private-account-trigger { list-style: none; cursor: pointer; }
+summary.private-account-trigger::-webkit-details-marker { display: none; }
+
+/* Give the sidebar collapse control a clear, consistent state in both workspaces. */
+.private-sidebar-collapse { border: 1px solid #ffffff45; border-radius: 9px; background: #ffffff14; color: #fff; transition: color .18s, background-color .18s, border-color .18s; }
+.private-sidebar-collapse:hover { border-color: #ffad76; background: #f16a22; color: #fff; }
+.private-shell.is-sidebar-collapsed .private-sidebar-collapse { border-color: #f16a22; background: #f16a22; color: #fff; }
+.private-shell.is-sidebar-collapsed .private-sidebar-collapse:hover { border-color: #fff; background: #fff; color: #603477; }
+
+/* Keep the evolution filters balanced and the complete results table in view. */
+.platform-progress-filter-groups { grid-template-columns: minmax(0, .9fr) minmax(0, 2fr); align-items: stretch; }
+.platform-progress-filter-group { min-width: 0; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.platform-progress-filter-group:first-child { grid-template-columns: minmax(0, 1fr); }
+.platform-progress-filter-group:nth-child(3) { grid-column: 1 / -1; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.platform-progress-filter-group .platform-field { min-width: 0; }
+.platform-progress-table-wrap { min-width: 0; overflow: visible; }
+.platform-progress-table-wrap > .relative { width: 100%; overflow: visible; }
+.platform-progress-table { width: 100%; min-width: 0; table-layout: fixed; }
+.platform-progress-table th,.platform-progress-table td { white-space: normal; overflow-wrap: anywhere; }
+.platform-progress-table th:nth-child(1),.platform-progress-table td:nth-child(1) { width: 18%; }
+.platform-progress-table th:nth-child(2),.platform-progress-table td:nth-child(2) { width: 17%; }
+.platform-progress-table th:nth-child(3),.platform-progress-table td:nth-child(3) { width: 18%; }
+.platform-progress-table th:nth-child(4),.platform-progress-table td:nth-child(4) { width: 32%; }
+.platform-progress-table th:nth-child(5),.platform-progress-table td:nth-child(5) { width: 15%; }
+.platform-progress-table td > small { overflow-wrap: anywhere; }
+.platform-progress-table td:last-child > button { min-width: 0; padding-inline: 8px; white-space: nowrap; }
+.platform-progress-card { container-type: inline-size; }
+.platform-progress-mobile-results { display: none; }
+@container (max-width: 700px) {
+  .platform-progress-desktop-results { display: none !important; }
+  .platform-progress-mobile-results { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+  .platform-progress-mobile-results > li > article { display: grid; gap: 13px; padding: 15px; border: 1px solid var(--private-line); border-radius: 13px; background: white; }
+  .platform-progress-mobile-results article > header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding-bottom: 11px; border-bottom: 1px solid var(--private-line); }
+  .platform-progress-mobile-results article > header > div { display: grid; gap: 4px; }
+  .platform-progress-mobile-results h4 { margin: 0; color: var(--private-deep); font-size: 15px; }
+  .platform-progress-mobile-results article > header span { color: var(--private-muted); font-size: 11px; }
+  .platform-progress-mobile-results article > header > strong { flex: 0 0 auto; color: var(--private-forest); font-size: 14px; text-align: right; }
+  .platform-progress-mobile-results dl { display: grid; gap: 10px; margin: 0; }
+  .platform-progress-mobile-results dl > div { display: grid; grid-template-columns: minmax(100px,.8fr) minmax(0,1.2fr); gap: 10px; }
+  .platform-progress-mobile-results dt { color: var(--private-muted); font-size: 11px; font-weight: 600; }
+  .platform-progress-mobile-results dd { min-width: 0; margin: 0; color: var(--private-deep); font-size: 12px; line-height: 1.45; overflow-wrap: anywhere; }
+  .platform-progress-mobile-results article > button { width: 100%; }
+}
+@media (max-width: 760px) {
+  .platform-progress-filter-groups { grid-template-columns: minmax(0, 1fr); }
+  .platform-progress-filter-group:nth-child(3) { grid-column: auto; }
+  .platform-progress-desktop-results { display: none !important; }
+  .platform-progress-mobile-results { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+  .platform-progress-mobile-results > li > article { display: grid; gap: 13px; padding: 15px; border: 1px solid var(--private-line); border-radius: 13px; background: white; }
+  .platform-progress-mobile-results article > header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding-bottom: 11px; border-bottom: 1px solid var(--private-line); }
+  .platform-progress-mobile-results article > header > div { display: grid; gap: 4px; }
+  .platform-progress-mobile-results h4 { margin: 0; color: var(--private-deep); font-size: 15px; }
+  .platform-progress-mobile-results article > header span { color: var(--private-muted); font-size: 11px; }
+  .platform-progress-mobile-results article > header > strong { flex: 0 0 auto; color: var(--private-forest); font-size: 14px; text-align: right; }
+  .platform-progress-mobile-results dl { display: grid; gap: 10px; margin: 0; }
+  .platform-progress-mobile-results dl > div { display: grid; grid-template-columns: minmax(100px,.8fr) minmax(0,1.2fr); gap: 10px; }
+  .platform-progress-mobile-results dt { color: var(--private-muted); font-size: 11px; font-weight: 600; }
+  .platform-progress-mobile-results dd { min-width: 0; margin: 0; color: var(--private-deep); font-size: 12px; line-height: 1.45; overflow-wrap: anywhere; }
+  .platform-progress-mobile-results article > button { width: 100%; }
+}
+@media (max-width: 480px) {
+  .private-account-trigger { min-height: 46px; padding-inline: 5px 10px; font-size: 12px; }
+  .platform-progress-table th,.platform-progress-table td { padding: 8px 5px; font-size: 9px; }
+  .platform-progress-table td:last-child > button { padding-inline: 5px; font-size: 9px; }
 }

@@ -142,6 +142,21 @@ export async function POST(request) {
       await db.runTransaction(async (tx) => { const lock = collection(db, "locks").doc("platform-admins"); await tx.get(lock); tx.set(lock, { updatedAt: Date.now() }); audit(tx, db, account, body.delivery === "invite" ? "send-platform-user-invite" : "reset-platform-user-password", target.uid); });
       return json({ resetLink, emailDelivery: "manual" });
     }
+    if (body.action === "generate-temporary-password") {
+      assert(Object.keys(body).every((key) => ["action", "uid"].includes(key)), "Campo não permitido.");
+      const uid = String(body.uid || "").trim();
+      assert(uid && uid !== account.uid, "Não pode substituir a sua própria palavra-passe por esta ação.", 403);
+      const target = await auth.getUser(uid);
+      const temporaryPassword = randomBytes(15).toString("base64url");
+      await db.runTransaction(async (tx) => { const lock = collection(db, "locks").doc("platform-admins"); await tx.get(lock); tx.set(lock, { updatedAt: Date.now() }); audit(tx, db, account, "generate-platform-user-temporary-password", uid); });
+      await auth.updateUser(uid, { password: temporaryPassword });
+      let sessionsRevoked = false;
+      for (let attempt = 0; attempt < 2 && !sessionsRevoked; attempt += 1) {
+        try { await auth.revokeRefreshTokens(uid); sessionsRevoked = true; }
+        catch { if (attempt === 1) console.error("Não foi possível terminar todas as sessões do utilizador após substituir a palavra-passe."); }
+      }
+      return json({ email: target.email || "", temporaryPassword, sessionsRevoked });
+    }
     assert(Object.keys(body).every((key) => ["email", "displayName", "roles", "profileIds", "profile", "delivery", "modules"].includes(key)), "Campo não permitido.");
     assert(body.delivery === undefined || ["invite", "temporary"].includes(body.delivery), "Método de acesso inicial inválido.");
     const email = String(body.email || "").trim().toLowerCase();
