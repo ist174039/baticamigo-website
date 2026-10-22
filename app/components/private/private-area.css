@@ -320,6 +320,19 @@
 .user-manager-access-sheet .user-manager-profile-options { grid-template-columns: minmax(0, 1fr); }
 .user-manager-access-sheet .user-manager-access-preview { grid-column: 1 / -1; min-width: 0; }
 .user-manager-access-sheet .user-manager-access-preview > .user-manager-module-options { width: 100%; }
+.user-manager-access-sheet .shadcn-tabs { min-width: 0; margin: 4px 0 18px; }
+.user-manager-access-sheet .shadcn-tabs-list { display: flex; gap: 4px; min-width: 0; overflow-x: auto; border-bottom: 1px solid var(--private-line); }
+.user-manager-access-sheet .shadcn-tabs-trigger { min-height: 44px; flex: 1 0 auto; padding: 10px 14px; border: 0; border-bottom: 2px solid transparent; background: transparent; color: var(--private-muted); font: inherit; font-size: 12px; font-weight: 650; white-space: nowrap; cursor: pointer; }
+.user-manager-access-sheet .shadcn-tabs-trigger:hover { color: var(--private-deep); background: #faf7fb; }
+.user-manager-access-sheet .shadcn-tabs-trigger[aria-selected="true"] { border-bottom-color: var(--private-lime); color: var(--private-forest); }
+.user-manager-access-sheet .shadcn-tabs-trigger:focus-visible { outline: 2px solid var(--private-blue); outline-offset: -2px; }
+.user-manager-access-sheet .shadcn-tabs-content { min-width: 0; outline: none; }
+.user-manager-edit-tab-panel { display: grid; min-width: 0; gap: 12px; }
+.user-manager-edit-tab-panel > .platform-hint { margin: 0 0 4px; }
+.user-manager-edit-tab-panel > .user-manager-role-options,
+.user-manager-edit-tab-panel > .user-manager-profile-options { width: 100%; margin: 0 0 10px; }
+.user-manager-edit-tab-panel > .user-manager-module-options { margin: 0; }
+.user-manager-account-active { margin-top: 4px; }
 .user-manager-access-profile-options { display: grid; gap: 12px; margin: 18px 0; }
 .user-manager-record-associations { display: grid; gap: 14px; margin-top: 30px; padding-top: 24px; border-top: 1px solid var(--private-line); }
 .user-manager-record-associations .user-manager-heading { margin: 0; }
@@ -354,6 +367,7 @@
 .user-manager-account-profile-options .user-manager-profile-draft { width: 100%; }
 .user-manager-account-profile-options .user-manager-profile-draft > .user-manager-profile-options { grid-template-columns: minmax(0, 1fr); }
 .user-manager-form-fields { min-width: 0; margin: 0; padding: 0; border: 0; }
+.user-manager-access-sheet .user-manager-form-fields { display: block; }
 .user-manager-creation-modes > div { display: flex; flex-wrap: wrap; gap: 8px; }
 .user-manager-creation-modes > .platform-hint { margin: 8px 0 0; }
 .user-manager-creation-stepper { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin: 4px 0 22px; padding: 0; list-style: none; }
