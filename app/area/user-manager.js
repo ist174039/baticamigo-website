@@ -29,15 +29,15 @@ const blankProfileDraft = (kind, displayName = "", email = "") => ({ kind, name:
 const blankForm = () => ({ displayName: "", email: "", roles: [], profileIds: [], active: true, profileDrafts: [] });
 const date = (value) => value ? new Intl.DateTimeFormat("pt-PT", { dateStyle: "medium" }).format(new Date(value)) : "Nunca";
 
-function RoleOptions({ value, onChange }) {
-  return <fieldset className="user-manager-role-options"><legend>Perfis de acesso</legend><p className="platform-hint">Escolha um ou mais perfis. Os menus são atribuídos automaticamente a partir da configuração da associação.</p>{Object.entries(roleLabels).map(([role, label]) => <label className="platform-check" key={role}><Checkbox checked={value.includes(role)} onChange={(event) => onChange(event.target.checked ? [...value, role] : value.filter((current) => current !== role))} />{label}</label>)}</fieldset>;
+function RoleOptions({ value, onChange, title="Perfis de acesso", options=Object.entries(roleLabels), hint="Escolha um ou mais perfis. Os menus são atribuídos automaticamente a partir da configuração da associação." }) {
+  return <fieldset className="user-manager-role-options"><legend>{title}</legend><p className="platform-hint">{hint}</p>{options.map(([role, label]) => <label className="platform-check" key={role}><Checkbox checked={value.includes(role)} onChange={(event) => onChange(event.target.checked ? [...value, role] : value.filter((current) => current !== role))} />{label}</label>)}</fieldset>;
 }
 
 function ProfileDraftFields({ draft, onChange, guardians }) {
   const update = (key, value) => onChange({ ...draft, [key]: value });
   return <article className="user-manager-profile-draft">
     <header><div><p className="platform-eyebrow">Novo registo</p><h4>{profileLabels[draft.kind] || draft.kind}</h4></div><Button type="button" size="sm" variant="ghost" onClick={() => onChange(null)}>Remover</Button></header>
-    <p className="platform-hint">O nome e o email de contacto serão copiados da conta.</p>
+    <p className="platform-hint">Este registo usa o nome e o email de contacto comuns definidos acima.</p>
     {draft.kind === "student" && <>
       <fieldset className="user-manager-profile-options"><legend>Encarregados associados</legend>{guardians.map(profile => <label className="platform-check" key={profile.id}><Checkbox checked={(draft.guardianIds || []).includes(profile.id)} onChange={event => update("guardianIds", event.target.checked ? [...new Set([...(draft.guardianIds || []), profile.id])] : (draft.guardianIds || []).filter(id => id !== profile.id))} />{profile.name}</label>)}{!guardians.length && <p className="platform-hint">Ainda não existem registos de encarregado para associar.</p>}</fieldset>
       <FieldLike label="Ano escolar"><Input maxLength={40} value={draft.schoolYear || ""} onChange={event => update("schoolYear", event.target.value)} /></FieldLike>
@@ -51,6 +51,7 @@ function ProfileDraftFields({ draft, onChange, guardians }) {
       <FieldLike label="Disciplinas"><Input maxLength={300} value={draft.subjects || ""} onChange={event => update("subjects", event.target.value)} /></FieldLike>
       <FieldLike label="Disponibilidade"><Input maxLength={300} value={draft.availability || ""} onChange={event => update("availability", event.target.value)} /></FieldLike>
     </>}
+    {["guardian", "coordinator"].includes(draft.kind) && <p className="platform-hint">Este tipo de registo não precisa de dados adicionais.</p>}
   </article>;
 }
 
@@ -108,6 +109,8 @@ export default function AreaUserManager({view="users",onNavigate}={}) {
   const [passwordTarget, setPasswordTarget] = useState(null);
   const [invite, setInvite] = useState(null);
   const [temporaryPassword, setTemporaryPassword] = useState(false);
+  const [creationMode, setCreationMode] = useState("both");
+  const createModeDrafts = useRef({});
   const [createdCredentials, setCreatedCredentials] = useState(null);
   const passwordInput = useRef(null);
   const [detailUser, setDetailUser] = useState(null);
@@ -190,6 +193,9 @@ export default function AreaUserManager({view="users",onNavigate}={}) {
   useEffect(() => { if (page > totalPages) setPage(totalPages); }, [page, totalPages]);
   function openCreate(profile = null) {
     const initial = blankForm();
+    createModeDrafts.current = {};
+    setCreationMode("both");
+    setTemporaryPassword(false);
     setRoleChangeNotice("");
     if (profile) {
       initial.displayName = profile.name;
@@ -250,7 +256,11 @@ export default function AreaUserManager({view="users",onNavigate}={}) {
     } else {
       setRoleChangeNotice("");
     }
-    setForm(current=>({...current,roles}));
+    const availableKinds = new Set(allProfiles.filter(profile => profile.active === true && (!profile.accountUid || profile.accountUid === dialogUser?.uid)).map(profile => profile.kind));
+    setForm(current => {
+      const newDrafts = roles.filter(role => personKinds.includes(role) && !availableKinds.has(role) && !current.profileDrafts.some(draft => draft.kind === role)).map(kind => blankProfileDraft(kind, current.displayName, current.email));
+      return { ...current, roles, profileDrafts: [...current.profileDrafts, ...newDrafts] };
+    });
   }
 
   function addProfileDraft(kind) {
@@ -260,8 +270,18 @@ export default function AreaUserManager({view="users",onNavigate}={}) {
     }));
   }
 
+  function changeRecordKinds(kinds) {
+    setRoleChangeNotice("");
+    setForm(current => ({
+      ...current,
+      roles: kinds,
+      profileIds: [],
+      profileDrafts: [...current.profileDrafts.filter(draft => kinds.includes(draft.kind)), ...kinds.filter(kind => !current.profileDrafts.some(draft => draft.kind === kind)).map(kind => blankProfileDraft(kind, current.displayName, current.email))],
+    }));
+  }
+
   function updateProfileDraft(kind, draft) {
-    setForm(current => ({ ...current, profileDrafts: draft ? current.profileDrafts.map(item => item.kind === kind ? draft : item) : current.profileDrafts.filter(item => item.kind !== kind) }));
+    setForm(current => ({ ...current, roles: !draft && !dialogUser && creationMode === "records" ? current.roles.filter(role => role !== kind) : current.roles, profileDrafts: draft ? current.profileDrafts.map(item => item.kind === kind ? draft : item) : current.profileDrafts.filter(item => item.kind !== kind) }));
   }
 
   async function submit(event) {
@@ -270,14 +290,19 @@ export default function AreaUserManager({view="users",onNavigate}={}) {
     const email = String(formData.get("email") || "").trim();
     const displayName = String(formData.get("displayName") || "").trim();
     const body = {
-      ...(dialogUser ? { action: "update-access", uid: dialogUser.uid, active: form.active } : { email, displayName }),
+      ...(dialogUser ? { action: "update-access", uid: dialogUser.uid, active: form.active } : { email, displayName, creationMode }),
       roles: form.roles,
       profileIds: form.profileIds,
       profilesToCreate: form.profileDrafts.map(({ kind, guardianIds, active, memberNumber, membershipStatus, subjects, availability, schoolYear, ageBand }) => ({
         kind, name: displayName, email, guardianIds, active, memberNumber, membershipStatus, subjects, availability, schoolYear, ageBand,
       })),
     };
-    const requiredKinds = form.roles.filter(role => ["student", "guardian", "tutor", "member"].includes(role));
+    const recordsOnly = !dialogUser && creationMode === "records";
+    if (recordsOnly) {
+      if (!displayName) { setError("Introduza o nome da pessoa."); return; }
+      if (!form.profileDrafts.length) { setError("Escolha pelo menos um tipo de registo."); return; }
+    }
+    const requiredKinds = recordsOnly || (!dialogUser && creationMode === "account") ? [] : form.roles.filter(role => ["student", "guardian", "tutor", "member"].includes(role));
     const linkedKinds = new Set(allProfiles.filter(profile => form.profileIds.includes(profile.id) && profile.active === true).map(profile => profile.kind));
     const draftKinds = new Set(form.profileDrafts.map(profile => profile.kind));
     const missingKinds = requiredKinds.filter(kind => !linkedKinds.has(kind) && !draftKinds.has(kind));
@@ -296,13 +321,16 @@ export default function AreaUserManager({view="users",onNavigate}={}) {
     }
     setBusy(true); setError(""); setMessage("");
     try {
-      if (dialogUser) await request("", { method: "PATCH", body: JSON.stringify(body) });
+      if (recordsOnly) {
+        const result = await request("", { method: "POST", body: JSON.stringify({ action: "create-person-records", profilesToCreate: body.profilesToCreate }) });
+        setMessage(`${result.profiles.length} ${result.profiles.length === 1 ? "registo criado" : "registos criados"} sem conta de acesso.`);
+      } else if (dialogUser) await request("", { method: "PATCH", body: JSON.stringify(body) });
       else {
         const result = await request("", { method: "POST", body: JSON.stringify({ ...body, delivery: temporaryPassword ? "temporary" : "invite" }) });
         if (result.resetLink) setInvite({ email: result.user.email, link: result.resetLink, title: "Convite para definir palavra-passe" });
         if (result.temporaryPassword) setCreatedCredentials({ email: result.user.email, password: result.temporaryPassword });
       }
-      setMessage(dialogUser ? "Conta, perfis e permissões atualizados." : temporaryPassword ? "Conta e registos criados com palavra-passe temporária." : "Conta e registos criados. Envie a ligação de convite ao utilizador.");
+      if (!recordsOnly) setMessage(dialogUser ? "Conta, perfis e permissões atualizados." : creationMode === "account" ? (temporaryPassword ? "Conta criada com palavra-passe temporária." : "Conta criada. Envie a ligação de convite ao utilizador.") : temporaryPassword ? "Conta e registos criados com palavra-passe temporária." : "Conta e registos criados. Envie a ligação de convite ao utilizador.");
       setDialogUser(null);
       setUserDialogOpen(false);
       await reload();
@@ -417,15 +445,27 @@ export default function AreaUserManager({view="users",onNavigate}={}) {
     finally { setBusy(false); }
   }
 
+  const recordsOnly = !dialogUser && creationMode === "records";
+  const accountOnly = !dialogUser && creationMode === "account";
+  function changeCreationMode(mode) {
+    createModeDrafts.current[creationMode] = { roles: form.roles, profileIds: form.profileIds, profileDrafts: form.profileDrafts };
+    setCreationMode(mode);
+    setRoleChangeNotice("");
+    if (mode === "records") setTemporaryPassword(false);
+    setForm(current => ({ ...current, ...(createModeDrafts.current[mode] || { roles: [], profileIds: [], profileDrafts: [] }) }));
+  }
+
   const userAccessSheet = (
-    <Sheet open={userDialogOpen} onOpenChange={(open) => { setUserDialogOpen(open); if (!open) setDialogUser(null); }} ariaLabel={dialogUser ? `Editar conta de ${dialogUser.displayName || dialogUser.email}` : "Criar utilizador"} className="platform-context-sheet user-manager-access-sheet">
-      <section className="platform-card platform-editor"><div className="platform-list-heading"><div><p className="platform-eyebrow">Gestão central</p><h2>{dialogUser ? "Editar conta e acessos" : "Nova conta e registos"}</h2><p>Configure o tipo de utilizador, os registos de pessoa e os menus num único passo.</p></div><Button type="button" variant="outline" onClick={() => { setDialogUser(null); setUserDialogOpen(false); }}>Fechar</Button></div>
+    <Sheet open={userDialogOpen} onOpenChange={(open) => { setUserDialogOpen(open); if (!open) setDialogUser(null); }} ariaLabel={dialogUser ? `Editar conta de ${dialogUser.displayName || dialogUser.email}` : "Criar utilizador ou registo"} className="platform-context-sheet user-manager-access-sheet">
+      <section className="platform-card platform-editor"><div className="platform-list-heading"><div><p className="platform-eyebrow">Gestão central</p><h2>{dialogUser ? "Editar conta e acessos" : "Nova conta ou registo"}</h2><p>{dialogUser ? "Atualize a conta, os perfis associados e as permissões num único passo." : "Escolha criar uma conta, registos de pessoa ou ambos. Pode completar a associação mais tarde."}</p></div><Button type="button" variant="outline" onClick={() => { setDialogUser(null); setUserDialogOpen(false); }}>Fechar</Button></div>
         <form onSubmit={submit}><fieldset className="user-manager-form-fields" disabled={busy}>
-          <FieldLike label="Nome da conta"><Input name="displayName" required maxLength={100} value={form.displayName} readOnly={Boolean(dialogUser)} onChange={event => setForm(current => ({ ...current, displayName: event.target.value, profileDrafts: current.profileDrafts.map(draft => draft.name === current.displayName ? { ...draft, name: event.target.value } : draft) }))} /></FieldLike>
-          <FieldLike label="Email de acesso"><Input name="email" required type="email" maxLength={254} value={form.email} readOnly={Boolean(dialogUser)} onChange={event => setForm(current => ({ ...current, email: event.target.value, profileDrafts: current.profileDrafts.map(draft => draft.email === current.email ? { ...draft, email: event.target.value } : draft) }))} /></FieldLike>
-          {!dialogUser && <fieldset className="user-manager-profile-options"><legend>Acesso inicial</legend><label className="platform-check"><input type="radio" name="initial-access" checked={!temporaryPassword} onChange={() => setTemporaryPassword(false)} />Enviar convite para definir palavra-passe</label><label className="platform-check"><input type="radio" name="initial-access" checked={temporaryPassword} onChange={() => setTemporaryPassword(true)} />Gerar palavra-passe temporária</label><p className="platform-hint">A palavra-passe temporária é mostrada apenas uma vez. Entregue-a por um canal seguro e peça ao utilizador para a alterar ao entrar.</p></fieldset>}
-          <RoleOptions value={form.roles} onChange={changeAssignedRoles} />
-          <fieldset className="user-manager-profile-options user-manager-associated-profiles"><legend>Associar registos existentes</legend><p className="platform-hint">Escolha registos ativos compatíveis com os tipos selecionados. Um registo ligado a outra conta fica indisponível.</p>
+          {!dialogUser && <fieldset className="user-manager-profile-options user-manager-creation-modes"><legend id="user-manager-creation-mode-label">O que pretende criar?</legend><div role="group" aria-labelledby="user-manager-creation-mode-label"><Button type="button" variant={creationMode === "both" ? "default" : "outline"} aria-pressed={creationMode === "both"} onClick={() => changeCreationMode("both")}>Conta + registos</Button><Button type="button" variant={creationMode === "account" ? "default" : "outline"} aria-pressed={creationMode === "account"} onClick={() => changeCreationMode("account")}>Só conta</Button><Button type="button" variant={creationMode === "records" ? "default" : "outline"} aria-pressed={creationMode === "records"} onClick={() => changeCreationMode("records")}>Só registos</Button></div><p className="platform-hint">Pode associar a conta e os registos mais tarde.</p></fieldset>}
+          <FieldLike label={recordsOnly ? "Nome da pessoa" : "Nome da conta"}><Input name="displayName" required maxLength={100} value={form.displayName} readOnly={Boolean(dialogUser)} onChange={event => setForm(current => ({ ...current, displayName: event.target.value, profileDrafts: current.profileDrafts.map(draft => draft.name === current.displayName ? { ...draft, name: event.target.value } : draft) }))} /></FieldLike>
+          <FieldLike label={recordsOnly ? "Email de contacto do registo (opcional)" : "Email de acesso"}><Input name="email" required={!recordsOnly} type="email" maxLength={254} value={form.email} readOnly={Boolean(dialogUser)} onChange={event => setForm(current => ({ ...current, email: event.target.value, profileDrafts: current.profileDrafts.map(draft => draft.email === current.email ? { ...draft, email: event.target.value } : draft) }))} /></FieldLike>
+          {recordsOnly && <p className="platform-hint">Este email fica no registo e não cria acesso à plataforma.</p>}
+          {!dialogUser && !recordsOnly && <fieldset className="user-manager-profile-options"><legend>Acesso inicial</legend><label className="platform-check"><input type="radio" name="initial-access" checked={!temporaryPassword} onChange={() => setTemporaryPassword(false)} />Enviar convite para definir palavra-passe</label><label className="platform-check"><input type="radio" name="initial-access" checked={temporaryPassword} onChange={() => setTemporaryPassword(true)} />Gerar palavra-passe temporária</label><p className="platform-hint">A palavra-passe temporária é mostrada apenas uma vez. Entregue-a por um canal seguro e peça ao utilizador para a alterar ao entrar.</p></fieldset>}
+          <RoleOptions value={form.roles} onChange={recordsOnly ? changeRecordKinds : changeAssignedRoles} title={recordsOnly ? "Tipo de registo" : "Perfis de acesso"} options={recordsOnly ? personKinds.map(kind => [kind, profileLabels[kind]]) : Object.entries(roleLabels)} hint={recordsOnly ? "Escolha os registos de pessoa a criar. Os campos necessários aparecem automaticamente." : "Escolha um ou mais perfis. Os menus são atribuídos automaticamente a partir da configuração da associação."} />
+          {!recordsOnly && !accountOnly && <fieldset className="user-manager-profile-options user-manager-associated-profiles"><legend>Associar registos existentes</legend><p className="platform-hint">Escolha registos ativos compatíveis com os tipos selecionados. Um registo ligado a outra conta fica indisponível.</p>
             <Label className="platform-search user-manager-local-search"><span className="platform-sr">Pesquisar registos para associar</span><Input type="search" value={assignedProfileQuery} onChange={event => { setAssignedProfileQuery(event.target.value); setAssignedProfilePage(1); }} placeholder="Pesquisar por nome, email ou tipo" /></Label>
             <span className="user-manager-count">{matchingProfilePickerRows.length} registos disponíveis · {form.profileIds.length} selecionados</span>
             <div className="user-manager-table-wrap"><Table className="user-manager-table"><TableCaption>Registos de pessoa que podem ser associados à conta</TableCaption><TableHeader><TableRow><TableHead>Associar</TableHead><TableHead>Registo</TableHead><TableHead>Tipo e estado</TableHead></TableRow></TableHeader><TableBody>
@@ -434,14 +474,14 @@ export default function AreaUserManager({view="users",onNavigate}={}) {
             </TableBody></Table></div>
             <LocalPagination page={assignedProfilePage} pageSize={assignedProfilePageSize} total={matchingProfilePickerRows.length} onPageChange={setAssignedProfilePage} label="Paginação dos registos para associar" />
             {!assignableProfiles.some(profile => profile.active === true) && !form.profileIds.length && <p className="platform-hint">Ainda não existem registos ativos compatíveis. Pode criar os necessários abaixo.</p>}
-          </fieldset>
-          {(personKinds.some(kind => form.roles.includes(kind)) || form.profileDrafts.length > 0) && <fieldset className="user-manager-profile-options user-manager-account-profile-options"><legend>Criar registos nesta conta</legend><p className="platform-hint">Pode criar os registos necessários aqui mesmo. O nome e email começam iguais aos da conta e podem ser ajustados antes de guardar.</p>{personKinds.filter(kind => form.roles.includes(kind) && !form.profileDrafts.some(draft => draft.kind === kind)).map(kind => <Button key={kind} type="button" size="sm" variant="outline" onClick={() => addProfileDraft(kind)}>Adicionar {profileLabels[kind].toLocaleLowerCase("pt-PT")}</Button>)}{form.profileDrafts.map(draft => { const incompatible = !form.roles.includes(draft.kind); return <div key={draft.kind}>{incompatible && <p className="user-manager-access-warning">{profileLabels[draft.kind]} já não é um tipo selecionado. Remova este registo ou volte a selecionar o tipo.</p>}<ProfileDraftFields draft={draft} guardians={allProfiles.filter(profile => profile.kind === "guardian" && profile.active)} onChange={next => updateProfileDraft(draft.kind, next)} /></div>; })}{!form.profileDrafts.length && <p className="platform-hint">Selecione um tipo de utilizador acima e adicione o respetivo registo, se ainda não existir.</p>}</fieldset>}
+          </fieldset>}
+          {!accountOnly && (personKinds.some(kind => form.roles.includes(kind)) || form.profileDrafts.length > 0) && <fieldset className="user-manager-profile-options user-manager-account-profile-options"><legend>{recordsOnly ? "Dados dos registos" : "Criar registos nesta conta"}</legend>{!recordsOnly && <p className="platform-hint">O nome e email são partilhados com a conta. Os campos específicos aparecem ao escolher um perfil sem registo associado.</p>}{!recordsOnly && personKinds.filter(kind => form.roles.includes(kind) && !form.profileDrafts.some(draft => draft.kind === kind)).map(kind => <Button key={kind} type="button" size="sm" variant="outline" onClick={() => addProfileDraft(kind)}>Adicionar {profileLabels[kind].toLocaleLowerCase("pt-PT")}</Button>)}{form.profileDrafts.map(draft => { const incompatible = !recordsOnly && !form.roles.includes(draft.kind); return <div key={draft.kind}>{incompatible && <p className="user-manager-access-warning">{profileLabels[draft.kind]} já não é um tipo selecionado. Remova este registo ou volte a selecionar o tipo.</p>}<ProfileDraftFields draft={draft} guardians={allProfiles.filter(profile => profile.kind === "guardian" && profile.active)} onChange={next => updateProfileDraft(draft.kind, next)} /></div>; })}{!form.profileDrafts.length && <p className="platform-hint">Selecione um tipo de utilizador acima e adicione o respetivo registo, se ainda não existir.</p>}</fieldset>}
           {roleChangeNotice && <p className="user-manager-access-warning" role="status">{roleChangeNotice}</p>}
           {missingRequiredKinds.length > 0 && <p className="user-manager-access-warning" role="status">Falta associar ou criar um registo para: {missingRequiredKinds.map(kind => profileLabels[kind]).join(", ")}.</p>}
-          <AccessPreview roles={form.roles} accessProfiles={accessProfiles} />
+          {!recordsOnly && <AccessPreview roles={form.roles} accessProfiles={accessProfiles} />}
           {dialogUser && <label className="platform-check"><Checkbox checked={form.active} onChange={(event) => setForm((current) => ({ ...current, active: event.target.checked }))} />Acesso à área ativo</label>}
           <p className="platform-hint">{dialogUser ? "As alterações à conta, perfis associados e permissões são guardadas em conjunto." : "O convite gera uma ligação segura para definir a palavra-passe; a palavra-passe temporária só é apresentada uma vez."}</p>
-          <div className="platform-actions"><Button type="submit" className="platform-primary" disabled={busy || hasIncompatibleSelection || missingRequiredKinds.length > 0}>{busy ? "A guardar…" : dialogUser ? "Guardar conta e acessos" : "Criar conta e acessos"}</Button><Button type="button" variant="outline" onClick={() => { setDialogUser(null); setUserDialogOpen(false); }}>Cancelar</Button></div>
+          <div className="platform-actions"><Button type="submit" className="platform-primary" disabled={busy || hasIncompatibleSelection || missingRequiredKinds.length > 0 || (!dialogUser && !recordsOnly && !form.roles.length) || (recordsOnly && (!form.profileDrafts.length || !form.displayName.trim()))}>{busy ? "A guardar…" : dialogUser ? "Guardar conta e acessos" : recordsOnly ? "Criar registos" : accountOnly ? "Criar conta" : "Criar conta e registos"}</Button><Button type="button" variant="outline" onClick={() => { setDialogUser(null); setUserDialogOpen(false); }}>Cancelar</Button></div>
         </fieldset></form>
       </section>
     </Sheet>
@@ -461,13 +501,13 @@ export default function AreaUserManager({view="users",onNavigate}={}) {
         <div className="user-manager-heading"><div><p className="platform-eyebrow">Contas e pessoas</p><h2 id="user-manager-record-associations-title">Gestão de registos</h2><p>Crie e edite registos, defina o tipo de pessoa e associe cada registo à conta correspondente.</p></div><div className="platform-record-actions"><Button variant="outline" onClick={()=>onNavigate?.("profiles")}>Voltar a utilizadores</Button><Button className="platform-primary" disabled={busy||loading} onClick={openNewRecord}>Novo registo</Button></div></div>
         <div className="user-manager-inline-toolbar"><Label className="platform-search user-manager-local-search"><span className="platform-sr">Pesquisar registos</span><Input type="search" value={recordQuery} onChange={event=>setRecordQuery(event.target.value)} placeholder="Pesquisar registo, tipo ou conta associada" /></Label><span className="user-manager-count">{recordAssociationProfiles.length} registos</span></div>
         {loading ? <p role="status">A carregar registos…</p> : <><div className="user-manager-table-wrap"><Table className="user-manager-table"><TableCaption>Registos de pessoas e contas associadas</TableCaption><TableHeader><TableRow><TableHead>Registo</TableHead><TableHead>Tipo e estado</TableHead><TableHead>Conta associada</TableHead><TableHead>Ações</TableHead></TableRow></TableHeader><TableBody>
-          {visibleAssociationProfiles.map(profile=>{const account=users.find(user=>(user.profileIds||[]).includes(profile.id));return <TableRow key={profile.id}><TableCell><strong>{profile.name}</strong><small className="user-manager-secondary">{profile.email||"Sem email de contacto"}</small></TableCell><TableCell><div className="user-manager-badges"><Badge variant="secondary">{profileLabels[profile.kind]||profile.kind}</Badge><Badge variant={profile.active?"outline":"destructive"}>{profile.active?"Ativo":"Suspenso"}</Badge></div></TableCell><TableCell>{account?<><strong>{account.displayName||"Sem nome"}</strong><small className="user-manager-secondary">{account.email}</small></>:<span className="user-manager-secondary">Sem conta associada</span>}</TableCell><TableCell><Button size="sm" variant="outline" disabled={busy} onClick={()=>inspectRecord(profile)}>Gerir registo</Button></TableCell></TableRow>;})}
+          {visibleAssociationProfiles.map(profile=>{const account=users.find(user=>(user.profileIds||[]).includes(profile.id));return <TableRow key={profile.id}><TableCell><strong>{profile.name}</strong><small className="user-manager-secondary">{profile.email||"Sem email de contacto"}</small></TableCell><TableCell><div className="user-manager-badges"><Badge variant="secondary">{profileLabels[profile.kind]||profile.kind}</Badge><Badge variant={profile.active?"outline":"destructive"}>{profile.active?"Ativo":"Suspenso"}</Badge></div></TableCell><TableCell>{account?<><strong>{account.displayName||"Sem nome"}</strong><small className="user-manager-secondary">{account.email}</small></>:<span className="user-manager-secondary">Sem conta associada</span>}</TableCell><TableCell><div className="user-manager-actions">{!account&&profile.active&&<Button size="sm" variant="outline" disabled={busy} onClick={()=>openCreate(profile)}>Criar conta</Button>}<Button size="sm" variant="outline" disabled={busy} onClick={()=>inspectRecord(profile)}>Gerir registo</Button></div></TableCell></TableRow>;})}
           {!visibleAssociationProfiles.length&&<TableRow><TableCell colSpan={4}>Não foram encontrados registos.</TableCell></TableRow>}
         </TableBody></Table></div><LocalPagination page={recordPage} pageSize={recordPageSize} total={recordAssociationProfiles.length} onPageChange={setRecordPage} label="Paginação dos registos" /></>}
         <div className="user-manager-heading"><div><p className="platform-eyebrow">Associação de contas</p><h3>Associe os registos</h3><p>Escolha os tipos de utilizador e ligue as contas aos registos correspondentes.</p></div></div>
         <div className="user-manager-inline-toolbar"><Label className="platform-search user-manager-local-search"><span className="platform-sr">Pesquisar contas para associar registos</span><Input type="search" value={associationQuery} onChange={event=>setAssociationQuery(event.target.value)} placeholder="Pesquisar conta, email ou perfil" /></Label><span className="user-manager-count">{recordAssociationAccounts.length} contas</span></div>
         {loading ? <p role="status">A carregar contas…</p> : <><div className="user-manager-table-wrap"><Table className="user-manager-table"><TableCaption>Contas e perfis de pessoa associados</TableCaption><TableHeader><TableRow><TableHead>Conta</TableHead><TableHead>Tipos de utilizador</TableHead><TableHead>Registos associados</TableHead><TableHead>Ações</TableHead></TableRow></TableHeader><TableBody>
-          {visibleAssociationAccounts.map(user=><TableRow key={user.uid}><TableCell><strong>{user.displayName||"Sem nome"}</strong><small className="user-manager-secondary">{user.email||"Sem email"}</small></TableCell><TableCell><div className="user-manager-badges">{user.roles?.length?user.roles.map(role=><Badge key={role} variant="outline">{roleLabels[role]||role}</Badge>):<span className="user-manager-secondary">Sem tipo atribuído</span>}</div></TableCell><TableCell><div className="user-manager-badges">{user.profiles?.length?user.profiles.map(profile=><Badge key={profile.id} variant="secondary">{profileLabels[profile.kind]||profile.kind} · {profile.name}</Badge>):<span className="user-manager-secondary">Sem registos associados</span>}</div></TableCell><TableCell><Button size="sm" variant="outline" disabled={busy||user.uid===platformAuth().currentUser?.uid} onClick={()=>openEdit(user)}>Editar conta, perfis e permissões</Button></TableCell></TableRow>)}
+          {visibleAssociationAccounts.map(user=><TableRow key={user.uid}><TableCell><strong>{user.displayName||"Sem nome"}</strong><small className="user-manager-secondary">{user.email||"Sem email"}</small></TableCell><TableCell><div className="user-manager-badges">{user.roles?.length?user.roles.map(role=><Badge key={role} variant="outline">{roleLabels[role]||role}</Badge>):<span className="user-manager-secondary">Sem tipo atribuído</span>}</div></TableCell><TableCell><div className="user-manager-badges">{user.profiles?.length?user.profiles.map(profile=><Badge key={profile.id} variant="secondary">{profileLabels[profile.kind]||profile.kind} · {profile.name}</Badge>):<span className="user-manager-secondary">Sem registos associados</span>}</div></TableCell><TableCell><Button size="sm" variant="outline" disabled={busy||user.uid===platformAuth().currentUser?.uid} onClick={()=>openEdit(user)}>{user.profiles?.length ? "Editar conta, perfis e permissões" : "Criar/associar registo"}</Button></TableCell></TableRow>)}
           {!visibleAssociationAccounts.length&&<TableRow><TableCell colSpan={4}>Não foram encontradas contas.</TableCell></TableRow>}
         </TableBody></Table></div><LocalPagination page={associationPage} pageSize={associationPageSize} total={recordAssociationAccounts.length} onPageChange={setAssociationPage} label="Paginação das contas com registos associados" /></>}
       </section>}

@@ -183,7 +183,30 @@ export async function POST(request) {
       }
       return json({ email: target.email || "", temporaryPassword, sessionsRevoked });
     }
-    assert(Object.keys(body).every((key) => ["email", "displayName", "roles", "profileIds", "profile", "profilesToCreate", "delivery"].includes(key)), "Campo não permitido.");
+    if (body.action === "create-person-records") {
+      assert(Object.keys(body).every(key => ["action", "profilesToCreate"].includes(key)), "Campo não permitido.");
+      assert(Array.isArray(body.profilesToCreate) && body.profilesToCreate.length > 0 && body.profilesToCreate.length <= 10, "Escolha pelo menos um registo de pessoa (máximo de 10).");
+      const kinds = [...new Set(body.profilesToCreate.map(value => profileInput(value).kind))];
+      const createProfiles = body.profilesToCreate.map(value => {
+        const data = profileInput(value);
+        assert(!data.id && data.active, "Um novo registo tem de estar ativo e não pode ter identificador existente.");
+        const ref = collection(db, "profiles").doc();
+        const profileData = { ...data, accountUid: "", ...(data.kind === "member" ? { membershipHistory: [{ status: data.membershipStatus, at: new Date().toISOString(), actorUid: account.uid }] } : {}) };
+        return { id: ref.id, ref, data: profileData };
+      });
+      const profileIdsToCreate = createProfiles.map(profile => profile.id);
+      const createdProfiles = await db.runTransaction(async tx => {
+        const profiles = await validateLinks(tx, db, "pending-person-records", kinds, profileIdsToCreate, createProfiles, collection);
+        for (const profile of profiles) tx.create(profile.ref, profile.data);
+        audit(tx, db, account, "create-platform-person-records", profileIdsToCreate.join(","), { count: profiles.length, kinds });
+        return profiles.map(profile => ({ id: profile.id, kind: profile.data.kind, name: profile.data.name }));
+      });
+      return json({ profiles: createdProfiles }, 201);
+    }
+    assert(Object.keys(body).every((key) => ["email", "displayName", "roles", "profileIds", "profile", "profilesToCreate", "delivery", "creationMode"].includes(key)), "Campo não permitido.");
+    const creationMode = body.creationMode || "both";
+    assert(["account", "both"].includes(creationMode), "Escolha criar uma conta ou uma conta com registos de pessoa.");
+    assert(creationMode !== "account" || (!(body.profilesToCreate || []).length && !(body.profileIds || []).length && !body.profile), "Para criar apenas a conta, remova os registos de pessoa associados.");
     assert(body.delivery === undefined || ["invite", "temporary"].includes(body.delivery), "Método de acesso inicial inválido.");
     const email = String(body.email || "").trim().toLowerCase();
     const displayName = String(body.displayName || "").trim();
@@ -215,10 +238,10 @@ export async function POST(request) {
       const accountRef = collection(db, "accounts").doc(createdUser.uid);
       assert(!(await tx.get(accountRef)).exists, "A conta já tem permissões configuradas.", 409);
       const profilesToStore = createProfiles.map((profile) => ({ ...profile, data: { ...profile.data, accountUid: createdUser.uid } }));
-      const profiles = await validateLinks(tx, db, createdUser.uid, validatedUserInput.roles, ids, profilesToStore);
+      const profiles = await validateLinks(tx, db, createdUser.uid, validatedUserInput.roles, ids, profilesToStore, collection, { requireRequiredProfiles: creationMode !== "account" });
       for (const profile of profiles) {
         if (profile.isNew) tx.create(profile.ref, profile.data);
-        else tx.set(profile.ref, { ...profile.data, accountUid: createdUser.uid });
+        else tx.set(profile.ref, { ...profile.data, name: displayName, email, accountUid: createdUser.uid });
       }
       tx.create(accountRef, { ...validatedUserInput, uid: createdUser.uid, suspended: false });
       audit(tx, db, account, "create-platform-user", createdUser.uid);
@@ -312,7 +335,7 @@ export async function PATCH(request) {
         removedProfiles.forEach((profile, index) => { if (profile.exists && profile.data().accountUid === uid) tx.set(removedRefs[index], { ...profile.data(), accountUid: "" }); });
         linked.forEach((profile) => {
           if (profile.isNew) tx.create(profile.ref, profile.data);
-          else tx.set(profile.ref, { ...profile.data, accountUid: uid });
+          else tx.set(profile.ref, { ...profile.data, name: target.displayName || profile.data.name, email: target.email || profile.data.email || "", accountUid: uid });
         });
         tx.set(accountRef, { ...value, suspended: previous.data()?.suspended === true });
         tx.set(lockRef, { updatedAt: Date.now() });

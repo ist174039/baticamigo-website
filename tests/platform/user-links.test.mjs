@@ -52,6 +52,20 @@ test('rejects incompatible person records and missing records required by access
   await assert.rejects(validateLinks(tx, db, 'account-1', ['student'], [], [], getCollection), /Associe um perfil de pessoa correspondente/);
 });
 
+test('allows creating an access account before its person record is ready', async () => {
+  const { db, tx, getCollection } = firestoreMock();
+  const linked = await validateLinks(tx, db, 'account-1', ['student'], [], [], getCollection, { requireRequiredProfiles: false });
+  assert.deepEqual(linked, []);
+});
+
+test('validates standalone person records without assigning an account', async () => {
+  const { db, tx, getCollection } = firestoreMock();
+  const student = newProfile('student-new', 'student');
+  const linked = await validateLinks(tx, db, 'pending-person-records', ['student'], [student.id], [student], getCollection);
+  assert.deepEqual(linked.map(profile => profile.id), [student.id]);
+  assert.equal(linked[0].data.accountUid, undefined);
+});
+
 test('rejects person records linked elsewhere or students with invalid guardian references', async () => {
   const { db, tx, getCollection } = firestoreMock(
     [['member-1', { kind: 'member', active: true, accountUid: 'another-account' }], ['inactive-guardian', { kind: 'guardian', active: false }]],
