@@ -311,6 +311,15 @@
 .user-manager-access-sheet > section { width: 100%; }
 .user-manager-access-sheet .platform-editor > p { max-width: 64ch; color: var(--private-muted); line-height: 1.55; }
 .user-manager-access-profile-options { display: grid; gap: 12px; margin: 18px 0; }
+.user-manager-record-associations { display: grid; gap: 14px; margin-top: 30px; padding-top: 24px; border-top: 1px solid var(--private-line); }
+.user-manager-record-associations .user-manager-heading { margin: 0; }
+.user-manager-association-list { display: grid; gap: 10px; }
+.user-manager-association-row { display: grid; grid-template-columns: minmax(150px, 1.2fr) minmax(130px, .8fr) minmax(180px, 1.3fr) auto; align-items: center; gap: 14px; padding: 14px; border: 1px solid var(--private-line); border-radius: 12px; background: #fff; }
+.user-manager-association-row > div:first-child { display: grid; gap: 4px; min-width: 0; }
+.user-manager-association-row > div:first-child strong { color: var(--private-deep); }
+.user-manager-association-row > div:first-child span, .user-manager-association-profiles > span { color: var(--private-muted); font-size: 12px; overflow-wrap: anywhere; }
+.user-manager-association-profiles { display: flex; flex-wrap: wrap; gap: 6px; }
+.user-manager-association-row > button { justify-self: end; white-space: nowrap; }
 .user-manager-access-profile { min-width: 0; padding: 0 14px; border: 1px solid var(--private-line); border-radius: 12px; background: #fff; }
 .user-manager-access-profile[open] { padding-bottom: 14px; }
 .user-manager-access-profile > summary { display: flex; min-height: 48px; align-items: center; justify-content: space-between; gap: 12px; cursor: pointer; list-style: none; }
@@ -341,6 +350,8 @@
 @media (max-width: 520px) { .user-manager-detail-grid { grid-template-columns: 1fr; } .user-manager-detail-grid > div:first-child, .user-manager-detail-grid > .user-manager-detail-profiles { grid-column: auto; } .user-manager-detail-grid > div { min-height: 0; padding: 13px 14px; } .user-manager-detail-profile-list article { align-items: flex-start; flex-direction: column; } .user-manager-detail-actions { align-items: stretch; flex-direction: column; } .user-manager-detail-actions button { width: 100%; } }
 @media (max-width: 900px) { .user-manager-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); } .user-manager-filter-label { grid-column: 1/-1; padding: 0; } .user-manager-filters > button { justify-self: start; } }
 @media (max-width: 760px) { .user-manager-heading { align-items: stretch; flex-direction: column; } .user-manager-toolbar { align-items: stretch; flex-direction: column; } .user-manager-filters { grid-template-columns: 1fr; } .user-manager-filter-label { grid-column: auto; } .user-manager-role-options, .user-manager-profile-options { grid-template-columns: 1fr; } .user-manager-access-profile > div { grid-template-columns: 1fr; } .user-manager-actions { justify-content: flex-start; } }
+@media (max-width: 980px) { .user-manager-association-row { grid-template-columns: repeat(2, minmax(0, 1fr)); } .user-manager-association-row > button { justify-self: start; } }
+@media (max-width: 560px) { .user-manager-association-row { grid-template-columns: 1fr; } }
 @media (max-width: 900px) { .platform-metrics { gap: 10px; } .platform .platform-metrics > button { min-height: 142px; padding: 16px; } }
 @media (max-width: 620px) { .platform-metrics { grid-template-columns: 1fr; } .platform .platform-metrics > button { min-height: 112px; } }
 @media (prefers-reduced-motion: reduce) { .area-login-page .login-submit { transition: none; } }

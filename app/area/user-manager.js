@@ -55,6 +55,9 @@ export default function AreaUserManager({view="users"}={}) {
   const [accessProfiles,setAccessProfiles]=useState(defaultAccessProfiles);
   const [accessProfilesDraft,setAccessProfilesDraft]=useState(defaultAccessProfiles);
   const [accessSettingsOpen,setAccessSettingsOpen]=useState(false);
+  const [associationTarget,setAssociationTarget]=useState(null);
+  const [associationRoles,setAssociationRoles]=useState([]);
+  const [associationProfileIds,setAssociationProfileIds]=useState([]);
   const [profileEditorOpen, setProfileEditorOpen] = useState(false);
   const [editingProfile, setEditingProfile] = useState(null);
   const [profileForm, setProfileForm] = useState({});
@@ -198,6 +201,33 @@ export default function AreaUserManager({view="users"}={}) {
     finally{setBusy(false);}
   }
 
+  function openAssociations(user) {
+    setAssociationTarget(user);
+    setAssociationRoles(user.roles || []);
+    setAssociationProfileIds(user.profileIds || []);
+    setError("");
+    setMessage("");
+  }
+
+  function toggleAssociationRole(role, enabled) {
+    const next = enabled ? [...new Set([...associationRoles, role])] : associationRoles.filter(item => item !== role);
+    const allowed = new Set(allProfiles.filter(profile => next.includes(profile.kind) || (profile.kind === "tutor" && next.includes("volunteer"))).map(profile => profile.id));
+    setAssociationRoles(next);
+    setAssociationProfileIds(ids => ids.filter(id => allowed.has(id)));
+  }
+
+  async function saveAssociations() {
+    if (!associationTarget) return;
+    setBusy(true); setError(""); setMessage("");
+    try {
+      await request("", { method: "PATCH", body: JSON.stringify({ action: "update-access", uid: associationTarget.uid, roles: associationRoles, profileIds: associationProfileIds, active: associationTarget.accessActive }) });
+      setAssociationTarget(null);
+      setMessage("Tipo de utilizador e registos associados atualizados.");
+      await reload();
+    } catch (failure) { setError(failure.message); }
+    finally { setBusy(false); }
+  }
+
   async function changeSuspension() {
     if (!confirmUser) return;
     const target = confirmUser;
@@ -265,6 +295,11 @@ export default function AreaUserManager({view="users"}={}) {
       <p className="user-manager-access-warning">Ao guardar, esta configuração passa a definir os menus de todos os utilizadores. As escolhas antigas feitas conta a conta deixam de se aplicar.</p>
       {loading?<p role="status">A carregar perfis e permissões…</p>:<AccessProfileOptions value={accessProfilesDraft} onChange={updateAccessProfile}/>}
       <div className="platform-actions"><Button className="platform-primary" disabled={busy||loading} onClick={saveAccessSettings}>{busy?"A guardar…":"Guardar configuração"}</Button><Button variant="outline" disabled={busy||loading} onClick={()=>setAccessProfilesDraft(structuredClone(accessProfiles))}>Descartar alterações</Button></div>
+      <section className="user-manager-record-associations" aria-labelledby="user-manager-record-associations-title">
+        <div className="user-manager-heading"><div><p className="platform-eyebrow">Contas e pessoas</p><h2 id="user-manager-record-associations-title">Gestão de registos</h2><p>Defina o tipo de utilizador e associe a conta aos registos correspondentes de aluno, encarregado, explicador ou sócio.</p></div></div>
+        {loading ? <p role="status">A carregar utilizadores…</p> : users.length ? <div className="user-manager-association-list">{users.map(user => <article key={user.uid} className="user-manager-association-row"><div><strong>{user.displayName || "Sem nome"}</strong><span>{user.email || "Sem email"}</span></div><div className="user-manager-badges">{user.roles?.length ? user.roles.map(role => <Badge key={role} variant="outline">{roleLabels[role] || role}</Badge>) : <span className="user-manager-secondary">Sem tipo atribuído</span>}</div><div className="user-manager-association-profiles">{user.profiles?.length ? user.profiles.map(profile => <Badge key={profile.id} variant="secondary">{profileLabels[profile.kind] || profile.kind} · {profile.name}</Badge>) : <span className="user-manager-secondary">Sem registos associados</span>}</div><Button variant="outline" disabled={busy || user.uid === platformAuth().currentUser?.uid} onClick={() => openAssociations(user)}>Associar registos</Button></article>)}</div> : <p>Ainda não existem contas de utilizador.</p>}
+      </section>
+      <Sheet open={!!associationTarget} onOpenChange={open => { if (!open && !busy) setAssociationTarget(null); }} ariaLabel="Gestão do tipo de utilizador e dos registos associados" className="platform-dialog platform-context-sheet user-manager-access-sheet"><section className="platform-card platform-editor"><div className="platform-list-heading"><div><p className="platform-eyebrow">Gestão de registos</p><h2>{associationTarget?.displayName || associationTarget?.email || "Utilizador"}</h2></div><Button type="button" variant="outline" disabled={busy} onClick={() => setAssociationTarget(null)}>Fechar</Button></div><p>Escolha os tipos de utilizador desta conta. Depois associe os registos de pessoa que lhe pertencem.</p><fieldset className="user-manager-role-options"><legend>Tipo de utilizador</legend>{Object.entries(roleLabels).map(([role, label]) => <label className="platform-check" key={role}><Checkbox checked={associationRoles.includes(role)} onChange={event => toggleAssociationRole(role, event.target.checked)} />{label}</label>)}</fieldset><fieldset className="user-manager-role-options"><legend>Associe os registos</legend><p className="platform-hint">Só aparecem registos compatíveis com os tipos escolhidos. Um registo já associado a outra conta fica indisponível.</p>{allProfiles.filter(profile => associationRoles.includes(profile.kind) || (profile.kind === "tutor" && associationRoles.includes("volunteer"))).map(profile => { const assignedElsewhere = Boolean(profile.accountUid && profile.accountUid !== associationTarget?.uid); return <label className="platform-check" key={profile.id}><Checkbox checked={associationProfileIds.includes(profile.id)} disabled={assignedElsewhere} onChange={event => setAssociationProfileIds(current => event.target.checked ? [...new Set([...current, profile.id])] : current.filter(id => id !== profile.id))} />{profileLabels[profile.kind] || profile.kind} · {profile.name}{assignedElsewhere && <small>Associado a outra conta</small>}</label>; })}{!allProfiles.some(profile => associationRoles.includes(profile.kind) || (profile.kind === "tutor" && associationRoles.includes("volunteer"))) && <p className="platform-hint">Os tipos escolhidos não precisam de registo de pessoa, ou ainda não existem registos compatíveis.</p>}</fieldset><div className="platform-actions"><Button className="platform-primary" disabled={busy} onClick={saveAssociations}>{busy ? "A guardar…" : "Guardar tipo e associações"}</Button><Button variant="outline" disabled={busy} onClick={() => setAssociationTarget(null)}>Cancelar</Button></div></section></Sheet>
     </Card>
   </div>;
 
