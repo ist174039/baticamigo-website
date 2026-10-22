@@ -1,7 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
+import {spawnSync} from 'node:child_process';
 import {renderAdminMarkup} from '../../app/admin/dashboard/markup.mjs';
+
+test('admin dashboard script parses before attaching data and navigation handlers',()=>{
+  const script=readFileSync(new URL('../../public/admin/js/admin.js',import.meta.url),'utf8');
+  const result=spawnSync(process.execPath,['--input-type=module','--check'],{input:script,encoding:'utf8'});
+  assert.equal(result.status,0,result.stderr);
+});
 
 test('admin panels are independent so hidden Contacto cannot hide members or partners',()=>{
   const markup=renderAdminMarkup(readFileSync(new URL('../../public/admin/dashboard.html',import.meta.url),'utf8'));

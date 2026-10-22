@@ -209,8 +209,9 @@
 /* Form dialogs keep create/edit flows focused and responsive. */
 .platform-dialog { width: min(720px, calc(100% - 28px)); max-width: none; max-height: min(88dvh, 900px); margin: auto; padding: 0; overflow: visible; border: 0; background: transparent; color: inherit; }
 .platform-dialog::backdrop { background: #21132dcc; backdrop-filter: blur(4px); }
-.platform-dialog > .platform-editor { max-height: min(88dvh, 900px); margin: 0; overflow: auto; padding: clamp(20px, 4vw, 32px); border-color: var(--private-line); background: hsl(var(--card)); box-shadow: 0 24px 80px #170d2460; }
-.platform-dialog .platform-list-heading { position: sticky; top: calc(-1 * clamp(20px, 4vw, 32px)); z-index: 1; margin: calc(-1 * clamp(20px, 4vw, 32px)) calc(-1 * clamp(20px, 4vw, 32px)) 18px; padding: clamp(20px, 4vw, 32px); background: hsl(var(--card)); }
+.platform-dialog > .platform-editor { max-height: min(88dvh, 900px); margin: 0; overflow: auto; padding: clamp(20px, 4vw, 32px); border-color: var(--private-line); border-radius: 20px; background: hsl(var(--card)); box-shadow: 0 24px 80px #170d2460; }
+.platform-dialog .platform-list-heading { position: sticky; top: calc(-1 * clamp(20px, 4vw, 32px)); z-index: 1; margin: calc(-1 * clamp(20px, 4vw, 32px)) calc(-1 * clamp(20px, 4vw, 32px)) 20px; padding: clamp(20px, 4vw, 32px); border-bottom: 1px solid #f0eaf1; background: hsl(var(--card)); }
+.platform-dialog .platform-list-heading h2 { margin: 0; font-size: clamp(21px, 2.4vw, 27px); line-height: 1.2; }
 .platform-dialog :is(input, select, textarea):focus-visible { outline: 3px solid hsl(var(--ring)); outline-offset: 2px; }
 .user-manager-card { padding: clamp(18px, 3vw, 30px); border-color: var(--private-line); border-radius: calc(var(--radius) + 4px); background: hsl(var(--card)); box-shadow: 0 10px 28px #3920480a; }
 .user-manager-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 22px; margin-bottom: 24px; }
@@ -233,6 +234,19 @@
 .user-manager-table td strong { color: var(--private-deep); font-size: 13px; }
 .user-manager-table .user-manager-secondary { margin-top: 4px; }
 .user-manager-badges { display: flex; flex-wrap: wrap; gap: 5px; max-width: 390px; }
+.user-manager-detail-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 11px; }
+.user-manager-detail-grid > div { display: grid; align-content: start; justify-items: start; gap: 8px; min-width: 0; min-height: 82px; padding: 14px 16px; border: 1px solid var(--private-line); border-radius: 12px; background: #fcfafc; }
+.user-manager-detail-grid > div:first-child, .user-manager-detail-grid > .user-manager-detail-profiles { grid-column: 1 / -1; }
+.user-manager-detail-grid > div > span { color: var(--private-muted); font-size: 9px; font-weight: 750; letter-spacing: .09em; line-height: 1.4; text-transform: uppercase; }
+.user-manager-detail-grid > div > strong { max-width: 100%; color: var(--private-deep); font-size: 13px; line-height: 1.45; overflow-wrap: anywhere; }
+.user-manager-detail-grid > div > p { margin: 0; color: var(--private-muted); font-size: 12px; line-height: 1.5; }
+.user-manager-detail-grid .user-manager-badges { width: 100%; max-width: none; gap: 7px; }
+.user-manager-detail-profile-list { display: grid; width: 100%; gap: 8px; }
+.user-manager-detail-profile-list article { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 11px 12px; border: 1px solid #eee8f0; border-radius: 10px; background: white; }
+.user-manager-detail-profile-list article > div { display: grid; gap: 4px; min-width: 0; }
+.user-manager-detail-profile-list article strong { color: var(--private-deep); font-size: 12px; }
+.user-manager-detail-profile-list article small { color: var(--private-muted); font-size: 10px; line-height: 1.45; }
+.user-manager-detail-actions { justify-content: flex-start; flex-wrap: wrap; gap: 9px; margin-top: 18px; padding-top: 17px; border-top: 1px solid var(--private-line); }
 .user-manager-actions { display: flex; flex-wrap: wrap; justify-content: flex-start; gap: 6px; min-width: 170px; max-width: 260px; }
 .user-manager-actions button { min-height: 34px; border-radius: 9px; }
 .user-manager-details-button { white-space: nowrap; }
@@ -259,6 +273,7 @@
 @media (max-width: 700px) { .area-login-page { display: block; min-height: 100svh; padding: 18px; background: radial-gradient(ellipse at 10% 0%, #eee6f8 0, transparent 38%), var(--private-paper); } .area-login-page .login-panel { min-height: calc(100svh - 36px); padding: 24px 0; } .area-login-page .login-brand { margin-bottom: 18px; } .area-login-page .login-card { padding: clamp(24px, 7vw, 34px); border-radius: 18px; } .area-login-page .login-aside { display: none; } .area-login-page .login-heading h1 { font-size: clamp(40px, 11vw, 50px); } }
 @media (max-width: 380px) { .area-login-page { padding: 12px; } .area-login-page .login-panel { min-height: calc(100svh - 24px); } .area-login-page .login-card { padding: 23px 19px; } .area-login-page .login-form-options { align-items: flex-start; flex-direction: column; } .area-login-page .workspace-choice-card { padding: 14px; } }
 @media (max-width: 760px) { .platform-dialog { width: calc(100% - 20px); max-height: 92dvh; } .platform-dialog > .platform-editor { max-height: 92dvh; padding: 18px; } .platform-dialog .platform-list-heading { top: -18px; margin: -18px -18px 16px; padding: 18px; } }
+@media (max-width: 520px) { .user-manager-detail-grid { grid-template-columns: 1fr; } .user-manager-detail-grid > div:first-child, .user-manager-detail-grid > .user-manager-detail-profiles { grid-column: auto; } .user-manager-detail-grid > div { min-height: 0; padding: 13px 14px; } .user-manager-detail-profile-list article { align-items: flex-start; flex-direction: column; } .user-manager-detail-actions { align-items: stretch; flex-direction: column; } .user-manager-detail-actions button { width: 100%; } }
 @media (max-width: 900px) { .user-manager-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); } .user-manager-filter-label { grid-column: 1/-1; padding: 0; } .user-manager-filters > button { justify-self: start; } }
 @media (max-width: 760px) { .user-manager-heading { align-items: stretch; flex-direction: column; } .user-manager-toolbar { align-items: stretch; flex-direction: column; } .user-manager-filters { grid-template-columns: 1fr; } .user-manager-filter-label { grid-column: auto; } .user-manager-role-options, .user-manager-profile-options { grid-template-columns: 1fr; } .user-manager-module-group > div { grid-template-columns: 1fr; } .user-manager-actions { justify-content: flex-start; } }
 @media (max-width: 900px) { .platform-metrics { gap: 10px; } .platform .platform-metrics > button { min-height: 142px; padding: 16px; } }

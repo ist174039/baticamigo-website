@@ -95,4 +95,12 @@
 @media(max-width:520px){.admin-settings-form{padding:18px 16px}.profile-security-content{padding:18px 16px}.admin-user-info{align-items:center;flex-direction:row!important;gap:7px}.admin-user-avatar{width:34px;height:34px}.admin-user-identity strong,.admin-user-identity small{max-width:145px}.admin-logout-btn{padding:9px 11px}.admin-table-tools,.admin-pagination-summary{align-items:stretch;flex-direction:column}.admin-table-search input{width:100%}.admin-pagination-actions{align-self:flex-end}}
 .admin-shell .admin-modal-close:focus-visible{outline:3px solid #f28a4b;outline-offset:3px}
 .admin-shell .admin-table-actions button{min-width:44px;min-height:44px}
-.admin-shell .admin-modal-close{min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center}
+.admin-shell .admin-empty-row td{padding:34px 18px;color:var(--private-muted);font-size:12px;text-align:center}
+.admin-shell .admin-modal{padding:clamp(12px,3vw,28px);overflow-y:auto;background:#21132dcc;backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px)}
+.admin-shell .admin-modal-content{width:min(760px,100%);max-width:none;max-height:min(90dvh,920px);padding:0;overflow:auto;border:1px solid var(--private-line);border-radius:20px;background:#fff;box-shadow:0 24px 80px #170d2460}
+.admin-shell .admin-modal-header{position:sticky;top:0;z-index:3;gap:18px;margin:0;padding:clamp(18px,3vw,27px);border-bottom:1px solid var(--private-line);background:#fff}
+.admin-shell .admin-modal-header h3{color:var(--private-deep);font:700 clamp(20px,2.5vw,27px) var(--admin-display);letter-spacing:-.04em}
+.admin-shell .admin-modal-close{display:inline-flex;min-width:44px;min-height:44px;align-items:center;justify-content:center;border:1px solid var(--private-line);border-radius:11px;background:#fff;color:var(--private-forest);font:500 24px/1 var(--admin-body-font);transition:background-color .16s,border-color .16s,transform .16s}
+.admin-shell .admin-modal-close:hover{transform:translateY(-1px);border-color:#cdb9d7;background:#f8f3fa}
+.admin-shell .admin-modal-content>.admin-form{display:grid;gap:17px;padding:clamp(18px,3vw,27px)}
+@media(max-width:520px){.admin-shell .admin-modal{align-items:flex-end;padding:10px}.admin-shell .admin-modal-content{width:100%;max-height:92dvh;border-radius:18px}.admin-shell .admin-modal-content>.admin-form{padding:17px 15px}.admin-shell .admin-modal-header{padding:17px 15px}}

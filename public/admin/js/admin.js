@@ -364,6 +364,7 @@ document.addEventListener("DOMContentLoaded", () => {
       ["membros", renderMembros],
       ["parceiros", renderParceiros],
     ]
+    const emptyLabels = { eventos: "eventos", programas: "programas", agenda: "itens de agenda", noticias: "notícias", membros: "membros", parceiros: "parceiros" }
     const errorBox = document.getElementById("admin-init-error")
     if (errorBox) {
       errorBox.textContent = "A carregar conteúdos e dados da comunidade…"
@@ -393,6 +394,16 @@ document.addEventListener("DOMContentLoaded", () => {
       const [name, render] = collections[index]
       if (result.status === "fulfilled") {
         render(result.value.docs)
+        const tableBody = document.getElementById(`${name}-table-body`)
+        if (tableBody && !tableBody.children.length) {
+          const row = document.createElement("tr")
+          row.className = "admin-empty-row"
+          const cell = document.createElement("td")
+          cell.colSpan = tableBody.closest("table")?.querySelectorAll("thead th").length || 1
+          cell.textContent = `Ainda não existem ${emptyLabels[name] || "registos"}.`
+          row.append(cell)
+          tableBody.append(row)
+        }
         return
       }
       failed.push(name)
@@ -410,7 +421,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     })
 
-    const errorBox = document.getElementById("admin-init-error")
     if (errorBox) {
       if (failed.length) {
         const errors = results
