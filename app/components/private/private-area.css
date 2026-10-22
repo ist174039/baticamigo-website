@@ -843,3 +843,56 @@
   .private-shell.is-sidebar-collapsed .private-nav-group { margin-bottom: 12px; }
   .private-shell.is-sidebar-collapsed .private-navigation-panel nav :is(a,button) { justify-content: flex-start; padding: 9px 11px; }
 }
+
+/* Keep the account bar in view while the selected workspace section changes or scrolls. */
+.private-userbar { position: sticky; top: 0; z-index: 45; display: flex; width: 100%; justify-content: space-between; box-sizing: border-box; margin: 0; padding: 0 clamp(20px, 4vw, 56px); background: var(--private-paper); }
+.private-userbar-actions { min-width: 0; max-width: 100%; }
+.private-account-menu,.private-account-trigger { min-width: 0; max-width: 100%; }
+
+/* The label and icon have separate flex contracts so menu names never collapse to a few letters. */
+.private-shell .private-navigation-panel nav :is(a,button) { justify-content: flex-start; text-align: left; }
+.private-navigation-panel nav :is(a,button) > .private-nav-text { display: block; width: auto; min-width: 0; flex: 1 1 auto; color: inherit; text-align: left; }
+.private-nav-label,.private-nav-group-label { width: 100%; box-sizing: border-box; text-align: left; }
+
+/* Assessment entries read as compact result cards rather than unstructured text rows. */
+.platform-assessment-list > li { padding: 0; overflow: hidden; border-radius: 15px; }
+.platform-assessment-record { display: grid; gap: 0; padding: 18px 20px; }
+.platform-assessment-record .platform-list-heading { align-items: flex-start; margin: 0; padding: 0 0 14px; border-bottom: 1px solid #f0eaf1; }
+.platform-assessment-record .platform-list-heading > div:first-child { min-width: 0; }
+.platform-assessment-record .platform-list-heading h3 { margin: 0 0 5px; font-size: 17px; line-height: 1.35; }
+.platform-assessment-record .platform-list-heading p { margin: 0; color: var(--private-muted); }
+.platform-assessment-record .platform-record-actions { flex: 0 0 auto; }
+.platform-assessment-record .platform-record-content { margin: 14px 0 0; color: var(--private-deep); font-size: 13px; line-height: 1.65; }
+.platform-assessment-meta { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.platform-assessment-meta > span { display: inline-flex; align-items: center; min-height: 28px; padding: 5px 10px; border: 1px solid var(--private-line); border-radius: 999px; background: #fcfafc; color: var(--private-muted); font-size: 10px; font-weight: 650; }
+.platform-assessment-meta > .is-score { border-color: #e4d5ec; background: #f6f0fa; color: var(--private-forest); }
+.platform-assessment-record .platform-progress-gaps { margin-top: 12px; padding: 12px 14px; border-left: 3px solid var(--private-lime); border-radius: 0 10px 10px 0; background: #fff9f4; }
+
+/* Group evolution filters by student, assessment details and date. */
+.platform-progress-filters { align-items: start; }
+.platform-progress-filter-group { display: grid; grid-column: 1 / -1; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; padding: 15px; border: 1px solid var(--private-line); border-radius: 12px; background: #fff; }
+.platform-progress-filter-group:first-child { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.platform-progress-filter-group h3 { grid-column: 1 / -1; margin: 0; color: var(--private-deep); font-size: 12px; letter-spacing: 0; }
+.platform-progress-filter-group > .platform-field { min-width: 0; }
+.platform-progress-filter-help { grid-column: 1 / -1; margin: -2px 0 0; color: var(--private-muted); font-size: 11px; line-height: 1.5; }
+.platform-overview-welcome { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-bottom: 18px; padding: 20px 22px; border: 1px solid var(--private-line); border-radius: 16px; background: linear-gradient(110deg, #fff 0%, #f8f3fa 68%, #fff5ec 100%); }
+.platform-overview-welcome-copy { display: grid; gap: 5px; }
+.platform-overview-welcome .platform-eyebrow { margin: 0; }
+.platform-overview-welcome h2 { margin: 0; font-size: clamp(18px, 2vw, 22px); }
+.platform-overview-welcome p:last-child { margin: 0; color: var(--private-muted); font-size: 12px; line-height: 1.55; }
+.platform-progress-note ul { display: grid; gap: 5px; margin: 10px 0 0; padding-left: 18px; color: var(--private-muted); font-size: 11px; line-height: 1.55; }
+.platform-assessment-record > a,.platform-assessment-record > p > a { display: inline-flex; margin-top: 12px; color: var(--private-forest); font-size: 12px; font-weight: 650; }
+@media (max-width: 760px) {
+  .platform-progress-filter-group { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .platform-progress-filter-group:first-child { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .platform-overview-welcome { align-items: flex-start; flex-direction: column; padding: 17px; }
+}
+@media (max-width: 480px) {
+  .platform-progress-filter-group { grid-template-columns: 1fr; }
+  .platform-assessment-record { padding: 15px; }
+  .platform-assessment-record .platform-list-heading { flex-direction: column; }
+  .platform-progress-filter-group,.platform-progress-filter-group:first-child { grid-template-columns: 1fr; }
+  .private-userbar { gap: 8px; padding-inline: 16px; }
+  .private-userbar-actions { flex: 0 1 auto; }
+  .private-account-trigger { padding-inline: 8px; font-size: 11px; }
+}
