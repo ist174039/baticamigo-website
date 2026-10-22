@@ -487,6 +487,38 @@
 .platform-status.is-active { border-color: #cbe4d1; }
 .platform :is(button, a):focus-visible { outline: 3px solid var(--private-lime); outline-offset: 3px; }
 
+.platform-session-workspace { min-width: 0; }
+.platform-session-view-actions, .platform-calendar-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.platform-calendar { margin-top: 24px; }
+.platform-calendar-heading, .platform-calendar-day-summary { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 16px; }
+.platform-calendar-heading h3, .platform-calendar-day-summary h3 { margin: 0; color: var(--private-deep); font-size: 20px; font-weight: 700; text-transform: capitalize; }
+.platform-calendar-grid { display: grid; grid-template-columns: minmax(0, 1fr); overflow: hidden; border: 1px solid var(--private-line); border-radius: 14px; background: #fff; }
+.platform-calendar-row { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); }
+.platform-calendar-weekday { padding: 11px 8px; border-bottom: 1px solid var(--private-line); background: #faf7fb; color: var(--private-muted); font-size: 11px; font-weight: 700; text-align: center; }
+.platform-calendar-day { min-width: 0; min-height: 116px; padding: 7px; border-right: 1px solid #f0eaf1; border-bottom: 1px solid #f0eaf1; background: #fff; }
+.platform-calendar-day:nth-child(7n) { border-right: 0; }
+.platform-calendar-day.is-outside { background: #fcfafc; }
+.platform-calendar-day.is-selected { background: #f8f2fb; box-shadow: inset 0 0 0 2px var(--private-forest); }
+.platform-calendar-day.is-today .platform-calendar-date > span:first-child { display: inline-grid; min-width: 26px; min-height: 26px; place-items: center; border-radius: 50%; background: var(--private-forest); color: #fff; }
+.platform-calendar-date { display: flex; width: 100%; align-items: center; justify-content: space-between; padding: 2px 3px 6px; border: 0; background: transparent; color: var(--private-deep); font-size: 12px; font-weight: 700; text-align: left; }
+.platform-calendar-count { display: inline-grid; min-width: 19px; height: 19px; place-items: center; border-radius: 999px; background: #f1e8f5; color: var(--private-forest); font-size: 10px; }
+.platform-calendar-events { display: grid; gap: 4px; }
+.platform-calendar-event { display: block; overflow: hidden; width: 100%; padding: 5px 6px; border: 0; border-left: 3px solid var(--private-lime); border-radius: 5px; background: #f6f0f9; color: var(--private-deep); font-size: 11px; font-weight: 650; text-overflow: ellipsis; white-space: nowrap; }
+.platform-calendar-event.is-cancelled { border-left-color: #a99fae; background: #f4f2f4; color: #716a74; text-decoration: line-through; }
+.platform-calendar-more { color: var(--private-muted); font-size: 10px; }
+.platform-calendar-day-summary { margin: 22px 0 8px; }
+.platform-calendar-day-summary .platform-eyebrow { margin: 0 0 5px; }
+.platform-calendar-selected-list { display: grid; gap: 7px; margin: 12px 0 0; padding: 0; list-style: none; }
+.platform-calendar-selected-list li > button { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; border: 1px solid var(--private-line); border-radius: 10px; background: #fff; color: var(--private-deep); text-align: left; }
+.platform-calendar-selected-list li > button > span:nth-child(2) { flex: 1; color: var(--private-muted); font-size: 12px; }
+.platform-calendar-empty { margin: 12px 0 0; padding: 16px; border-radius: 10px; background: #faf7fb; color: var(--private-muted); font-size: 13px; }
+.platform-session-series { display: inline-block; margin-left: 9px; padding: 4px 8px; border-radius: 999px; background: #f4edf7; color: var(--private-forest); font-size: 10px; font-weight: 700; letter-spacing: 0; vertical-align: middle; }
+.platform-add-attendee { margin-top: 14px; padding: 12px 14px; border: 1px solid var(--private-line); border-radius: 10px; background: #fcfafc; }
+.platform-add-attendee summary { display: flex; align-items: center; gap: 8px; color: var(--private-forest); cursor: pointer; font-size: 13px; font-weight: 700; }
+.platform-add-attendee > div { display: flex; align-items: end; gap: 10px; margin-top: 12px; }
+.platform-add-attendee select { min-width: 0; flex: 1; min-height: 40px; padding: 8px 10px; border: 1px solid var(--private-line); border-radius: 8px; background: white; }
+.platform-add-attendee p { margin: 8px 0 0; color: var(--private-muted); font-size: 11px; }
+
 /* Keep authenticated page headings aligned with the Manrope display style on the public home page. */
 .platform .platform-title h1,
 .admin-private-shell .dashboard-welcome h1 {
@@ -505,6 +537,24 @@
 .admin-private-shell .dashboard-page { max-width: 1680px; padding-inline: clamp(24px, 4vw, 64px); }
 .admin-private-shell .dashboard-welcome { margin-bottom: 28px; padding: 0 8px 24px; }
 
+@media (max-width: 760px) {
+  .platform-session-view-actions { width: 100%; }
+  .platform-session-view-actions button { flex: 1; }
+  .platform-calendar-day { min-height: 82px; padding: 4px; }
+  .platform-calendar-event { padding: 4px; }
+  .platform-calendar-events { display: none; }
+  .platform-calendar-selected-list li > button { align-items: flex-start; flex-direction: column; gap: 5px; }
+  .platform-add-attendee > div { align-items: stretch; flex-direction: column; }
+}
+@media (max-width: 480px) {
+  .platform-calendar-weekday { padding: 8px 2px; font-size: 9px; }
+  .platform-calendar-day { min-height: 66px; padding: 3px; }
+  .platform-calendar-controls button:first-child { min-height: 34px; padding-inline: 9px; }
+  .platform-calendar-heading h3, .platform-calendar-day-summary h3 { font-size: 16px; }
+  .platform-calendar-day-summary { align-items: flex-start; flex-direction: column; }
+  .platform-calendar-day-summary > button { width: 100%; }
+  .platform-calendar-count { min-width: 16px; height: 16px; font-size: 9px; }
+}
 @media (max-width: 760px) {
   .platform-shell .platform-main { padding: 20px 14px 40px; }
   .platform-shell .platform-title { padding-inline: 2px; }

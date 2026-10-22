@@ -1,7 +1,8 @@
 import {readModules,writeModule} from '../../../lib/platform/modules-server';
 import {context,collection,audit,json,failure} from '../../../lib/platform/server';
-import {assert,id,profileInput,sessionInput,manages,hasRole,profileIds,canReadStudent,canAttend,overlaps,attendanceVersion} from '../../../lib/platform/domain.mjs';
+import {assert,id,profileInput,sessionInput,manages,hasRole,profileIds,canReadStudent,canAttend,canAddUnplannedAttendee,overlaps,attendanceVersion} from '../../../lib/platform/domain.mjs';
 import {canAccessArea} from '../../../lib/platform/access.mjs';
+import {expandLisbonSessionRecurrence} from '../../../lib/platform/time.mjs';
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
 const rows=(snapshot)=>snapshot.docs.map(d=>({...d.data(),id:d.id}));
@@ -67,7 +68,7 @@ export async function POST(request) {
     const body=await readJson(request);
     assert(body && typeof body==='object' && !Array.isArray(body));
     if(body.action==='save-record') return await writeModule(db,account,body);
-    const allowed={ 'save-profile':['action','profile'], 'create-session':['action','session'], 'update-session':['action','id','version','session','status'], 'set-attendance':['action','sessionId','studentId','status','version'] };
+    const allowed={ 'save-profile':['action','profile'], 'create-session':['action','session'], 'create-session-series':['action','session','recurrence'], 'add-attendee':['action','sessionId','studentId'], 'update-session':['action','id','version','session','status'], 'set-attendance':['action','sessionId','studentId','status','version'] };
     assert(allowed[body.action] && Object.keys(body).every(k=>allowed[body.action].includes(k)),'Operação inválida.');
     if(body.action==='save-profile') {
       assert(manages(account)&&canAccessArea(account,'profiles'),'Sem permissão.',403); const value=profileInput(body.profile); const ref=value.id ? collection(db,'profiles').doc(value.id) : collection(db,'profiles').doc(); delete value.id;
@@ -85,6 +86,62 @@ export async function POST(request) {
         const lock=collection(db,'locks').doc('schedule'); await tx.get(lock);
         const existing=await tx.get(collection(db,'sessions').where('endsAt','>',value.startsAt).limit(501)); assert(existing.size<=500,'Intervalo demasiado abrangente.',409); assert(!rows(existing).some(s=>s.id!==ref.id && overlaps(s,value)),'Conflito de horário de aluno, explicador ou sala.',409);
         tx.set(lock,{updatedAt:Date.now()}); tx.set(ref,value); audit(tx,db,account,body.action,ref.id); }); return json({saved:true,id:ref.id});
+    }
+    if(body.action==='create-session-series') {
+      assert(manages(account)&&canAccessArea(account,'sessions'),'Sem permissão.',403);
+      const base=sessionInput(body.session);
+      assert(body.recurrence && typeof body.recurrence==='object' && !Array.isArray(body.recurrence) && Object.keys(body.recurrence).every(key=>['frequency','count'].includes(key)),'Repetição inválida.');
+      const {frequency,count}=body.recurrence;
+      const schedule=expandLisbonSessionRecurrence(base.startsAt,base.endsAt,frequency,count);
+      const occurrences=schedule.map(times=>({...base,...times}));
+      for(let index=0;index<occurrences.length;index++) for(let other=index+1;other<occurrences.length;other++) assert(!overlaps(occurrences[index],occurrences[other]),'As sessões repetidas entram em conflito entre si.');
+      const refs=occurrences.map(()=>collection(db,'sessions').doc());
+      const seriesId=refs[0].id;
+      await db.runTransaction(async tx=>{
+        const lock=collection(db,'locks').doc('schedule');
+        await tx.get(lock);
+        const people=await tx.getAll(...[base.tutorId,...base.studentIds].map(profileId=>collection(db,'profiles').doc(profileId)));
+        assert(people[0].exists && people[0].data().kind==='tutor' && people[0].data().active,'Explicador inválido.');
+        assert(people.slice(1).every(person=>person.exists && person.data().kind==='student' && person.data().active),'Aluno inválido.');
+        const existing=await tx.get(collection(db,'sessions').where('endsAt','>',base.startsAt).limit(501));
+        assert(existing.size<=500,'Intervalo demasiado abrangente.',409);
+        assert(!rows(existing).some(session=>occurrences.some(occurrence=>overlaps(session,occurrence))),'Conflito de horário de aluno, explicador ou sala. A série não foi criada.');
+        tx.set(lock,{updatedAt:Date.now()});
+        refs.forEach((ref,index)=>{
+          const value={...occurrences[index],seriesId,recurrence:{frequency,occurrence:index+1,total:occurrences.length}};
+          tx.set(ref,value);
+        });
+        audit(tx,db,account,body.action,seriesId,{occurrences:occurrences.length,frequency});
+      });
+      return json({saved:true,seriesId,ids:refs.map(ref=>ref.id)});
+    }
+    if(body.action==='add-attendee') {
+      assert(canAccessArea(account,'sessions'),'Este menu não está disponível para esta conta.',403);
+      const sessionId=id(body.sessionId),studentId=id(body.studentId);
+      const sessionRef=collection(db,'sessions').doc(sessionId), studentRef=collection(db,'profiles').doc(studentId);
+      await db.runTransaction(async tx=>{
+        const session=await tx.get(sessionRef), student=await tx.get(studentRef);
+        assert(session.exists,'Sessão inexistente.',404);
+        const value=session.data();
+        assert(value.status==='scheduled' && Date.parse(value.startsAt)<=Date.now() && Date.parse(value.endsAt)>=Date.now(),'Só é possível acrescentar alunos enquanto a sessão está a decorrer.');
+        assert(canAttend(account,value),'Sem permissão para alterar esta sessão.',403);
+        assert(student.exists && student.data().kind==='student' && student.data().active,'Aluno inválido.');
+        const assigned=manages(account)?null:await tx.get(collection(db,'sessions').where('tutorId','==',value.tutorId).limit(501));
+        assert(!assigned || assigned.size<=500,'Demasiadas sessões atribuídas. Contacte a coordenação.',409);
+        const tutorStudentIds=assigned ? rows(assigned).filter(item=>item.studentIds.includes(studentId)).map(()=>studentId) : [];
+        assert(canAddUnplannedAttendee(account,value,studentId,tutorStudentIds),'Sem permissão para associar este aluno à sessão.',403);
+        assert(!value.studentIds.includes(studentId),'Este aluno já está associado à sessão.');
+        const attendanceRef=collection(db,'attendance').doc(`${sessionId}:${studentId}`);
+        const previousAttendance=await tx.get(attendanceRef);
+        const lock=collection(db,'locks').doc('schedule');
+        await tx.get(lock);
+        const studentIds=[...value.studentIds,studentId];
+        tx.set(sessionRef,{...value,studentIds,version:(value.version||1)+1});
+        tx.set(attendanceRef,{sessionId,studentId,status:'present',version:(previousAttendance.data()?.version||0)+1});
+        tx.set(lock,{updatedAt:Date.now()});
+        audit(tx,db,account,body.action,sessionId,{studentId});
+      });
+      return json({saved:true});
     }
     assert(canAccessArea(account,'sessions'),'Este menu não está disponível para esta conta.',403);const sessionId=id(body.sessionId),studentId=id(body.studentId); assert(['present','absent','excused'].includes(body.status),'Presença inválida.');
     await db.runTransaction(async tx=>{ const session=await tx.get(collection(db,'sessions').doc(sessionId)); assert(session.exists,'Sessão inexistente.',404); assert(canAttend(account,session.data()),'Sem permissão para registar presenças.',403); assert(session.data().status==='scheduled' && session.data().studentIds.includes(studentId),'Aluno ou sessão inválidos.'); assert(Date.parse(session.data().startsAt)<=Date.now(),'A sessão ainda não começou.'); const ref=collection(db,'attendance').doc(`${sessionId}:${studentId}`); const old=await tx.get(ref); const version=attendanceVersion(old.data(),body.version); tx.set(ref,{sessionId,studentId,status:body.status,version}); audit(tx,db,account,body.action,ref.id); }); return json({saved:true});
