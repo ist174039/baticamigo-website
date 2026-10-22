@@ -44,10 +44,7 @@ document.addEventListener("DOMContentLoaded", () => {
       document.getElementById("user-name").textContent = displayName
       document.getElementById("user-email").textContent = email
       document.getElementById("user-avatar").textContent = initials(displayName)
-      document.getElementById("profile-display-name").textContent = displayName
-      document.getElementById("profile-account-email").textContent = email
-      document.getElementById("profile-avatar").textContent = initials(displayName)
-      document.getElementById("profile-name").value = displayName
+      document.getElementById("user-role").textContent = "Administrador"
       loadData()
       loadContactSettings()
     } else {
@@ -59,58 +56,6 @@ document.addEventListener("DOMContentLoaded", () => {
   function initials(name) {
     return String(name || "BA").trim().split(/\s+/).slice(0, 2).map((part) => part[0]?.toLocaleUpperCase() || "").join("") || "BA"
   }
-
-  function setProfileStatus(id, message, isError = false) {
-    const status = document.getElementById(id)
-    if (!status) return
-    status.textContent = message
-    status.dataset.state = isError ? "error" : "success"
-  }
-
-  document.getElementById("profile-form")?.addEventListener("submit", async (event) => {
-    event.preventDefault()
-    const user = auth.currentUser
-    const name = event.currentTarget.elements.displayName.value.trim()
-    if (!user || !name) return
-    const button = event.currentTarget.querySelector('button[type="submit"]')
-    button.disabled = true
-    button.textContent = "A guardar…"
-    try {
-      await user.updateProfile({ displayName: name })
-      document.getElementById("user-name").textContent = name
-      document.getElementById("profile-display-name").textContent = name
-      document.getElementById("user-avatar").textContent = initials(name)
-      document.getElementById("profile-avatar").textContent = initials(name)
-      setProfileStatus("profile-settings-status", "Nome atualizado com sucesso.")
-    } catch (error) {
-      console.error("Erro ao atualizar o perfil:")
-      setProfileStatus("profile-settings-status", "Não foi possível atualizar o perfil. Tente novamente.", true)
-    } finally {
-      button.disabled = false
-      button.textContent = "Guardar nome"
-    }
-  })
-
-  document.getElementById("profile-reset-password")?.addEventListener("click", async (event) => {
-    const button = event.currentTarget
-    const email = auth.currentUser?.email
-    if (!email) {
-      setProfileStatus("profile-password-status", "A conta atual não tem um email associado.", true)
-      return
-    }
-    button.disabled = true
-    button.textContent = "A enviar…"
-    try {
-      await auth.sendPasswordResetEmail(email)
-      setProfileStatus("profile-password-status", `Ligação de recuperação enviada para ${email}.`)
-    } catch (error) {
-      console.error("Erro ao enviar recuperação da palavra-passe:")
-      setProfileStatus("profile-password-status", "Não foi possível enviar a ligação. Tente novamente mais tarde.", true)
-    } finally {
-      button.disabled = false
-      button.textContent = "Enviar ligação de recuperação"
-    }
-  })
 
   document.getElementById("admin-user-reset-password")?.addEventListener("click", async (event) => {
     const button = event.currentTarget
@@ -581,9 +526,13 @@ document.addEventListener("DOMContentLoaded", () => {
     membros.forEach((doc) => {
       const membro = doc.data()
       const row = document.createElement("tr")
+      const image = safeMediaUrl(membro.imagem)
+      const photo = image
+        ? `<img src="${image}" alt="" loading="lazy">`
+        : `<span class="admin-table-person-avatar" aria-hidden="true">${escapeHtml(initials(membro.nome))}</span>`
 
       row.innerHTML = `
-                <td>${escapeHtml(membro.nome)}</td>
+                <td><span class="admin-table-person">${photo}<span class="admin-table-person-name">${escapeHtml(membro.nome)}</span></span></td>
                 <td>${escapeHtml(membro.cargo)}</td>
                 <td class="admin-table-actions">
                     <button aria-label="Editar registo" class="edit-btn" data-id="${escapeHtml(doc.id)}"><i class="fas fa-edit"></i></button>
@@ -613,9 +562,13 @@ document.addEventListener("DOMContentLoaded", () => {
     parceiros.forEach((doc) => {
       const parceiro = doc.data()
       const row = document.createElement("tr")
+      const image = safeMediaUrl(parceiro.logo)
+      const photo = image
+        ? `<img src="${image}" alt="" loading="lazy">`
+        : `<span class="admin-table-person-avatar" aria-hidden="true">${escapeHtml(initials(parceiro.nome))}</span>`
 
       row.innerHTML = `
-                <td>${escapeHtml(parceiro.nome)}</td>
+                <td><span class="admin-table-person">${photo}<span class="admin-table-person-name">${escapeHtml(parceiro.nome)}</span></span></td>
                 <td>${escapeHtml(parceiro.website || "-")}</td>
                 <td class="admin-table-actions">
                     <button aria-label="Editar registo" class="edit-btn" data-id="${escapeHtml(doc.id)}"><i class="fas fa-edit"></i></button>

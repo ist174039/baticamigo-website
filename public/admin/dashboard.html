@@ -28,11 +28,12 @@
                 <div class="admin-header">
                     <details class="admin-user-menu private-account-menu">
                         <summary class="private-account-trigger" aria-label="Abrir opções da conta"><span class="private-account-avatar admin-user-avatar" id="user-avatar" aria-hidden="true">BA</span><span class="admin-user-menu-label">A minha conta</span></summary>
-                        <div class="admin-user-menu-panel private-account-menu-panel" role="menu">
-                            <span class="admin-user-identity private-account-menu-identity"><strong id="user-name">Administrador</strong><small id="user-email"></small></span>
-                            <button id="admin-user-reset-password" class="admin-user-menu-action" type="button" role="menuitem">Alterar palavra-passe</button>
+                        <div class="admin-user-menu-panel private-account-menu-panel">
+                            <span class="admin-user-identity private-account-menu-identity"><strong id="user-name">Administrador</strong><small id="user-email"></small><small id="user-role">Administrador</small></span>
+                            <a class="private-account-menu-link" href="/area?tab=account">O meu perfil</a>
+                            <button id="admin-user-reset-password" class="admin-user-menu-action" type="button">Alterar palavra-passe</button>
                             <p id="admin-user-menu-status" role="status" aria-live="polite"></p>
-                            <button id="logout-btn" class="admin-logout-btn" type="button" role="menuitem">Terminar sessão</button>
+                            <button id="logout-btn" class="admin-logout-btn" type="button">Terminar sessão</button>
                         </div>
                     </details>
                 </div>

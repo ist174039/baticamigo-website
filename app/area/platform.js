@@ -19,6 +19,7 @@ import AreaNavigation from "./navigation";
 import { PrivateWorkspaceTemplate } from "../components/private/private-workspace-template";
 import { PrivateAccountMenu } from "../components/private/private-account-menu";
 import AreaUserManager from "./user-manager";
+import AccountProfile from "./account-profile";
 import {Records, Progress, Reports, Finance} from "./modules";
 import { lisbonDateTimeInput, lisbonDateTimeToIso } from "../../lib/platform/time.mjs";
 import {canAccessArea,defaultAreasForRoles} from "../../lib/platform/access.mjs";
@@ -43,6 +44,7 @@ function selected(form, name) { return form.getAll(name).map(String); }
 function values(event) { return new FormData(event.currentTarget); }
 export default function Platform() {
   const [user, setUser] = useState(null);
+  const [accountName, setAccountName] = useState("");
   const [ready, setReady] = useState(false);
   const [data, setData] = useState(empty);
   const [busy, setBusy] = useState(false);
@@ -111,8 +113,9 @@ export default function Platform() {
     const unsubscribe = onAuthStateChanged(platformAuth(), async (currentUser) => {
       const current = ++revision.current;
       setUser(currentUser);
+      setAccountName(currentUser?.displayName || "");
       const requestedTab = new URLSearchParams(window.location.search).get("tab");
-      setTab(currentUser && ["users", "profiles"].includes(requestedTab) ? "profiles" : "overview");
+      setTab(currentUser && ["users", "profiles"].includes(requestedTab) ? "profiles" : currentUser && requestedTab === "account" ? "account" : "overview");
       setProfileEditorOpen(false);
       setSessionEditorOpen(false);
       setData(empty);
@@ -201,11 +204,12 @@ export default function Platform() {
     await action(async () => { await save(body); done(); }, "Registo guardado.");
   }
   const recordKinds = ["assignment", "material", "document", "message", "assessment", "justification"];
-  const moduleTitles = {assignment:"Trabalhos",material:"Materiais",document:"Documentos",message:"Mensagens",assessment:"Avaliações",justification:"Justificações",progress:"Evolução do aluno",reports:"Relatórios",notifications:"Avisos",finance:"Área financeira"};
+  const moduleTitles = {assignment:"Trabalhos",material:"Materiais",document:"Documentos",message:"Mensagens",assessment:"Avaliações",justification:"Justificações",progress:"Evolução do aluno",reports:"Relatórios",notifications:"Avisos",finance:"Área financeira",account:"O meu perfil"};
   const pageDescriptions = {
     overview: "Acompanhe sessões, presenças e o percurso escolar num só lugar.",
     sessions: manager ? "Agenda, participantes e presenças num só lugar." : "Consulte os horários e acompanhe as presenças das sessões associadas ao seu perfil.",
     profiles: admin ? "Consulte pessoas, perfis, permissões e acessos da associação." : "Consulte e atualize os perfis associados à sua conta.",
+    account: "Consulte as permissões e atualize os dados da sua conta.",
     assignment: "Consulte trabalhos, prazos e materiais partilhados com os alunos.",
     material: "Consulte materiais de apoio e recursos partilhados.",
     assessment: "Registos qualitativos e quantitativos das avaliações dos alunos.",
@@ -228,17 +232,21 @@ export default function Platform() {
     ...((admin||roles.includes("member"))?[["finance","Área financeira"]]:[]),
     ["document","Documentos"],["message","Mensagens"],["notifications","Avisos"],
     ...(manager?[["reports","Relatórios"]]:[]),
+    ...(admin?[["account","O meu perfil"]]:[]),
   ];
   const accountConfigured=Boolean(data.account);
   const configuredModules=data.account?.modules;
   const allowedModules=useMemo(()=>accountConfigured?(configuredModules??defaultAreasForRoles(roles)):[],[accountConfigured,configuredModules,roles]);
-  const navigationItems=user&&data.account?navigationCandidates.filter(([key])=>canAccessArea({...data.account,modules:allowedModules},key)).map(([key,label])=>({key,label})): [{key:"overview",label:"Iniciar sessão"}];
+  const navigationItems=user&&data.account?navigationCandidates.filter(([key])=>key==="account"?admin:canAccessArea({...data.account,modules:allowedModules},key)).map(([key,label])=>({key,label})): [{key:"overview",label:"Iniciar sessão"}];
   const accountUid=data.account?.uid;
-  useEffect(()=>{if(user&&accountUid&&!allowedModules.includes(tab))setTab(allowedModules.includes('overview')?'overview':allowedModules[0]||'overview');},[user,accountUid,allowedModules,tab]);
+  useEffect(()=>{if(user&&accountUid&&tab!=="account"&&!allowedModules.includes(tab))setTab(allowedModules.includes('overview')?'overview':allowedModules[0]||'overview');if(user&&accountUid&&tab==="account"&&!admin)setTab(allowedModules.includes('overview')?'overview':allowedModules[0]||'overview');},[user,accountUid,allowedModules,tab,admin]);
   const visibleProfiles = data.profiles.filter((profile) => (profileKind === "all" || profile.kind === profileKind) && `${profile.name} ${profile.email || ""} ${profile.memberNumber || ""} ${profile.subjects || ""} ${kindNames[profile.kind]}`.toLocaleLowerCase("pt-PT").includes(profileQuery.toLocaleLowerCase("pt-PT")));
   const upcoming = [...data.sessions].filter((session) => session.status === "scheduled" && new Date(session.endsAt) >= new Date()).sort((a, b) => a.startsAt.localeCompare(b.startsAt));
+  const completedSessions = data.sessions.filter(session => session.status === "scheduled" && Date.parse(session.endsAt) < Date.now());
+  const expectedAttendance = completedSessions.reduce((total, session) => total + session.studentIds.length, 0);
+  const confirmedAttendance = data.attendance.filter(record => record.status === "present" && completedSessions.some(session => session.id === record.sessionId)).length;
   const visibleSessions = [...data.sessions].filter((session) => (!sessionStudent || session.studentIds.includes(sessionStudent)) && (sessionFilter === "all" || (sessionFilter === "upcoming" ? session.status === "scheduled" && new Date(session.endsAt) >= new Date() : sessionFilter === "past" ? session.status !== "cancelled" && new Date(session.endsAt) < new Date() : session.status === "cancelled")) && `${session.title} ${profileName(session.tutorId)} ${session.room || ""} ${sessionNames[session.status] || session.status}`.toLocaleLowerCase("pt-PT").includes(sessionQuery.toLocaleLowerCase("pt-PT"))).sort((a, b) => a.startsAt.localeCompare(b.startsAt));
-  const accountMenu = user && <PrivateAccountMenu displayName={user.displayName || "Conta BaticAmigo"} email={user.email} roleLabel={roles.map(role => roleNames[role] || role).join(", ")} busy={busy} onChangePassword={() => { setPasswordError(""); setPasswordMessage(""); setPasswordDialogOpen(true); }} onSignOut={() => action(async () => { revision.current += 1; setData(empty); await signOut(platformAuth()); }, "Sessão terminada.")} />;
+  const accountMenu = user && <PrivateAccountMenu displayName={accountName || user.displayName || "Conta BaticAmigo"} email={user.email} roleLabel={roles.map(role => roleNames[role] || role).join(", ")} onOpenProfile={admin ? () => navigate("account") : undefined} busy={busy} onChangePassword={() => { setPasswordError(""); setPasswordMessage(""); setPasswordDialogOpen(true); }} onSignOut={() => action(async () => { revision.current += 1; setData(empty); await signOut(platformAuth()); }, "Sessão terminada.")} />;
   return <div className="platform">
     <a className="platform-skip" href="#conteudo">Saltar para o conteúdo</a>
     <AreaNavigation items={navigationItems} active={tab} onNavigate={navigate} admin={admin} user={user} accountMenu={accountMenu}>
@@ -248,10 +256,11 @@ export default function Platform() {
       <div ref={notice} tabIndex={-1} className="platform-notices">{error && <p className="platform-error" role="alert">{error}</p>}{message && <p className="platform-success" role="status">{message}</p>}</div>
       {!ready ? <p role="status">A carregar a sua área…</p> : !user ? <section className="platform-card platform-login" aria-labelledby="sign-in-title"><h2 id="sign-in-title">Aceda à sua área</h2><p>Use a conta disponibilizada pela associação para consultar sessões, perfis, documentos e mensagens.</p><Button className="platform-primary" onClick={() => window.location.assign("/platform/login")}>Iniciar sessão</Button></section> : !data.account ? <section className="platform-card"><h2>{error ? "Não foi possível abrir a sua área" : "Acesso pendente"}</h2><p>{error ? "Volte a tentar. Se o problema continuar, contacte a coordenação para verificar a conta e a configuração do serviço." : "A associação precisa de confirmar o seu perfil e permissões. Contacte a coordenação."}</p><Button disabled={busy} onClick={() => action(async () => setData(await request(user)), "Acesso atualizado.")}>Voltar a verificar</Button></section> : <>
         {tab === "overview" && educational && <>
-          <div className="platform-metrics platform-overview-metrics"><Button className="platform-overview-metric" onClick={() => { setSessionFilter("upcoming"); navigate("sessions"); }}><span className="platform-metric-label"><span className="platform-metric-icon"><CalendarDays size={17}/></span>Próximas sessões</span><strong>{upcoming.length}</strong><span className="platform-metric-footer"><small>{upcoming.length===1?"sessão agendada":"sessões agendadas"}</small><span>Ver agenda <ArrowRight size={14}/></span></span></Button><Button className="platform-overview-metric" onClick={() => navigate("profiles")}><span className="platform-metric-label"><span className="platform-metric-icon"><GraduationCap size={18}/></span>{manager ? "Alunos ativos" : "Perfis associados"}</span><strong>{manager ? students.filter((p) => p.active).length : data.profiles.length}</strong><span className="platform-metric-footer"><small>{manager?"Com estado ativo na associação":"Associados à sua conta"}</small><span>{manager ? "Ver pessoas" : "Ver perfis"} <ArrowRight size={14}/></span></span></Button><Button className="platform-overview-metric" onClick={() => { setSessionFilter("past"); navigate("sessions"); }}><span className="platform-metric-label"><span className="platform-metric-icon"><CircleCheck size={17}/></span>Presenças confirmadas</span><strong>{data.attendance.filter((record) => record.status === "present").length}</strong><span className="platform-metric-footer"><small>Registos de presença concluídos</small><span>Ver presenças <ArrowRight size={14}/></span></span></Button></div>
+          <div className="platform-metrics platform-overview-metrics"><article className="platform-overview-metric"><div className="platform-metric-topline"><span className="platform-metric-icon"><CalendarDays size={17}/></span><span className="platform-metric-period">A seguir</span></div><span className="platform-metric-label">Próximas sessões</span><strong>{upcoming.length}</strong><span className="platform-metric-context">{upcoming.length===1?"sessão na agenda":"sessões na agenda"}</span><Button variant="ghost" className="platform-metric-action" onClick={() => { setSessionFilter("upcoming"); navigate("sessions"); }}>Abrir agenda <ArrowRight size={14}/></Button></article><article className="platform-overview-metric"><div className="platform-metric-topline"><span className="platform-metric-icon"><GraduationCap size={18}/></span><span className="platform-metric-period">{manager?"Acompanhamento":"Conta"}</span></div><span className="platform-metric-label">{manager ? "Alunos ativos" : "Perfis associados"}</span><strong>{manager ? students.filter((p) => p.active).length : data.profiles.length}</strong><span className="platform-metric-context">{manager?"Com perfil ativo na associação":"Ligados ao seu acesso"}</span><Button variant="ghost" className="platform-metric-action" onClick={() => navigate("profiles")}>{manager ? "Ver pessoas" : "Ver perfis"} <ArrowRight size={14}/></Button></article><article className="platform-overview-metric"><div className="platform-metric-topline"><span className="platform-metric-icon"><CircleCheck size={17}/></span><span className="platform-metric-period">Sessões terminadas</span></div><span className="platform-metric-label">Presenças confirmadas</span><strong>{confirmedAttendance}<small className="platform-metric-total"> / {expectedAttendance}</small></strong><span className="platform-metric-context">Presenças registadas entre participantes esperados</span><Button variant="ghost" className="platform-metric-action" onClick={() => { setSessionFilter("past"); navigate("sessions"); }}>Ver presenças <ArrowRight size={14}/></Button></article></div>
           <section className="platform-card"><div className="platform-list-heading"><div><p className="platform-eyebrow">A sua agenda</p><h2>Próximas sessões</h2></div><Button onClick={() => navigate("sessions")}>Ver sessões</Button></div>{upcoming.length ? <ul className="platform-list">{upcoming.slice(0, 5).map((session) => <li key={session.id}><div><h3>{session.title}</h3><p>{dates.format(new Date(session.startsAt))} · {session.room || "Sala por definir"}</p><p>{profileName(session.tutorId)}</p></div><span className="platform-status is-active">Agendada</span></li>)}</ul> : <div className="platform-empty"><h3>A agenda está livre</h3><p>{manager ? "Comece por adicionar as pessoas e agendar a primeira sessão." : "As sessões aparecerão aqui assim que forem agendadas pela coordenação."}</p></div>}{manager && <div className="platform-actions"><Button className="platform-primary" onClick={() => { navigate("sessions"); setEditingSession(null); setSessionEditorOpen(true); }}>Agendar sessão</Button><Button onClick={() => { navigate("profiles"); setEditing(null); setEditorKind("student"); setProfileEditorOpen(true); }}>Adicionar pessoa</Button></div>}</section>
         </>}
         {tab === "overview" && !educational && <section className="platform-card"><div className="platform-list-heading"><div><p className="platform-eyebrow">A sua ligação à BaticAmigo</p><h2>O meu espaço</h2></div></div>{data.profiles.filter(profile => profile.kind === "member").map(profile => <div className="platform-summary" key={profile.id}><h3>{profile.name}</h3><p>Sócio {profile.memberNumber || "com número por atribuir"} · {{active:"Ativo",pending:"Pendente",suspended:"Suspenso",left:"Cessou"}[profile.membershipStatus] || "Situação por confirmar"}</p></div>)}<p>Consulte a informação partilhada consigo ou envie uma mensagem à associação.</p><div className="platform-actions"><Button className="platform-primary" onClick={() => navigate("document")}>Os meus documentos</Button><Button onClick={() => navigate("message")}>Mensagens</Button><Button onClick={() => navigate("profiles")}>O meu perfil</Button></div></section>}
+        {tab === "account" && admin && <AccountProfile user={user} roles={roles} profiles={data.profiles.filter(profile => (data.account?.profileIds || []).includes(profile.id))} displayName={accountName} onDisplayNameChange={setAccountName} onChangePassword={() => { setPasswordError(""); setPasswordMessage(""); setPasswordDialogOpen(true); }} />}
         {recordKinds.includes(tab) && <Records key={tab} kind={tab} data={data} user={user} manager={manager} busy={busy} onSave={saveModule}/>}
         {tab === "finance" && (admin || roles.includes("member")) && <Finance key={user.uid} user={user}/>}
         {tab === "progress" && <Progress data={data} manager={manager}/>}

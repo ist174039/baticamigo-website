@@ -828,6 +828,17 @@
 .private-shell.is-sidebar-collapsed .private-navigation-panel nav :is(a,button) > span:first-child { width: 22px; flex-basis: 22px; }
 .private-shell.is-sidebar-collapsed .private-sidebar-footer { padding-inline: 0; }
 .private-shell.is-sidebar-collapsed .private-sidebar-footer a { justify-content: center; padding-inline: 6px; }
+.private-nav-group-toggle { display: flex; width: 100%; min-height: 30px; align-items: center; justify-content: space-between; gap: 8px; padding: 0 10px; border: 0; border-radius: 7px; background: transparent; color: hsl(var(--primary-foreground) / .7); text-align: left; }
+.private-nav-group-toggle:hover,.private-nav-group-toggle[aria-expanded="true"] { background: hsl(var(--primary-foreground) / .06); color: white; }
+.private-nav-group-toggle .private-nav-group-label { display: block; width: auto; min-width: 0; flex: 1 1 auto; margin: 0; overflow: hidden; color: inherit; text-align: left; text-overflow: ellipsis; white-space: nowrap; }
+.private-nav-group-toggle > svg { flex: 0 0 auto; color: #ffad76; }
+.private-nav-group-items { display: grid; gap: 4px; }
+.private-nav-group-items[hidden] { display: none; }
+.private-shell .private-navigation-panel nav .private-nav-group-toggle { min-height: 30px; justify-content: space-between; padding: 0 10px; }
+.private-shell .private-navigation-panel nav .private-nav-group-toggle > .private-nav-group-label { width: auto; min-width: 0; flex: 1 1 auto; }
+.private-shell.is-sidebar-collapsed .private-nav-group-toggle { min-height: 30px; justify-content: center; padding: 0; }
+.private-shell.is-sidebar-collapsed .private-nav-group-toggle .private-nav-group-label { display: none; }
+.private-shell.is-sidebar-collapsed .private-navigation-panel nav .private-nav-group-toggle { min-height: 30px; justify-content: center; padding: 0; }
 .platform { background: var(--private-paper); }
 .platform-card,.user-manager-card,.admin-shell .admin-card { border-color: var(--private-line); border-radius: 16px; box-shadow: 0 3px 12px #2d183b08; }
 .admin-shell .admin-dashboard { display: block; min-height: 0; overflow: visible; border: 0; border-radius: 0; background: transparent; box-shadow: none; backdrop-filter: none; }
@@ -854,8 +865,12 @@
 .private-userbar { position: sticky; top: 0; z-index: 45; display: flex; width: 100%; min-height: 76px; justify-content: flex-end; box-sizing: border-box; margin: 0; padding: 0 clamp(20px, 4vw, 56px); background: var(--private-paper); }
 .private-userbar-actions { min-width: 0; max-width: 100%; margin-left: auto; }
 .private-account-menu,.private-account-trigger { min-width: 0; max-width: 100%; }
-.private-account-trigger { min-height: 46px; justify-content: flex-start; }
+.private-account-trigger { min-height: 46px; justify-content: flex-start; gap: 9px; padding: 4px 13px 4px 5px; border-radius: 999px; background: #fff; color: var(--private-deep); font-size: 12px; font-weight: 600; }
+.private-account-trigger:hover,.private-account-menu:has([aria-expanded="true"]) .private-account-trigger { background: #faf7fc; }
 .private-account-avatar { width: 34px; height: 34px; flex-basis: 34px; }
+.private-account-menu-panel > .private-account-menu-link { display: flex; width: 100%; min-height: 38px; align-items: center; padding: 0 12px; border-radius: 8px; color: var(--private-deep); font-size: 12px; text-decoration: none; }
+.private-account-menu-panel > .private-account-menu-link:hover { background: #f7f2f8; color: var(--private-forest); }
+.admin-private-shell .admin-user-menu > summary { min-height: 46px; gap: 9px; padding: 4px 13px 4px 5px; font-size: 12px; }
 
 /* The label and icon have separate flex contracts so menu names never collapse to a few letters. */
 .private-shell .private-navigation-panel nav :is(a,button) { justify-content: flex-start; text-align: left; }
@@ -900,12 +915,74 @@
 .platform .platform-overview-metric .platform-metric-footer > span { display: inline-flex; flex: 0 0 auto; align-items: center; gap: 4px; color: var(--private-forest); font-size: 10px; font-weight: 700; }
 .platform-progress-note ul { display: grid; gap: 5px; margin: 10px 0 0; padding-left: 18px; color: var(--private-muted); font-size: 11px; line-height: 1.55; }
 .platform-assessment-record > a,.platform-assessment-record > p > a { display: inline-flex; margin-top: 12px; color: var(--private-forest); font-size: 12px; font-weight: 650; }
+.platform .platform-overview-metrics { grid-template-columns: repeat(3,minmax(0,1fr)); align-items: stretch; }
+.platform .platform-overview-metric { display: grid; min-width: 0; min-height: 202px; grid-template-rows: auto auto auto auto 1fr; align-content: start; gap: 8px; padding: 18px; border: 1px solid var(--private-line); border-radius: 16px; background: linear-gradient(150deg,#fff 0%,#fff 65%,#fcf8fd 100%); box-shadow: 0 8px 22px #2d183b09; }
+.platform .platform-overview-metric:nth-child(2) { background: linear-gradient(150deg,#fff 0%,#fff 65%,#f4f8fc 100%); }
+.platform .platform-overview-metric:nth-child(3) { background: linear-gradient(150deg,#fff 0%,#fff 65%,#fff5ec 100%); }
+.platform .platform-metric-topline { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.platform .platform-metric-period { padding: 5px 8px; border-radius: 999px; background: #f8f4fa; color: var(--private-muted); font-size: 9px; font-weight: 650; }
+.platform .platform-overview-metric:nth-child(2) .platform-metric-period { background: #eff5fa; }
+.platform .platform-overview-metric:nth-child(3) .platform-metric-period { background: #fff2e8; }
+.platform .platform-metric-label { color: var(--private-muted); font-size: 11px; font-weight: 650; }
+.platform .platform-metrics > .platform-overview-metric > strong { color: var(--private-deep); font-size: clamp(34px,4vw,42px); line-height: 1; }
+.platform .platform-metric-total { margin-left: 5px; color: var(--private-muted); font-size: 17px; font-weight: 600; }
+.platform .platform-metric-context { color: var(--private-muted); font-size: 10px; line-height: 1.4; }
+.platform .platform-overview-metric > .platform-metric-action { display: inline-flex; width: max-content; min-height: 30px; align-self: end; gap: 5px; margin-top: 9px; padding: 4px 8px; color: var(--private-forest); font-size: 10px; font-weight: 700; }
+.platform .platform-overview-metric > .platform-metric-action:hover { background: #f3edf7; }
+.platform .platform-overview-metric:nth-child(2) > .platform-metric-action:hover { background: #edf4fa; }
+.platform .platform-overview-metric:nth-child(3) > .platform-metric-action:hover { background: #fff2e9; }
+.platform-progress-filters { display: grid; grid-template-columns: minmax(220px,1fr); align-items: start; gap: 11px; padding: 0; border: 0; background: transparent; }
+.platform-progress-advanced-filters { border: 1px solid var(--private-line); border-radius: 12px; background: #fcfafc; }
+.platform-progress-advanced-filters > summary { display: flex; min-height: 46px; align-items: center; gap: 9px; padding: 0 14px; color: var(--private-deep); cursor: pointer; font-size: 12px; font-weight: 700; list-style: none; }
+.platform-progress-advanced-filters > summary::-webkit-details-marker { display: none; }
+.platform-progress-advanced-filters > summary > svg { color: var(--private-forest); }
+.platform-progress-filter-count { margin-left: auto; color: var(--private-muted); font-size: 10px; font-weight: 550; }
+.platform-progress-filter-groups { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 10px; padding: 0 12px 12px; }
+.platform-progress-filter-group { display: grid; grid-column: auto; grid-template-columns: repeat(2,minmax(0,1fr)); align-content: start; gap: 10px; padding: 13px; }
+.platform-progress-filter-group h3 { grid-column: 1/-1; }
+.platform-progress-filter-help { margin: 0; padding: 0 14px 13px; }
+.platform-progress-table-wrap { border: 1px solid var(--private-line); border-radius: 12px; background: white; }
+.platform-progress-table-wrap > .relative { overflow: visible; }
+.platform-progress-table { min-width: 920px; }
+.platform-progress-table caption { padding: 11px 14px; color: var(--private-muted); text-align: left; }
+.platform-progress-table th { color: var(--private-muted); font-size: 10px; white-space: nowrap; }
+.platform-progress-table td { max-width: 250px; color: var(--private-deep); font-size: 11px; line-height: 1.5; vertical-align: top; white-space: normal; }
+.platform-progress-table td > strong,.platform-progress-table td > small { display: block; }
+.platform-progress-table td > small { margin-top: 3px; color: var(--private-muted); font-size: 10px; }
+.platform-progress-table td:last-child { min-width: 105px; }
+.user-manager-actions .user-manager-edit-profile { border-color: var(--private-line); background: white; color: var(--private-deep); }
+.user-manager-actions .user-manager-edit-profile:hover { border-color: #cdb9d7; background: #faf7fc; }
+.platform-upload-field { display: grid; gap: 8px; }
+.platform-upload-input { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; clip-path: inset(50%); }
+.platform-upload-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.platform-upload-actions > button:first-child { min-height: 42px; gap: 8px; border-color: #ddcde7; background: #fff; color: var(--private-forest); font-weight: 650; }
+.platform-upload-actions > button:first-child:hover { border-color: var(--private-forest); background: #faf6fc; }
+.platform-upload-selected,.platform-upload-hint { margin: 0; color: var(--private-muted); font-size: 11px; line-height: 1.5; overflow-wrap: anywhere; }
+.platform-upload-selected { color: var(--private-deep); font-weight: 600; }
+.platform-account-profile { grid-template-columns: repeat(2,minmax(0,1fr)); align-items: start; }
+.platform-account-profile > .platform-card { display: grid; align-content: start; gap: 16px; padding: clamp(18px,3vw,28px); }
+.platform-account-summary { display: flex; align-items: center; gap: 12px; padding: 14px; border: 1px solid var(--private-line); border-radius: 12px; background: #fcfafc; }
+.platform-account-avatar { display: grid; width: 44px; height: 44px; flex: 0 0 44px; place-items: center; border-radius: 50%; background: #f3edf7; color: var(--private-forest); font-size: 13px; font-weight: 750; }
+.platform-account-summary > div { display: grid; gap: 4px; min-width: 0; }
+.platform-account-summary strong { color: var(--private-deep); font-size: 13px; }
+.platform-account-summary small { color: var(--private-muted); font-size: 11px; overflow-wrap: anywhere; }
+.platform-account-detail { display: grid; gap: 9px; padding-top: 14px; border-top: 1px solid var(--private-line); }
+.platform-account-detail > span { color: var(--private-muted); font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+.platform-account-detail > div { display: flex; flex-wrap: wrap; gap: 7px; }
+.platform-account-detail > div > small { color: var(--private-muted); font-size: 12px; }
+.admin-table-person { display: flex; align-items: center; gap: 10px; min-width: 190px; }
+.admin-table-person img,.admin-table-person-avatar { display: grid; width: 38px; height: 38px; flex: 0 0 38px; place-items: center; border: 1px solid var(--private-line); border-radius: 50%; background: #f6eff8; color: var(--private-forest); font-size: 11px; font-weight: 750; object-fit: cover; }
+.admin-table-person-name { color: var(--private-deep); font-size: 12px; font-weight: 650; }
 @media (max-width: 760px) {
   .platform-progress-filter-group { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .platform-progress-filter-group:first-child { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .platform-overview-welcome { align-items: flex-start; flex-direction: column; padding: 17px; }
   .platform .platform-overview-metrics { gap: 10px; }
   .platform .platform-overview-metric { min-height: 136px; padding: 15px; }
+  .platform .platform-overview-metrics,.platform-account-profile { grid-template-columns: 1fr; }
+  .platform .platform-overview-metric { min-height: 180px; }
+  .platform-progress-filter-groups { grid-template-columns: 1fr; }
+  .private-shell.is-sidebar-collapsed .private-nav-group-toggle .private-nav-group-label { display: block; }
 }
 @media (max-width: 480px) {
   .platform-progress-filter-group { grid-template-columns: 1fr; }

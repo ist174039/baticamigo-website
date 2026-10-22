@@ -231,7 +231,7 @@ export default function AreaUserManager() {
             <TableCell><div className="user-manager-badges"><Badge variant="secondary">{profileLabels[profile.kind]}</Badge>{profile.kind === "member" && <Badge variant="outline">{membershipLabels[profile.membershipStatus] || "Estado por confirmar"}{profile.memberNumber ? ` · ${profile.memberNumber}` : ""}</Badge>}</div></TableCell>
             <TableCell><Badge variant={profile.active ? "outline" : "destructive"}>{profile.active ? "Sem conta" : "Perfil inativo"}</Badge></TableCell>
             <TableCell>—</TableCell>
-            <TableCell><div className="user-manager-actions"><Button size="sm" variant="outline" onClick={() => openCreate(profile)} disabled={!profile.active || busy}>Dar acesso</Button><Button size="sm" variant="ghost" onClick={() => openProfile(profile)}>Editar pessoa</Button></div></TableCell>
+            <TableCell><div className="user-manager-actions"><Button size="sm" variant="outline" onClick={() => openCreate(profile)} disabled={!profile.active || busy}>Dar acesso</Button><Button size="sm" variant="outline" className="user-manager-edit-profile" onClick={() => openProfile(profile)}>Editar pessoa</Button></div></TableCell>
           </TableRow>)}
           {!loading && !filteredUsers.length && !filteredProfiles.length && <TableRow><TableCell colSpan={5}>Não foram encontrados utilizadores ou perfis.</TableCell></TableRow>}
         </TableBody>

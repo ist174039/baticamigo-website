@@ -19,7 +19,6 @@ return body
       <li><a href="#parceiros-section" data-section="parceiros"><i class="fas fa-handshake"></i>Parceiros</a></li>
       <li class="admin-nav-group admin-nav-group-settings">Site</li>
       <li><a href="#contacto-section" data-section="contacto"><i class="fas fa-address-card"></i>Contacto do site</a></li>
-      <li><a href="#perfil-section" data-section="perfil"><i class="fas fa-user-circle"></i>Meu perfil</a></li>
     </ul>`
   )
   // Add short context and a consistent jump-to-list action without changing
@@ -38,21 +37,7 @@ return body
   )
   .replace(
     /(<div id="membros-section" class="admin-section">)/,
-    `<div id="perfil-section" class="admin-section">
-                    <section class="admin-card profile-card" aria-labelledby="profile-title">
-                      <div class="admin-card-header"><div class="admin-card-heading"><span class="admin-card-kicker">A sua conta</span><h3 id="profile-title">Perfil e segurança</h3></div></div>
-                      <form id="profile-form" class="admin-settings-form">
-                        <div class="profile-identity"><span id="profile-avatar" class="profile-avatar" aria-hidden="true">BA</span><div><strong id="profile-display-name">Administrador</strong><span id="profile-account-email"></span></div></div>
-                        <div><label for="profile-name">Nome apresentado no painel</label><input id="profile-name" name="displayName" type="text" maxlength="80" autocomplete="name" placeholder="O seu nome" required></div>
-                        <div class="admin-settings-footer"><p id="profile-settings-status" role="status" aria-live="polite"></p><button class="admin-btn primary-btn" type="submit">Guardar nome</button></div>
-                      </form>
-                    </section>
-                    <section class="admin-card profile-security-card" aria-labelledby="profile-security-title">
-                      <div class="admin-card-header"><div class="admin-card-heading"><span class="admin-card-kicker">Acesso à conta</span><h3 id="profile-security-title">Palavra-passe</h3></div></div>
-                      <div class="profile-security-content"><p>Enviaremos uma ligação segura para o email da conta para redefinir a palavra-passe.</p><button id="profile-reset-password" type="button" class="admin-btn secondary-btn">Enviar ligação de recuperação</button><p id="profile-password-status" role="status" aria-live="polite"></p></div>
-                    </section>
-                </div>
-                <div id="contacto-section" class="admin-section">
+    `<div id="contacto-section" class="admin-section">
                     <section class="admin-card admin-settings-card" aria-labelledby="contact-settings-title">
                       <div class="admin-card-header"><div class="admin-card-heading"><span class="admin-card-kicker">Conteúdo do site</span><h3 id="contact-settings-title">Informações de contacto</h3></div></div>
                       <form id="contact-settings-form" class="admin-settings-form">

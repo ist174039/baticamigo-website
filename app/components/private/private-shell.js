@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { Button, buttonVariants } from "@/app/components/ui/button";
 import { Input } from "@/app/components/ui/input";
-import { PanelLeftClose, PanelLeftOpen, Search } from "lucide-react";
+import { ChevronDown, ChevronRight, PanelLeftClose, PanelLeftOpen, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function PrivateShell({ areaLabel = "Área reservada", children, className = "", navLabel = "A sua área", items, active, onNavigate, footer, user, logoutId, logoutLabel = "Sair", accountMenu }) {
@@ -13,6 +13,8 @@ export function PrivateShell({ areaLabel = "Área reservada", children, classNam
   const [collapsed, setCollapsed] = useState(false);
   const [sidebarPreferenceLoaded, setSidebarPreferenceLoaded] = useState(false);
   const [navigationQuery, setNavigationQuery] = useState("");
+  const [collapsedGroups, setCollapsedGroups] = useState({});
+  const [groupPreferenceLoaded, setGroupPreferenceLoaded] = useState(false);
   const trigger = useRef(null);
   const sidebar = useRef(null);
 
@@ -25,8 +27,18 @@ export function PrivateShell({ areaLabel = "Área reservada", children, classNam
 
   useEffect(() => {
     setCollapsed(window.localStorage.getItem("baticamigo-sidebar-collapsed") === "true");
+    try {
+      setCollapsedGroups(JSON.parse(window.localStorage.getItem("baticamigo-sidebar-collapsed-groups") || "{}"));
+    } catch {
+      setCollapsedGroups({});
+    }
+    setGroupPreferenceLoaded(true);
     setSidebarPreferenceLoaded(true);
   }, []);
+
+  useEffect(() => {
+    if (groupPreferenceLoaded) window.localStorage.setItem("baticamigo-sidebar-collapsed-groups", JSON.stringify(collapsedGroups));
+  }, [collapsedGroups, groupPreferenceLoaded]);
 
   useEffect(() => {
     if (!sidebarPreferenceLoaded) return;
@@ -45,6 +57,7 @@ export function PrivateShell({ areaLabel = "Área reservada", children, classNam
   function activate(item) {
     setOpen(false);
     onNavigate?.(item.key);
+    if (item.group) setCollapsedGroups(current => ({ ...current, [item.group]: false }));
     if (window.matchMedia("(max-width: 760px)").matches) {
       requestAnimationFrame(() => {
         const main = document.querySelector("#conteudo, #conteudo-admin");
@@ -56,7 +69,7 @@ export function PrivateShell({ areaLabel = "Área reservada", children, classNam
 
   function handleNavigationKeyDown(event) {
     if (items.some(item => item.href)) return;
-    const tabs = [...event.currentTarget.querySelectorAll('[role="tab"]')];
+    const tabs = [...event.currentTarget.querySelectorAll('[role="tab"]')].filter(tab => !tab.closest("[hidden]"));
     const currentIndex = tabs.indexOf(document.activeElement);
     const nextIndex = event.key === "Home" ? 0 : event.key === "End" ? tabs.length - 1 : event.key === "ArrowDown" || event.key === "ArrowRight" ? (currentIndex + 1) % tabs.length : event.key === "ArrowUp" || event.key === "ArrowLeft" ? (currentIndex - 1 + tabs.length) % tabs.length : -1;
     if (nextIndex >= 0) {
@@ -90,7 +103,10 @@ export function PrivateShell({ areaLabel = "Área reservada", children, classNam
       {items?.length > 0 && <div id="private-navigation" className="private-navigation-panel">
         <p className="private-nav-label"><span>{navLabel}</span></p>
         <label className="private-nav-search"><Search size={15} aria-hidden="true"/><Input type="search" aria-label="Pesquisar menu" placeholder="Pesquisar menu" value={navigationQuery} onChange={event=>setNavigationQuery(event.target.value)}/></label>
-        <nav className={items.some(item => item.href) ? "admin-sidebar-menu" : undefined} aria-label="Navegação principal" role={items.some(item => !item.href) ? "tablist" : undefined} aria-orientation={items.some(item => !item.href) ? "vertical" : undefined} onKeyDown={handleNavigationKeyDown}>{navigationGroups.map(({group,items:groupItems})=><div className="private-nav-group" role={items.some(item=>!item.href)?"group":"presentation"} aria-label={items.some(item=>!item.href)?group:undefined} key={group}><p className="private-nav-group-label" aria-hidden="true">{group}</p>{groupItems.map(item => item.href ? <a key={item.key} href={item.href} className={cn(buttonVariants({ variant: "ghost" }), "private-nav-link", active === item.key && "active")} aria-label={item.label} title={collapsed?item.label:undefined} aria-current={active === item.key ? "page" : undefined} data-section={item.key} onClick={() => activate(item)}><span aria-hidden="true">{item.icon}</span><span className="private-nav-text">{item.label}</span></a> : <Button key={item.key} id={`area-tab-${item.key}`} type="button" role="tab" aria-controls="conteudo" aria-selected={active === item.key} tabIndex={active === item.key ? 0 : -1} variant="ghost" className="private-nav-button" aria-label={item.label} title={collapsed?item.label:undefined} onClick={() => activate(item)}><span aria-hidden="true">{item.icon}</span><span className="private-nav-text">{item.label}</span></Button>)}</div>)}</nav>
+        <nav className={items.some(item => item.href) ? "admin-sidebar-menu" : undefined} aria-label="Navegação principal" onKeyDown={handleNavigationKeyDown}>{navigationGroups.map(({group,items:groupItems},index)=>{const groupId=`private-nav-group-${index}`,isCollapsed=collapsedGroups[group]===true,hasTabs=groupItems.some(item=>!item.href);return <section className={`private-nav-group${isCollapsed?" is-collapsed":""}`} key={group}>
+          <Button type="button" variant="ghost" className="private-nav-group-toggle" aria-expanded={!isCollapsed} aria-controls={groupId} aria-label={`${isCollapsed?"Expandir":"Recolher"} grupo ${group}`} title={collapsed?group:undefined} onClick={()=>setCollapsedGroups(current=>({...current,[group]:!current[group]}))}><span className="private-nav-group-label">{group}</span>{isCollapsed?<ChevronRight size={14} aria-hidden="true"/>:<ChevronDown size={14} aria-hidden="true"/>}</Button>
+          <div id={groupId} className="private-nav-group-items" hidden={isCollapsed} role="group" aria-label={group}>{groupItems.map(item => item.href ? <a key={item.key} href={item.href} className={cn(buttonVariants({ variant: "ghost" }), "private-nav-link", active === item.key && "active")} aria-label={item.label} title={collapsed?item.label:undefined} aria-current={active === item.key ? "page" : undefined} data-section={item.key} onClick={() => activate(item)}><span aria-hidden="true">{item.icon}</span><span className="private-nav-text">{item.label}</span></a> : <Button key={item.key} id={`area-tab-${item.key}`} type="button" aria-current={active === item.key ? "page" : undefined} aria-controls="conteudo" variant="ghost" className="private-nav-button" aria-label={item.label} title={collapsed?item.label:undefined} onClick={() => activate(item)}><span aria-hidden="true">{item.icon}</span><span className="private-nav-text">{item.label}</span></Button>)}</div>
+        </section>})}</nav>
         {navigationQuery && navigationGroups.length===0&&<p className="private-nav-empty">Não foram encontrados menus.</p>}
         <div className="private-sidebar-footer">{footer}{!className.includes("platform-shell") && <a href="/">Voltar ao website <span aria-hidden="true">↗</span></a>}</div>
       </div>}
