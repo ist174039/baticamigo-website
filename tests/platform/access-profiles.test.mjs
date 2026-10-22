@@ -14,6 +14,11 @@ test('administrator access profile always retains every platform menu',()=>{
   assert.deepEqual(defaultAreasForRoles(['admin'],defaultAccessProfiles),areaModules);
 });
 
+test('tutors and volunteers receive the justifications area to record planned absences',()=>{
+  assert.ok(defaultAreasForRoles(['tutor']).includes('justification'));
+  assert.ok(defaultAreasForRoles(['volunteer']).includes('justification'));
+});
+
 test('invalid access profile permissions fail closed',()=>{
   assert.equal(validateAccessProfiles({...defaultAccessProfiles,member:['overview','unknown']}),null);
   assert.equal(validateAccessProfiles({...defaultAccessProfiles,coordinator:['finance','reports']}),null);

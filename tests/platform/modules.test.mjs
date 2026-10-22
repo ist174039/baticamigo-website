@@ -11,6 +11,14 @@ test('only the student, associated family, assigned tutor and management can rea
   for(const a of [account('student',['s1']),account('guardian',['g1']),account('tutor',['t1']),account('admin')]) assert.ok(canReadRecord(a,record,student,sessions));
   for(const a of [account('student',['s2']),account('guardian',['g2']),account('tutor',['t2']),account('member',['m1'])]) assert.equal(canReadRecord(a,record,student,sessions),false);
 });
+test('explicit sharing grants access to selected profiles or roles without bypassing family privacy',()=>{
+  const shared={...record,shareWithRoles:['volunteer'],shareWithProfileIds:['t2']};
+  assert.ok(canReadRecord(account('volunteer'),shared,student,sessions));
+  assert.ok(canReadRecord(account('tutor',['t2']),shared,student,sessions));
+  assert.equal(canReadRecord(account('student',['s2']),shared,student,sessions),false);
+  assert.equal(canReadRecord(account('guardian',['g2']),shared,student,sessions),false);
+  assert.throws(()=>moduleInput({kind:'assessment',studentId:'s1',title:'Teste',shareWithRoles:['volunteer']}));
+});
 test('students and guardians cannot write assessments or materials; tutors cannot write unrelated pupils',()=>{
   for(const a of [account('student',['s1']),account('guardian',['g1']),account('tutor',['t2'])]) assert.equal(canWriteRecord(a,record,student,sessions),false);
   assert.ok(canWriteRecord(account('tutor',['t1']),record,student,sessions));

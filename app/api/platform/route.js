@@ -52,10 +52,17 @@ export async function GET(request) {
       });
       sessions=sessions.map(s=>canAttend(account,s) ? s : {...s,studentIds:s.studentIds.filter(student=>studentIds.includes(student))});
     }
+    const personalSessions=sessions;
+    if(!manages(account)&&canAccessArea(account,'sessions')) {
+      const allSessions=await bounded(collection(db,'sessions'));
+      const visibleById=new Map(allSessions.map(({id,title,tutorId,room,startsAt,endsAt,status,recurrence})=>[id,{id,title,tutorId,room,startsAt,endsAt,status,recurrence,studentIds:[]}]));
+      for(const session of personalSessions) visibleById.set(session.id,session);
+      sessions=[...visibleById.values()];
+    }
     // Only expose names of the tutors already present on this account's sessions.
     for(const tutorId of new Set(sessions.map(s=>s.tutorId))) if(!profiles.some(p=>p.id===tutorId)) { const tutor=await collection(db,'profiles').doc(id(tutorId)).get(); if(tutor.exists) profiles.push({id:tutor.id,kind:'tutor',name:tutor.data().name,active:tutor.data().active}); }
-    const modules=await readModules(db,account,profiles,sessions,storage);
-    const attendance=await readAttendance(db,sessions);
+    const modules=await readModules(db,account,profiles,personalSessions,storage);
+    const attendance=await readAttendance(db,personalSessions);
     const uniqueProfiles=[...new Map(profiles.map(p=>[p.id,p])).values()];
     const visibleProfiles=canAccessArea(account,'profiles')?uniqueProfiles:uniqueProfiles.map(({id,kind,name,active,schoolYear,ageBand,subjects,membershipStatus,memberNumber})=>({id,kind,name,active,schoolYear,ageBand,subjects,membershipStatus,memberNumber}));
     const visibleSessions=canAccessArea(account,'sessions')?sessions:canAccessArea(account,'reports')?sessions.map(({id,studentIds,tutorId,startsAt,endsAt,status})=>({id,studentIds,tutorId,startsAt,endsAt,status})):[];
@@ -90,9 +97,9 @@ export async function POST(request) {
     if(body.action==='create-session-series') {
       assert(manages(account)&&canAccessArea(account,'sessions'),'Sem permissão.',403);
       const base=sessionInput(body.session);
-      assert(body.recurrence && typeof body.recurrence==='object' && !Array.isArray(body.recurrence) && Object.keys(body.recurrence).every(key=>['frequency','count'].includes(key)),'Repetição inválida.');
-      const {frequency,count}=body.recurrence;
-      const schedule=expandLisbonSessionRecurrence(base.startsAt,base.endsAt,frequency,count);
+      assert(body.recurrence && typeof body.recurrence==='object' && !Array.isArray(body.recurrence) && Object.keys(body.recurrence).every(key=>['period','weekdays'].includes(key)),'Repetição inválida.');
+      const {period,weekdays}=body.recurrence;
+      const schedule=expandLisbonSessionRecurrence(base.startsAt,base.endsAt,period,weekdays);
       const occurrences=schedule.map(times=>({...base,...times}));
       for(let index=0;index<occurrences.length;index++) for(let other=index+1;other<occurrences.length;other++) assert(!overlaps(occurrences[index],occurrences[other]),'As sessões repetidas entram em conflito entre si.');
       const refs=occurrences.map(()=>collection(db,'sessions').doc());
@@ -108,10 +115,10 @@ export async function POST(request) {
         assert(!rows(existing).some(session=>occurrences.some(occurrence=>overlaps(session,occurrence))),'Conflito de horário de aluno, explicador ou sala. A série não foi criada.');
         tx.set(lock,{updatedAt:Date.now()});
         refs.forEach((ref,index)=>{
-          const value={...occurrences[index],seriesId,recurrence:{frequency,occurrence:index+1,total:occurrences.length}};
+          const value={...occurrences[index],seriesId,recurrence:{frequency:'weekly',period,weekdays:[...weekdays],occurrence:index+1,total:occurrences.length}};
           tx.set(ref,value);
         });
-        audit(tx,db,account,body.action,seriesId,{occurrences:occurrences.length,frequency});
+        audit(tx,db,account,body.action,seriesId,{occurrences:occurrences.length,period,weekdays});
       });
       return json({saved:true,seriesId,ids:refs.map(ref=>ref.id)});
     }
