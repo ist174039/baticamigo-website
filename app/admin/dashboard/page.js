@@ -4,6 +4,7 @@ import AdminFirebaseScripts from "../components/AdminFirebaseScripts";
 import {renderAdminMarkup} from "./markup.mjs";
 import AdminTablePagination from "../components/AdminTablePagination";
 import { PrivateShell } from "../../components/private/private-shell";
+import { PrivatePageHeading } from "../../components/private/private-page-heading";
 import { CalendarDays, ContactRound, Handshake, Newspaper, PanelsTopLeft, Settings2, UsersRound, Workflow } from "lucide-react";
 
 const html = fs.readFileSync(path.join(process.cwd(), "public/admin/dashboard.html"), "utf8");
@@ -19,14 +20,13 @@ export default function AdminDashboardPage() {
   return (
     <PrivateShell className="admin-private-shell" areaLabel="Administração" items={navigation} active="eventos" navLabel="Gestão" footer={<a href="/area"><PanelsTopLeft size={16} aria-hidden="true"/><span>Plataforma BaticAmigo</span><span aria-hidden="true">↗</span></a>}>
       <a className="skip-link" href="#conteudo-admin">Saltar para o conteúdo</a><main id="conteudo-admin" tabIndex={-1} className="dashboard-page">
-        <header className="dashboard-welcome">
-          <div>
-            <span className="eyebrow">Espaço de gestão</span>
-            <h1>Gestão <em>BaticAmigo.</em></h1>
-            <p>Conteúdos, iniciativas e comunidade num só lugar.</p>
-          </div>
-          <a className="admin-view-site" href="/" target="_blank" rel="noreferrer">Ver site <span aria-hidden="true">↗</span></a>
-        </header>
+        <PrivatePageHeading
+          className="dashboard-welcome"
+          eyebrow="Espaço de gestão"
+          title={<>Gestão <em>BaticAmigo.</em></>}
+          description="Conteúdos, iniciativas e comunidade num só lugar."
+          action={<a className="admin-view-site" href="/" target="_blank" rel="noreferrer">Ver site <span aria-hidden="true">↗</span></a>}
+        />
         <div id="admin-init-error" className="admin-init-error" role="alert" hidden />
         <div dangerouslySetInnerHTML={{ __html: markup }} />
       </main>

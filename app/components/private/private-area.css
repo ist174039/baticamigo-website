@@ -463,6 +463,140 @@
 }
 .platform .user-manager-pagination > div { display: flex; align-items: center; gap: 10px; }
 .platform .user-manager-pagination > div > span { min-width: 98px; color: var(--private-deep); font-size: 11px; font-weight: 650; text-align: center; }
+
+/* A single page heading and control system for both private workspaces. */
+.private-page-heading,
+.admin-private-shell .dashboard-welcome,
+.platform-shell .platform-title {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin: 0 0 28px;
+  padding: 0 8px 24px;
+}
+.private-page-heading-copy { min-width: 0; }
+.private-page-heading .eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 11px;
+  border: 1px solid #6846b92a;
+  border-radius: 999px;
+  background: #ffffff78;
+  color: var(--private-forest);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .16em;
+  line-height: 1.3;
+  text-transform: uppercase;
+}
+.private-page-heading .eyebrow::before {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--private-lime);
+  box-shadow: 0 0 0 3px #f28a4b20;
+  content: "";
+}
+.platform .private-page-heading h1,
+.admin-private-shell .private-page-heading h1 {
+  max-width: 760px;
+  margin: 17px 0 9px;
+  color: var(--private-deep);
+  font-family: var(--display, var(--font-sans, Arial, sans-serif));
+  font-size: clamp(38px, 5vw, 64px);
+  font-weight: 700;
+  letter-spacing: -.075em;
+  line-height: 1;
+}
+.private-page-heading h1 em { color: var(--private-forest); font-style: normal; font-weight: 700; }
+.private-page-heading p { max-width: 64ch; margin: 0; color: var(--private-muted); font-size: 14px; line-height: 1.7; }
+.private-page-heading-actions { display: flex; min-width: 0; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 10px; }
+.platform-title .private-page-heading-actions { align-items: flex-end; }
+.platform .platform-title { text-align: left; }
+.platform .platform-title p { max-width: 64ch; margin: 0; }
+.platform .platform-user-identity { display: grid; gap: 3px; margin: 0 8px 0 0; color: var(--private-muted); font-size: 11px; text-align: right; }
+.platform .platform-user-role { color: var(--private-forest); }
+
+.private-shell .private-navigation-panel nav :is(a, button) {
+  min-height: 44px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  color: #ffffffd6;
+  font-family: var(--font-sans, Arial, sans-serif);
+  font-size: 12px;
+  font-weight: 550;
+  text-decoration: none;
+  transition: background-color .16s ease, color .16s ease, transform .16s ease;
+}
+.private-shell .private-navigation-panel nav :is(a, button):hover { background: #ffffff18; color: #fff; }
+.private-shell .private-navigation-panel nav :is(a, button)[aria-current="page"],
+.private-shell .private-navigation-panel nav button[aria-selected="true"] {
+  background: #ffffff19;
+  box-shadow: inset 3px 0 var(--private-lime);
+  color: #fff;
+}
+
+.platform .platform-card,
+.admin-private-shell .admin-card {
+  border: 1px solid var(--private-line);
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 8px 24px #2d183b0a;
+}
+.platform button[data-variant],
+.admin-private-shell .admin-btn,
+.admin-private-shell .admin-view-site {
+  min-height: 40px;
+  border-radius: 10px;
+  font-family: var(--font-sans, Arial, sans-serif);
+  font-size: 12px;
+  font-weight: 650;
+  transition: background-color .16s ease, border-color .16s ease, box-shadow .16s ease, transform .16s ease;
+}
+.platform button[data-variant="default"],
+.platform button.platform-primary,
+.admin-private-shell .admin-btn.primary-btn {
+  border: 1px solid var(--private-forest);
+  background: var(--private-forest);
+  color: #fff;
+  box-shadow: 0 3px 9px #60347724;
+}
+.platform button[data-variant="default"]:hover:not(:disabled),
+.platform button.platform-primary:hover:not(:disabled),
+.admin-private-shell .admin-btn.primary-btn:hover:not(:disabled) {
+  border-color: var(--private-deep);
+  background: var(--private-deep);
+}
+.platform button[data-variant="outline"],
+.admin-private-shell .admin-btn.secondary-btn,
+.admin-private-shell .admin-view-site {
+  border: 1px solid #ded3e4;
+  background: #fff;
+  color: var(--private-forest);
+  text-decoration: none;
+}
+.platform button[data-variant="outline"]:hover:not(:disabled),
+.admin-private-shell .admin-btn.secondary-btn:hover:not(:disabled),
+.admin-private-shell .admin-view-site:hover {
+  border-color: #cdb9d7;
+  background: #faf6fc;
+}
+.platform button[data-variant]:hover:not(:disabled),
+.admin-private-shell .admin-btn:hover:not(:disabled),
+.admin-private-shell .admin-view-site:hover { transform: translateY(-1px); }
+
+@media (max-width: 760px) {
+  .private-page-heading,
+  .admin-private-shell .dashboard-welcome,
+  .platform-shell .platform-title { align-items: flex-start; flex-direction: column; gap: 16px; }
+  .platform-shell .platform-title { padding-inline: 2px; }
+  .private-page-heading-actions { width: 100%; justify-content: flex-start; }
+  .platform .platform-user-identity { text-align: left; }
+  .platform .platform-title h1,
+  .admin-private-shell .dashboard-welcome h1 { font-size: clamp(36px, 10vw, 48px); }
+}
 .platform .user-manager-pagination button { min-height: 36px; padding-inline: 12px; border-radius: 9px; font-size: 11px; }
 .platform .user-manager-pagination button:disabled { opacity: .45; }
 .admin-shell .admin-pagination {

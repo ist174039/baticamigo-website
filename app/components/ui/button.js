@@ -26,7 +26,7 @@ const buttonVariants = cva(
 );
 
 export const Button = forwardRef(function Button({ className, variant, size, type = "button", ...props }, ref) {
-  return <button ref={ref} type={type} className={cn(buttonVariants({ variant, size }), className)} {...props} />;
+  return <button ref={ref} type={type} data-variant={variant || "default"} data-size={size || "default"} className={cn(buttonVariants({ variant, size }), className)} {...props} />;
 });
 
 export { buttonVariants };
