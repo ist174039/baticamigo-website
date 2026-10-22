@@ -2,6 +2,7 @@ import { cert, getApps, initializeApp } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
 import { getFirestore } from "firebase-admin/firestore";
 import { adminAuthorization } from "../../../../lib/platform/access.mjs";
+import { platformContinueUrl } from "../../../../lib/platform/continue-url.mjs";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -78,14 +79,7 @@ function handleError(error) {
 }
 
 function passwordResetContinueUrl() {
-  const vercelHost = process.env.VERCEL_URL?.trim();
-  const configured = process.env.NEXT_PUBLIC_APP_URL?.trim()
-    || (vercelHost ? `https://${vercelHost}` : "https://baticamigo-website.vercel.app");
-  let url;
-  try { url = new URL("/platform/login", configured); }
-  catch { throw new ApiError(503, "O endereço público da aplicação não está configurado corretamente.", "admin/invalid-public-url"); }
-  if (url.protocol !== "https:" || url.username || url.password) throw new ApiError(503, "O endereço público da aplicação tem de usar HTTPS.", "admin/invalid-public-url");
-  return url.toString();
+  return platformContinueUrl();
 }
 
 function movedResponse() {

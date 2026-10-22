@@ -78,6 +78,7 @@ export default function AreaUserManager({view="users",onNavigate}={}) {
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [formError, setFormError] = useState("");
   const [message, setMessage] = useState("");
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -199,6 +200,7 @@ export default function AreaUserManager({view="users",onNavigate}={}) {
     setCreationStep(1);
     setTemporaryPassword(false);
     setRoleChangeNotice("");
+    setFormError("");
     if (profile) {
       initial.displayName = profile.name;
       initial.email = profile.email || "";
@@ -212,6 +214,7 @@ export default function AreaUserManager({view="users",onNavigate}={}) {
 
   function openEdit(user) {
     setRoleChangeNotice("");
+    setFormError("");
     setDialogUser(user);
     setCreationStep(1);
     setForm({ displayName: user.displayName || "", email: user.email || "", roles: user.roles || [], profileIds: user.profileIds || [], active: user.accessActive || !(user.roles || []).length, profileDrafts: [] });
@@ -289,6 +292,7 @@ export default function AreaUserManager({view="users",onNavigate}={}) {
 
   async function submit(event) {
     event.preventDefault();
+    setFormError("");
     if (!dialogUser && creationStep < 4) {
       continueCreation();
       return;
@@ -306,8 +310,8 @@ export default function AreaUserManager({view="users",onNavigate}={}) {
     };
     const recordsOnly = !dialogUser && creationMode === "records";
     if (recordsOnly) {
-      if (!displayName) { setError("Introduza o nome da pessoa."); return; }
-      if (!form.profileDrafts.length) { setError("Escolha pelo menos um tipo de registo."); return; }
+      if (!displayName) { setFormError("Introduza o nome da pessoa."); return; }
+      if (!form.profileDrafts.length) { setFormError("Escolha pelo menos um tipo de registo."); return; }
     }
     const requiredKinds = recordsOnly || (!dialogUser && creationMode === "account") ? [] : form.roles.filter(role => ["student", "guardian", "tutor", "member"].includes(role));
     const linkedKinds = new Set(allProfiles.filter(profile => form.profileIds.includes(profile.id) && profile.active === true).map(profile => profile.kind));
@@ -319,14 +323,14 @@ export default function AreaUserManager({view="users",onNavigate}={}) {
     });
     const incompatibleDrafts = form.profileDrafts.filter(draft => !form.roles.includes(draft.kind));
     if (incompatibleIds.length || incompatibleDrafts.length) {
-      setError("Existem registos selecionados que já não correspondem aos tipos escolhidos. Remova-os explicitamente ou volte a selecionar os tipos compatíveis.");
+      setFormError("Existem registos selecionados que já não correspondem aos tipos escolhidos. Remova-os explicitamente ou volte a selecionar os tipos compatíveis.");
       return;
     }
     if (missingKinds.length) {
-      setError(`Associe ou crie pelo menos um registo para: ${missingKinds.map(kind => profileLabels[kind]).join(", ")}.`);
+      setFormError(`Associe ou crie pelo menos um registo para: ${missingKinds.map(kind => profileLabels[kind]).join(", ")}.`);
       return;
     }
-    setBusy(true); setError(""); setMessage("");
+    setBusy(true); setError(""); setFormError(""); setMessage("");
     try {
       if (recordsOnly) {
         const result = await request("", { method: "POST", body: JSON.stringify({ action: "create-person-records", profilesToCreate: body.profilesToCreate }) });
@@ -341,7 +345,7 @@ export default function AreaUserManager({view="users",onNavigate}={}) {
       setDialogUser(null);
       setUserDialogOpen(false);
       await reload();
-    } catch (failure) { setError(failure.message); }
+    } catch (failure) { setFormError(failure.message); }
     finally { setBusy(false); }
   }
 
@@ -463,29 +467,30 @@ export default function AreaUserManager({view="users",onNavigate}={}) {
   }
 
   function continueCreation() {
-    setError("");
+    setFormError("");
     if (creationStep === 1) {
-      if (!form.displayName.trim()) { setError(recordsOnly ? "Introduza o nome da pessoa." : "Introduza o nome da conta."); return; }
-      if (!recordsOnly && !/^\S+@\S+\.\S+$/.test(form.email.trim())) { setError("Introduza um email válido para a conta."); return; }
+      if (!form.displayName.trim()) { setFormError(recordsOnly ? "Introduza o nome da pessoa." : "Introduza o nome da conta."); return; }
+      if (!recordsOnly && !/^\S+@\S+\.\S+$/.test(form.email.trim())) { setFormError("Introduza um email válido para a conta."); return; }
       setCreationStep(2);
       return;
     }
     if (creationStep === 2) {
-      if (!form.roles.length) { setError(recordsOnly ? "Escolha pelo menos um tipo de registo." : "Escolha pelo menos um perfil de acesso."); return; }
+      if (!form.roles.length) { setFormError(recordsOnly ? "Escolha pelo menos um tipo de registo." : "Escolha pelo menos um perfil de acesso."); return; }
       setCreationStep(3);
       return;
     }
     if (creationStep === 3) {
-      if (recordsOnly && !form.profileDrafts.length) { setError("Escolha e preencha pelo menos um registo de pessoa."); return; }
-      if (!recordsOnly && !accountOnly && missingRequiredKinds.length) { setError(`Associe ou crie um registo para: ${missingRequiredKinds.map(kind => profileLabels[kind]).join(", ")}.`); return; }
-      if (hasIncompatibleSelection) { setError("Reveja os registos incompatíveis antes de continuar."); return; }
+      if (recordsOnly && !form.profileDrafts.length) { setFormError("Escolha e preencha pelo menos um registo de pessoa."); return; }
+      if (!recordsOnly && !accountOnly && missingRequiredKinds.length) { setFormError(`Associe ou crie um registo para: ${missingRequiredKinds.map(kind => profileLabels[kind]).join(", ")}.`); return; }
+      if (hasIncompatibleSelection) { setFormError("Reveja os registos incompatíveis antes de continuar."); return; }
       setCreationStep(4);
     }
   }
 
   const userAccessSheet = (
-    <Sheet open={userDialogOpen} onOpenChange={(open) => { setUserDialogOpen(open); if (!open) setDialogUser(null); }} ariaLabel={dialogUser ? `Editar conta de ${dialogUser.displayName || dialogUser.email}` : "Criar utilizador ou registo"} className="platform-context-sheet user-manager-access-sheet">
-      <section className="platform-card platform-editor"><div className="platform-list-heading"><div><p className="platform-eyebrow">Gestão central</p><h2>{dialogUser ? "Editar conta e acessos" : "Nova conta ou registo"}</h2><p>{dialogUser ? "Atualize a conta, os perfis associados e as permissões num único passo." : "Identificação, perfil, dados do registo e revisão final."}</p></div><Button type="button" variant="outline" onClick={() => { setDialogUser(null); setUserDialogOpen(false); }}>Fechar</Button></div>{!dialogUser && <ol className="user-manager-creation-stepper" aria-label="Passos para criar conta ou registo">{["Nome e email", recordsOnly ? "Tipo de registo" : "Perfil de acesso", "Dados do registo", "Resumo e criação"].map((label, index) => <li key={label} className={creationStep === index + 1 ? "is-current" : creationStep > index + 1 ? "is-complete" : ""} aria-current={creationStep === index + 1 ? "step" : undefined}><span>{index + 1}</span><small>{label}</small></li>)}</ol>}
+    <Sheet open={userDialogOpen} onOpenChange={(open) => { setUserDialogOpen(open); if (!open) { setDialogUser(null); setFormError(""); } }} ariaLabel={dialogUser ? `Editar conta de ${dialogUser.displayName || dialogUser.email}` : "Criar utilizador ou registo"} className="platform-context-sheet user-manager-access-sheet">
+      <section className="platform-card platform-editor"><div className="platform-list-heading"><div><p className="platform-eyebrow">Gestão central</p><h2>{dialogUser ? "Editar conta e acessos" : "Nova conta ou registo"}</h2><p>{dialogUser ? "Atualize a conta, os perfis associados e as permissões num único passo." : "Identificação, perfil, dados do registo e revisão final."}</p></div><Button type="button" variant="outline" onClick={() => { setDialogUser(null); setUserDialogOpen(false); setFormError(""); }}>Fechar</Button></div>{!dialogUser && <ol className="user-manager-creation-stepper" aria-label="Passos para criar conta ou registo">{["Nome e email", recordsOnly ? "Tipo de registo" : "Perfil de acesso", "Dados do registo", "Resumo e criação"].map((label, index) => <li key={label} className={creationStep === index + 1 ? "is-current" : creationStep > index + 1 ? "is-complete" : ""} aria-current={creationStep === index + 1 ? "step" : undefined}><span>{index + 1}</span><small>{label}</small></li>)}</ol>}
+        {formError && <p className="platform-error user-manager-form-error" role="alert">{formError}</p>}
         <form onSubmit={submit}><fieldset className="user-manager-form-fields" disabled={busy}>
           {(dialogUser || creationStep === 1) && <>
             <FieldLike label={recordsOnly ? "Nome da pessoa" : "Nome da conta"}><Input name="displayName" required maxLength={100} value={form.displayName} readOnly={Boolean(dialogUser)} onChange={event => setForm(current => ({ ...current, displayName: event.target.value, profileDrafts: current.profileDrafts.map(draft => draft.name === current.displayName ? { ...draft, name: event.target.value } : draft) }))} /></FieldLike>
@@ -508,13 +513,13 @@ export default function AreaUserManager({view="users",onNavigate}={}) {
           {(dialogUser || creationStep === 3) && !recordsOnly && !accountOnly && <fieldset className="user-manager-profile-options"><legend>Acesso inicial</legend><label className="platform-check"><input type="radio" name="initial-access" checked={!temporaryPassword} onChange={() => setTemporaryPassword(false)} />Enviar convite para definir palavra-passe</label><label className="platform-check"><input type="radio" name="initial-access" checked={temporaryPassword} onChange={() => setTemporaryPassword(true)} />Gerar palavra-passe temporária</label><p className="platform-hint">A palavra-passe temporária é mostrada apenas uma vez. Entregue-a por um canal seguro e peça ao utilizador para a alterar ao entrar.</p></fieldset>}
           {roleChangeNotice && <p className="user-manager-access-warning" role="status">{roleChangeNotice}</p>}
           {missingRequiredKinds.length > 0 && <p className="user-manager-access-warning" role="status">Falta associar ou criar um registo para: {missingRequiredKinds.map(kind => profileLabels[kind]).join(", ")}.</p>}
-          {!recordsOnly && (dialogUser || creationStep === 3) && <AccessPreview roles={form.roles} accessProfiles={accessProfiles} />}
+          {!recordsOnly && (dialogUser || creationStep === 3) && <div className="user-manager-access-preview"><AccessPreview roles={form.roles} accessProfiles={accessProfiles} /></div>}
           {dialogUser && <label className="platform-check"><Checkbox checked={form.active} onChange={(event) => setForm((current) => ({ ...current, active: event.target.checked }))} />Acesso à área ativo</label>}
           {(dialogUser || creationStep === 4) ? <>
             {!dialogUser && <div className="user-manager-creation-review"><p className="platform-eyebrow">Resumo · confirme antes de criar</p><strong>{form.displayName || "Sem nome"}</strong><span>{recordsOnly ? form.email || "Sem email de contacto" : form.email}</span><span>{recordsOnly ? "Sem conta de acesso" : `${creationMode === "account" ? "Conta sem registo de pessoa" : "Conta de acesso"} · ${form.roles.map(role => roleLabels[role] || role).join(", ") || "Sem perfis de acesso"}`}</span>{form.profileIds.length > 0 && <span>Registos associados: {allProfiles.filter(profile => form.profileIds.includes(profile.id)).map(profile => `${profileLabels[profile.kind] || profile.kind} · ${profile.name}`).join("; ")}</span>}{form.profileDrafts.map(draft => <span key={draft.kind}>Novo {profileLabels[draft.kind] || draft.kind}: {draft.name || form.displayName}{draft.schoolYear ? ` · ${draft.schoolYear}` : ""}{draft.ageBand ? ` · ${draft.ageBand}` : ""}{draft.memberNumber ? ` · Sócio ${draft.memberNumber}` : ""}{draft.subjects ? ` · ${draft.subjects}` : ""}</span>)}{creationMode !== "records" && <span>{temporaryPassword ? "Acesso inicial: palavra-passe temporária" : "Acesso inicial: enviar convite por email"}</span>}</div>}
             <p className="platform-hint">{dialogUser ? "As alterações à conta, perfis associados e permissões são guardadas em conjunto." : "O convite gera uma ligação segura para definir a palavra-passe; a palavra-passe temporária só é apresentada uma vez."}</p>
             <div className="platform-actions"><Button type="submit" className="platform-primary" disabled={busy || hasIncompatibleSelection || missingRequiredKinds.length > 0 || (!dialogUser && !recordsOnly && !form.roles.length) || (recordsOnly && (!form.profileDrafts.length || !form.displayName.trim()))}>{busy ? "A guardar…" : dialogUser ? "Guardar conta e acessos" : recordsOnly ? "Criar registos" : accountOnly ? "Criar conta" : "Criar conta e registos"}</Button>{!dialogUser && creationStep > 1 && <Button type="button" variant="outline" onClick={() => setCreationStep(current => current - 1)}>Voltar</Button>}<Button type="button" variant="outline" onClick={() => { setDialogUser(null); setUserDialogOpen(false); }}>Cancelar</Button></div>
-          </> : <div className="platform-actions user-manager-step-actions">{creationStep > 1 && <Button type="button" variant="outline" onClick={() => { setError(""); setCreationStep(current => current - 1); }}>Voltar</Button>}<Button type="button" className="platform-primary" onClick={continueCreation}>Continuar</Button></div>}        </fieldset></form>
+          </> : <div className="platform-actions user-manager-step-actions">{creationStep > 1 && <Button type="button" variant="outline" onClick={() => { setFormError(""); setCreationStep(current => current - 1); }}>Voltar</Button>}<Button type="button" className="platform-primary" onClick={continueCreation}>Continuar</Button></div>}        </fieldset></form>
       </section>
     </Sheet>
   );

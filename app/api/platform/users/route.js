@@ -1,9 +1,11 @@
 import { randomBytes } from "node:crypto";
 import { context, collection, audit, json, failure } from "../../../../lib/platform/server";
-import { assert, accountInput, hasRole, id, profileInput, profileIds, profileDependencyReasons, profileKindMatchesRoles } from "../../../../lib/platform/domain.mjs";
+import { PlatformError, assert, accountInput, hasRole, id, profileInput, profileIds, profileDependencyReasons, profileKindMatchesRoles } from "../../../../lib/platform/domain.mjs";
 import {areaModules,defaultAccessProfiles,effectiveAccountAreas,isBootstrapAdmin,validateAccessProfiles} from "../../../../lib/platform/access.mjs";
 import {canAccessArea} from "../../../../lib/platform/access.mjs";
 import { validateLinks as validateUserLinks } from "../../../../lib/platform/user-links.mjs";
+import { platformContinueUrl } from "../../../../lib/platform/continue-url.mjs";
+import { userCreationError } from "../../../../lib/platform/user-creation-error.mjs";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -51,13 +53,6 @@ async function listAuthUsers(auth) {
 }
 
 export const validateLinks = (tx, db, uid, roles, ids, newProfiles = []) => validateUserLinks(tx, db, uid, roles, ids, newProfiles, collection);
-
-function publicUrl() {
-  const host = process.env.NEXT_PUBLIC_APP_URL?.trim() || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL.trim()}` : "https://baticamigo-website.vercel.app");
-  const url = new URL("/platform/login", host);
-  assert(url.protocol === "https:" && !url.username && !url.password, "O endereço público tem de usar HTTPS.", 503);
-  return url.toString();
-}
 
 function bootstrapAdmin(user) {
   return isBootstrapAdmin(user?.email,user?.emailVerified);
@@ -163,7 +158,7 @@ export async function POST(request) {
       await requirePlatformAccount(db, uid);
       const target = await auth.getUser(uid);
       assert(target.email, "A conta não tem endereço de email.");
-      const resetLink = await auth.generatePasswordResetLink(target.email, { url: publicUrl(), handleCodeInApp: false });
+      const resetLink = await auth.generatePasswordResetLink(target.email, { url: platformContinueUrl(), handleCodeInApp: false });
       await db.runTransaction(async (tx) => { const lock = collection(db, "locks").doc("platform-admins"); await tx.get(lock); tx.set(lock, { updatedAt: Date.now() }); audit(tx, db, account, body.delivery === "invite" ? "send-platform-user-invite" : "reset-platform-user-password", target.uid); });
       return json({ resetLink, emailDelivery: "manual" });
     }
@@ -233,7 +228,7 @@ export async function POST(request) {
     const validatedUserInput = accountInput({ uid: "pending-user", roles: body.roles, profileIds: ids, active: true });
     const temporaryPassword = body.delivery === "temporary" ? randomBytes(15).toString("base64url") : null;
     createdUser = await auth.createUser({ email, displayName, password: temporaryPassword || randomBytes(36).toString("base64url"), emailVerified: false, disabled: false });
-    const resetLink = temporaryPassword ? null : await auth.generatePasswordResetLink(email, { url: publicUrl(), handleCodeInApp: false });
+    const resetLink = temporaryPassword ? null : await auth.generatePasswordResetLink(email, { url: platformContinueUrl(), handleCodeInApp: false });
     const linked = await db.runTransaction(async (tx) => {
       const accountRef = collection(db, "accounts").doc(createdUser.uid);
       assert(!(await tx.get(accountRef)).exists, "A conta já tem permissões configuradas.", 409);
@@ -252,6 +247,8 @@ export async function POST(request) {
     if (createdUser) {
       try { await auth.deleteUser(createdUser.uid); } catch { /* The API failure remains visible; account cleanup is best effort. */ }
     }
+    const creationError = userCreationError(error);
+    if (creationError) return failure(new PlatformError(creationError.status, creationError.message));
     return failure(error);
   }
 }
