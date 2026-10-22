@@ -96,7 +96,7 @@ export function PrivateShell({ areaLabel = "Área reservada", children, classNam
       </div>}
     </aside>
     <div className="private-content">
-      {(user || accountMenu) && <header className="private-userbar"><div className="private-user-identity">{user && <><span className="private-user-avatar" id="user-avatar" aria-hidden="true">BA</span><span><strong id="user-name">{user.name || "Administrador"}</strong><small id="user-email">{user.email || ""}</small></span></>}</div><div className="private-userbar-actions">{accountMenu}{logoutId && <button id={logoutId} type="button" className="private-logout">{logoutLabel}</button>}</div></header>}
+      {(user || accountMenu) && <header className="private-userbar"><div className="private-userbar-actions">{accountMenu}{logoutId && <button id={logoutId} type="button" className="private-logout">{logoutLabel}</button>}</div></header>}
       {children}
     </div>
   </div>;

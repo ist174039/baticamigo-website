@@ -127,8 +127,12 @@
 .private-workspace-page .private-page-heading p { margin-inline: 0; text-align: left; }
 .private-nav-label,.private-nav-group-label { text-align: left; }
 .private-nav-group { justify-items: stretch; }
+.admin-private-shell .admin-header { position: sticky; top: 0; z-index: 45; display: flex; width: 100%; min-height: 76px; box-sizing: border-box; align-items: center; justify-content: flex-end; margin: 0; padding: 0 clamp(20px, 4vw, 56px); border-bottom: 1px solid var(--private-line); background: var(--private-paper); }
+.admin-private-shell .private-userbar { display: none; }
+.admin-private-shell.has-shared-account-menu .admin-header { display: none; }
+.admin-private-shell.has-shared-account-menu .private-userbar { display: flex; }
 .admin-private-shell .admin-user-menu { position: relative; margin-left: auto; }
-.admin-private-shell .admin-user-menu > summary { display: flex; align-items: center; gap: 9px; padding: 5px 10px 5px 5px; border: 1px solid var(--private-line); border-radius: 999px; background: #fff; color: var(--private-deep); cursor: pointer; list-style: none; font: 600 12px var(--font-sans, Arial, sans-serif); }
+.admin-private-shell .admin-user-menu > summary { display: flex; min-height: 46px; align-items: center; justify-content: flex-start; gap: 9px; padding: 4px 13px 4px 5px; border: 1px solid var(--private-line); border-radius: 999px; background: #fff; color: var(--private-deep); cursor: pointer; list-style: none; font: 600 12px var(--font-sans, Arial, sans-serif); }
 .admin-private-shell .admin-user-menu > summary::-webkit-details-marker { display: none; }
 .admin-private-shell .admin-user-menu > summary:hover,.admin-private-shell .admin-user-menu[open] > summary { border-color: #cdb9d7; background: #faf7fc; }
 .admin-private-shell .admin-user-avatar { display: grid; width: 34px; height: 34px; place-items: center; border-radius: 50%; background: #f4edf8; color: var(--private-forest); font-size: 12px; font-weight: 750; }
@@ -699,6 +703,8 @@
 .platform-finance > .platform-card > .platform-list-heading > div:first-child { width: 100%; min-width: 0; }
 .platform-finance > .platform-card > .platform-list-heading > div:first-child p:last-child { max-width: 65ch; line-height: 1.55; }
 .platform-finance > .platform-card > .platform-list-heading .platform-record-actions { width: 100%; max-width: none; gap: 9px; }
+.platform-finance > .platform-card > .platform-list-heading .platform-record-actions { display: flex; justify-content: flex-end; }
+.platform-finance > .platform-card > .platform-list-heading .platform-action-menu { margin-left: auto; }
 .platform-finance > .platform-card > .platform-list-heading .platform-record-actions button { min-height: 40px; padding-inline: 15px; }
 
 .platform .user-manager-actions { width: max-content; min-width: 0; max-width: none; flex-wrap: nowrap; gap: 8px; }
@@ -845,9 +851,11 @@
 }
 
 /* Keep the account bar in view while the selected workspace section changes or scrolls. */
-.private-userbar { position: sticky; top: 0; z-index: 45; display: flex; width: 100%; justify-content: space-between; box-sizing: border-box; margin: 0; padding: 0 clamp(20px, 4vw, 56px); background: var(--private-paper); }
-.private-userbar-actions { min-width: 0; max-width: 100%; }
+.private-userbar { position: sticky; top: 0; z-index: 45; display: flex; width: 100%; min-height: 76px; justify-content: flex-end; box-sizing: border-box; margin: 0; padding: 0 clamp(20px, 4vw, 56px); background: var(--private-paper); }
+.private-userbar-actions { min-width: 0; max-width: 100%; margin-left: auto; }
 .private-account-menu,.private-account-trigger { min-width: 0; max-width: 100%; }
+.private-account-trigger { min-height: 46px; justify-content: flex-start; }
+.private-account-avatar { width: 34px; height: 34px; flex-basis: 34px; }
 
 /* The label and icon have separate flex contracts so menu names never collapse to a few letters. */
 .private-shell .private-navigation-panel nav :is(a,button) { justify-content: flex-start; text-align: left; }
@@ -880,18 +888,32 @@
 .platform-overview-welcome .platform-eyebrow { margin: 0; }
 .platform-overview-welcome h2 { margin: 0; font-size: clamp(18px, 2vw, 22px); }
 .platform-overview-welcome p:last-child { margin: 0; color: var(--private-muted); font-size: 12px; line-height: 1.55; }
+.platform .platform-overview-metrics { gap: 14px; }
+.platform .platform-overview-metric { min-height: 156px; gap: 13px; padding: 18px 20px; border-radius: 16px; }
+.platform .platform-metric-label { display: flex; align-items: center; gap: 10px; color: var(--private-deep); font-size: 12px; font-weight: 700; }
+.platform .platform-metric-icon { display: grid; width: 34px; height: 34px; flex: 0 0 34px; place-items: center; border-radius: 11px; background: #f5eff8; color: var(--private-forest); }
+.platform .platform-overview-metric:nth-child(2) .platform-metric-icon { background: #edf4fb; color: var(--private-blue); }
+.platform .platform-overview-metric:nth-child(3) .platform-metric-icon { background: #fff2e9; color: #bd531b; }
+.platform .platform-metrics > .platform-overview-metric > strong { font-size: clamp(30px, 3vw, 36px); }
+.platform .platform-overview-metric .platform-metric-footer { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: 9px; margin-top: auto; }
+.platform .platform-overview-metric .platform-metric-footer small { margin: 0; color: var(--private-muted); font-size: 10px; font-weight: 500; line-height: 1.4; }
+.platform .platform-overview-metric .platform-metric-footer > span { display: inline-flex; flex: 0 0 auto; align-items: center; gap: 4px; color: var(--private-forest); font-size: 10px; font-weight: 700; }
 .platform-progress-note ul { display: grid; gap: 5px; margin: 10px 0 0; padding-left: 18px; color: var(--private-muted); font-size: 11px; line-height: 1.55; }
 .platform-assessment-record > a,.platform-assessment-record > p > a { display: inline-flex; margin-top: 12px; color: var(--private-forest); font-size: 12px; font-weight: 650; }
 @media (max-width: 760px) {
   .platform-progress-filter-group { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .platform-progress-filter-group:first-child { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .platform-overview-welcome { align-items: flex-start; flex-direction: column; padding: 17px; }
+  .platform .platform-overview-metrics { gap: 10px; }
+  .platform .platform-overview-metric { min-height: 136px; padding: 15px; }
 }
 @media (max-width: 480px) {
   .platform-progress-filter-group { grid-template-columns: 1fr; }
   .platform-assessment-record { padding: 15px; }
   .platform-assessment-record .platform-list-heading { flex-direction: column; }
   .platform-progress-filter-group,.platform-progress-filter-group:first-child { grid-template-columns: 1fr; }
+  .platform-finance > .platform-card > .platform-list-heading .platform-record-actions { display: grid; grid-template-columns: minmax(0, 1fr); }
+  .platform-finance > .platform-card > .platform-list-heading .platform-action-menu { justify-self: end; }
   .private-userbar { gap: 8px; padding-inline: 16px; }
   .private-userbar-actions { flex: 0 1 auto; }
   .private-account-trigger { padding-inline: 8px; font-size: 11px; }
