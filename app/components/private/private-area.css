@@ -311,6 +311,17 @@
 .user-manager-module-options > p { margin: 0; }
 .user-manager-module-group > h4 { margin: 5px 0 8px; color: var(--private-muted); font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
 .user-manager-module-group > div { display: flex; flex-wrap: wrap; gap: 7px; }
+.user-manager-permissions-tab > .user-manager-module-options { margin: 0; padding: 0; border: 0; background: transparent; }
+.user-manager-permission-preview > header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 14px 16px; border: 1px solid var(--private-line); border-radius: 12px; background: #fff; }
+.user-manager-permission-preview > header h3 { display: grid; gap: 4px; margin: 0; color: var(--private-deep); font-size: 14px; }
+.user-manager-permission-preview > header h3 small { color: var(--private-muted); font-size: 11px; font-weight: 450; }
+.user-manager-permission-preview > header > span:last-child { flex: 0 0 auto; }
+.user-manager-permission-roles { display: grid; gap: 7px; padding: 12px 14px; border: 1px solid var(--private-line); border-radius: 11px; background: #fff; }
+.user-manager-permission-roles > span { color: var(--private-muted); font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+.user-manager-permission-roles > div { display: flex; flex-wrap: wrap; gap: 6px; }
+.user-manager-permission-preview .user-manager-module-group { padding: 10px 0 2px; }
+.user-manager-permission-preview .user-manager-module-group > h4 { margin-top: 0; }
+.user-manager-permission-preview > p { margin: 0; padding: 14px; border-radius: 10px; background: #fff; color: var(--private-muted); font-size: 12px; }
 .user-manager-access-warning { display: block; margin-top: 6px; color: #9a5225; font-size: 11px; line-height: 1.45; }
 .user-manager-access-sheet { width: min(760px, 100vw); }
 .user-manager-access-sheet > section { width: 100%; }
@@ -540,6 +551,7 @@
 .platform :is(button, a):focus-visible { outline: 3px solid var(--private-lime); outline-offset: 3px; }
 
 .platform-session-workspace { min-width: 0; }
+.platform-session-dialog { width: min(760px, 100vw); }
 .platform-session-editor .platform-list-heading { position: sticky; top: -32px; z-index: 3; margin: -32px -32px 22px; padding: 24px 32px 18px; border-bottom: 1px solid var(--private-line); background: hsl(var(--card)); }
 .platform-session-stepper { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 4px 0 18px; padding: 0; list-style: none; }
 .platform-session-stepper li { display: flex; min-width: 0; align-items: center; gap: 9px; padding: 9px 6px; border-bottom: 2px solid var(--private-line); color: var(--private-muted); }
@@ -550,6 +562,8 @@
 .platform-session-form-section { display: grid; gap: 14px; margin: 22px 0; padding: 20px; border: 1px solid var(--private-line); border-radius: 14px; background: #fff; }
 .platform-session-form-section[hidden] { display: none; }
 .platform-session-form-section > h3 { margin: 0; color: var(--private-forest); font-size: 16px; }
+.platform-session-details-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.platform-session-details-fields .platform-field { min-width: 0; margin: 0; }
 .platform-session-time-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
 .platform-session-form-section .platform-choices { margin: 0; }
 .platform-session-recurrence { display: grid; gap: 14px; padding-top: 16px; border-top: 1px solid var(--private-line); }
@@ -559,7 +573,7 @@
 .platform-session-review dt { color: var(--private-muted); font-size: 12px; }
 .platform-session-review dd { margin: 0; color: var(--private-deep); font-size: 13px; font-weight: 600; overflow-wrap: anywhere; }
 .platform-session-editor .platform-actions { position: sticky; bottom: -32px; z-index: 2; margin: 20px -32px -32px; padding: 16px 32px; border-top: 1px solid var(--private-line); background: hsl(var(--card)); }
-@media (max-width: 560px) { .platform-session-editor .platform-list-heading { top: -18px; margin: -18px -18px 16px; padding: 18px; } .platform-session-form-section { padding: 15px; } .platform-session-time-fields { grid-template-columns: 1fr; gap: 0; } .platform-session-editor .platform-actions { bottom: -18px; margin: 16px -18px -18px; padding: 12px 18px; } }
+@media (max-width: 560px) { .platform-session-editor .platform-list-heading { top: -18px; margin: -18px -18px 16px; padding: 18px; } .platform-session-form-section { padding: 15px; } .platform-session-details-fields, .platform-session-time-fields { grid-template-columns: 1fr; gap: 0; } .platform-session-details-fields .platform-field { margin: 10px 0; } .platform-session-editor .platform-actions { bottom: -18px; margin: 16px -18px -18px; padding: 12px 18px; } }
 .platform-session-view-actions, .platform-calendar-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .platform-calendar { margin-top: 24px; }
 .platform-calendar-heading, .platform-calendar-day-summary { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 16px; }

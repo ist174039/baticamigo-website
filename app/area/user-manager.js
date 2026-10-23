@@ -56,9 +56,14 @@ function ProfileDraftFields({ draft, onChange, guardians }) {
   </article>;
 }
 
-function AccessPreview({roles,accessProfiles}) {
+function AccessPreview({roles,accessProfiles,compact=false}) {
   const allowed=new Set(defaultAreasForRoles(roles,accessProfiles));
-  return <section className="user-manager-module-options" aria-label="Menus herdados dos perfis"><h3>Menus atribuídos automaticamente</h3>{roles.length?areaGroups.map(group=>({...group,modules:group.modules.filter(module=>allowed.has(module))})).filter(group=>group.modules.length>0).map(group=><section className="user-manager-module-group" key={group.label}><h4>{group.label}</h4><div>{group.modules.map(module=><Badge variant="secondary" key={module}>{moduleLabels[module]}</Badge>)}</div></section>):<p>Escolha um perfil para ver os menus herdados.</p>}<p className="platform-hint">Os dados e as ações continuam sujeitos às regras de acesso de cada perfil.</p></section>;
+  return <section className={`user-manager-module-options${compact ? " user-manager-permission-preview" : ""}`} aria-label="Menus herdados dos perfis">
+    <header><div><h3>{compact ? "Acesso resultante" : "Menus atribuídos automaticamente"}{compact && <small>Menus combinados a partir dos perfis selecionados.</small>}</h3></div>{compact && <Badge variant="outline">{allowed.size} menus</Badge>}</header>
+    {compact && roles.length > 0 && <div className="user-manager-permission-roles"><span>Perfis</span><div>{roles.map(role=><Badge variant="secondary" key={role}>{roleLabels[role] || role}</Badge>)}</div></div>}
+    {roles.length?areaGroups.map(group=>({...group,modules:group.modules.filter(module=>allowed.has(module))})).filter(group=>group.modules.length>0).map(group=><section className="user-manager-module-group" key={group.label}><h4>{group.label}</h4><div>{group.modules.map(module=><Badge variant="secondary" key={module}>{moduleLabels[module]}</Badge>)}</div></section>):<p>Associe um perfil na aba Perfis para consultar os menus disponíveis.</p>}
+    {!compact && <p className="platform-hint">Os dados e as ações continuam sujeitos às regras de acesso de cada perfil.</p>}
+  </section>;
 }
 
 function LocalPagination({ page, pageSize, total, onPageChange, label }) {
@@ -505,7 +510,7 @@ export default function AreaUserManager({view="users",onNavigate}={}) {
               </section>
               {(personKinds.some(kind => form.roles.includes(kind)) || form.profileDrafts.length > 0) && <section className="user-manager-profile-section user-manager-new-profile-section" aria-labelledby="user-manager-new-profile-title"><div className="user-manager-profile-section-heading"><div><h3 id="user-manager-new-profile-title">Adicionar registo</h3></div><div className="user-manager-profile-add-actions">{personKinds.filter(kind => form.roles.includes(kind) && !form.profileDrafts.some(draft => draft.kind === kind)).map(kind => <Button key={kind} type="button" size="sm" variant="outline" onClick={() => addProfileDraft(kind)}>+ {profileLabels[kind]}</Button>)}</div></div>{form.profileDrafts.map(draft => <ProfileDraftFields key={draft.kind} draft={draft} guardians={allProfiles.filter(profile => profile.kind === "guardian" && profile.active)} onChange={next => updateProfileDraft(draft.kind, next)} />)}</section>}
             </> : <p className="user-manager-profile-empty">Este perfil não precisa de um registo de pessoa associado.</p>}</div> },
-            { value: "permissions", label: "Permissões", content: <div className="user-manager-edit-tab-panel"><p className="platform-hint">Os menus disponíveis são determinados pelos perfis atribuídos. Quando existem vários perfis, os menus são combinados.</p><AccessPreview roles={form.roles} accessProfiles={accessProfiles} /></div> },
+            { value: "permissions", label: "Permissões", content: <div className="user-manager-edit-tab-panel user-manager-permissions-tab"><AccessPreview roles={form.roles} accessProfiles={accessProfiles} compact /></div> },
           ]} />}
           {!dialogUser && creationStep === 1 && <>
             <FieldLike label={recordsOnly ? "Nome da pessoa" : "Nome da conta"}><Input name="displayName" required maxLength={100} value={form.displayName} readOnly={Boolean(dialogUser)} onChange={event => setForm(current => ({ ...current, displayName: event.target.value, profileDrafts: current.profileDrafts.map(draft => draft.name === current.displayName ? { ...draft, name: event.target.value } : draft) }))} /></FieldLike>

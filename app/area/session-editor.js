@@ -74,7 +74,7 @@ export default function SessionEditor({ open, onOpenChange, editingSession, sess
     setStep(current => Math.min(3, current + 1));
   }
 
-  return <Sheet open={open} onOpenChange={onOpenChange} ariaLabel={editingSession ? `Editar sessão ${editingSession.title}` : "Agendar sessão"} className="platform-dialog">
+  return <Sheet open={open} onOpenChange={onOpenChange} ariaLabel={editingSession ? `Editar sessão ${editingSession.title}` : "Agendar sessão"} className="platform-dialog platform-session-dialog">
     <section className="platform-card platform-editor platform-session-editor">
       <div className="platform-list-heading"><div><p className="platform-eyebrow">Agenda de acompanhamento</p><h2>{editingSession ? `Editar sessão: ${editingSession.title}` : "Nova sessão"}</h2></div><Button type="button" variant="outline" onClick={onClose}>Fechar</Button></div>
       {!editingSession && <SessionStepIndicator step={step} />}
@@ -84,8 +84,8 @@ export default function SessionEditor({ open, onOpenChange, editingSession, sess
         <fieldset disabled={busy}>
           <section className="platform-session-form-section" data-session-step="1" hidden={isCreating && step !== 1}>
             <h3>Detalhes e horário</h3>
-            <Field label="Título da sessão"><Input name="title" required maxLength={120} placeholder="Ex.: Apoio a Matemática" defaultValue={editingSession?.title}/></Field>
-            <Field label="Sala ou ligação"><Input name="room" maxLength={200} placeholder="Sala, endereço ou ligação da reunião" defaultValue={editingSession?.room}/></Field>
+            <div className="platform-session-details-fields"><Field label="Título da sessão"><Input name="title" required maxLength={120} placeholder="Ex.: Apoio a Matemática" defaultValue={editingSession?.title}/></Field>
+            <Field label="Sala ou ligação"><Input name="room" maxLength={200} placeholder="Sala, endereço ou ligação da reunião" defaultValue={editingSession?.room}/></Field></div>
             <div className="platform-session-time-fields"><Field label="Começa"><Input name="startsAt" type="datetime-local" required defaultValue={editingSession ? lisbonDateTimeInput(editingSession.startsAt) : sessionDraftStart || undefined}/></Field><Field label="Termina"><Input name="endsAt" type="datetime-local" required defaultValue={editingSession ? lisbonDateTimeInput(editingSession.endsAt) : sessionDraftStart ? addLocalHours(sessionDraftStart, 1) : undefined}/></Field></div>
             <p className="platform-hint">Horários no fuso de Lisboa. A duração é definida pela hora de início e fim.</p>
           </section>
