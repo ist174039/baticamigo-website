@@ -396,6 +396,23 @@
 .user-manager-associated-profiles > .user-manager-table-wrap,
 .user-manager-associated-profiles > .user-manager-inline-pagination { grid-column: 1 / -1; }
 .user-manager-associated-profiles .user-manager-table { min-width: 520px; }
+.user-manager-profile-edit > .user-manager-role-options { margin: 0; padding: 12px 14px; background: #fff; }
+.user-manager-profile-section { display: grid; gap: 10px; min-width: 0; padding: 14px; border: 1px solid var(--private-line); border-radius: 12px; background: #fff; }
+.user-manager-profile-section-heading { display: flex; align-items: center; justify-content: space-between; gap: 14px; min-width: 0; }
+.user-manager-profile-section-heading > div:first-child { display: grid; gap: 4px; }
+.user-manager-profile-section-heading h3 { margin: 0; color: var(--private-deep); font-size: 13px; }
+.user-manager-profile-section-heading span { color: var(--private-muted); font-size: 11px; }
+.user-manager-profile-section-heading .user-manager-local-search { max-width: 260px; }
+.user-manager-profile-section .user-manager-table { min-width: 520px; }
+.user-manager-profile-section .user-manager-inline-pagination { padding: 4px 0 0; }
+.user-manager-profile-add-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
+.user-manager-profile-empty { margin: 0; padding: 12px 14px; border-radius: 10px; background: #faf7fb; color: var(--private-muted); font-size: 12px; }
+.user-manager-new-profile-section .user-manager-profile-draft { margin: 0; }
+@media (max-width: 620px) {
+  .user-manager-profile-section-heading { align-items: stretch; flex-direction: column; }
+  .user-manager-profile-section-heading .user-manager-local-search { max-width: none; }
+  .user-manager-profile-add-actions { justify-content: flex-start; }
+}
 .user-manager-module-options .platform-check { margin: 0; }
 .user-manager-create-profile { margin: 12px 0; font-weight: 700; }
 .user-manager-confirm { width: min(480px, calc(100% - 28px)); }
@@ -524,10 +541,23 @@
 
 .platform-session-workspace { min-width: 0; }
 .platform-session-editor .platform-list-heading { position: sticky; top: -32px; z-index: 3; margin: -32px -32px 22px; padding: 24px 32px 18px; border-bottom: 1px solid var(--private-line); background: hsl(var(--card)); }
+.platform-session-stepper { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 4px 0 18px; padding: 0; list-style: none; }
+.platform-session-stepper li { display: flex; min-width: 0; align-items: center; gap: 9px; padding: 9px 6px; border-bottom: 2px solid var(--private-line); color: var(--private-muted); }
+.platform-session-stepper li > span { display: grid; width: 25px; height: 25px; flex: 0 0 25px; place-items: center; border: 1px solid var(--private-line); border-radius: 50%; background: #fff; font-size: 11px; font-weight: 700; }
+.platform-session-stepper li small { overflow: hidden; font-size: 11px; font-weight: 650; text-overflow: ellipsis; }
+.platform-session-stepper li.is-current { border-color: var(--private-forest); color: var(--private-deep); }
+.platform-session-stepper li.is-current > span, .platform-session-stepper li.is-complete > span { border-color: var(--private-forest); background: var(--private-forest); color: #fff; }
 .platform-session-form-section { display: grid; gap: 14px; margin: 22px 0; padding: 20px; border: 1px solid var(--private-line); border-radius: 14px; background: #fff; }
+.platform-session-form-section[hidden] { display: none; }
 .platform-session-form-section > h3 { margin: 0; color: var(--private-forest); font-size: 16px; }
 .platform-session-time-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
 .platform-session-form-section .platform-choices { margin: 0; }
+.platform-session-recurrence { display: grid; gap: 14px; padding-top: 16px; border-top: 1px solid var(--private-line); }
+.platform-session-recurrence > h3 { margin: 0; color: var(--private-forest); font-size: 14px; }
+.platform-session-review dl { display: grid; gap: 0; margin: 0; }
+.platform-session-review dl > div { display: grid; grid-template-columns: minmax(120px, .5fr) minmax(0, 1fr); gap: 14px; padding: 11px 0; border-top: 1px solid var(--private-line); }
+.platform-session-review dt { color: var(--private-muted); font-size: 12px; }
+.platform-session-review dd { margin: 0; color: var(--private-deep); font-size: 13px; font-weight: 600; overflow-wrap: anywhere; }
 .platform-session-editor .platform-actions { position: sticky; bottom: -32px; z-index: 2; margin: 20px -32px -32px; padding: 16px 32px; border-top: 1px solid var(--private-line); background: hsl(var(--card)); }
 @media (max-width: 560px) { .platform-session-editor .platform-list-heading { top: -18px; margin: -18px -18px 16px; padding: 18px; } .platform-session-form-section { padding: 15px; } .platform-session-time-fields { grid-template-columns: 1fr; gap: 0; } .platform-session-editor .platform-actions { bottom: -18px; margin: 16px -18px -18px; padding: 12px 18px; } }
 .platform-session-view-actions, .platform-calendar-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
