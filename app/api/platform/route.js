@@ -45,11 +45,6 @@ export async function GET(request) {
       // Tutors see only the names of pupils in their assigned sessions.
       const assigned=[...new Set(sessions.filter(s=>canAttend(account,s)).flatMap(s=>s.studentIds))];
       for(const student of assigned) if(!profiles.some(p=>p.id===student)) { const p=await collection(db,'profiles').doc(id(student)).get(); if(p.exists) profiles.push({id:p.id,kind:'student',name:p.data().name,active:p.data().active}); }
-      profiles=profiles.map(p=>{
-        if(profileIds(account).includes(p.id)) return p;
-        if(canReadStudent(account,p)) return hasRole(account,'guardian') && !manages(account) ? {id:p.id,kind:p.kind,name:p.name,active:p.active} : p;
-        return {id:p.id,kind:p.kind,name:p.name,active:p.active};
-      });
       sessions=sessions.map(s=>canAttend(account,s) ? s : {...s,studentIds:s.studentIds.filter(student=>studentIds.includes(student))});
     }
     const personalSessions=sessions;
@@ -61,13 +56,17 @@ export async function GET(request) {
     }
     // Only expose names of the tutors already present on this account's sessions.
     for(const tutorId of new Set(sessions.map(s=>s.tutorId).filter(Boolean))) if(!profiles.some(p=>p.id===tutorId)) { const tutor=await collection(db,'profiles').doc(id(tutorId)).get(); if(tutor.exists) profiles.push({id:tutor.id,kind:'tutor',name:tutor.data().name,active:tutor.data().active}); }
-    // Keep the full relationship data for server-side authorization. `profiles`
-    // may be redacted for the API response (e.g. guardianIds for families).
-    const authorizationProfiles=[...profiles];
-    const modules=await readModules(db,account,authorizationProfiles,personalSessions,storage);
+    // Resolve records while relationship data is still complete. Profile
+    // redaction below is only for the external response, never authorization.
+    const modules=await readModules(db,account,profiles,personalSessions,storage);
     // Calendar metadata can be visible to every account, but attendance stays
     // scoped to the attendees already filtered for this account above.
     const attendance=await readAttendance(db,sessionsWithAuthorizedAttendees(sessions));
+    if(!manages(account)) profiles=profiles.map(p=>{
+      if(profileIds(account).includes(p.id)) return p;
+      if(canReadStudent(account,p)) return hasRole(account,'guardian') ? {id:p.id,kind:p.kind,name:p.name,active:p.active} : p;
+      return {id:p.id,kind:p.kind,name:p.name,active:p.active};
+    });
     const uniqueProfiles=[...new Map(profiles.map(p=>[p.id,p])).values()];
     const visibleProfiles=canAccessArea(account,'profiles')?uniqueProfiles:uniqueProfiles.map(({id,kind,name,active,schoolYear,ageBand,subjects,membershipStatus,memberNumber})=>({id,kind,name,active,schoolYear,ageBand,subjects,membershipStatus,memberNumber}));
     const visibleSessions=canAccessArea(account,'sessions')?sessions:canAccessArea(account,'reports')?sessions.map(({id,studentIds,tutorId,startsAt,endsAt,status})=>({id,studentIds,tutorId,startsAt,endsAt,status})):[];
