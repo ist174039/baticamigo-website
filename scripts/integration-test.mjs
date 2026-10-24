@@ -69,7 +69,7 @@ try {
   const assessment={kind:'assessment',studentId:'s1',title:'Avaliação de teste',subject:'Português',period:'Mensal',origin:'Teste sintético',score:14,scaleMin:0,scaleMax:20};
   for(const name of ['student','guardian','otherTutor','member'])await expect(name,{action:'save-record',record:assessment},403);
   const saved=await expect('tutor',{action:'save-record',record:assessment});
-  assert.equal((await expect('guardian')).records.length,1);assert.equal((await expect('otherGuardian')).records.length,0);
+  assert.equal((await expect('guardian')).records.length,1,'Guardians must retain authorized access to their pupil’s assessment after profile data is redacted from the API response.');assert.equal((await expect('otherGuardian')).records.length,0);
   await expect('tutor',{action:'save-record',record:{...assessment,id:saved.id,version:1,score:15}});
   await expect('tutor',{action:'save-record',record:{...assessment,id:saved.id,version:1,score:16}},409);
   await expect('tutor',{action:'save-record',record:{...assessment,score:22}},400);

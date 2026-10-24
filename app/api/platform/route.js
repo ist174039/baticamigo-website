@@ -61,7 +61,10 @@ export async function GET(request) {
     }
     // Only expose names of the tutors already present on this account's sessions.
     for(const tutorId of new Set(sessions.map(s=>s.tutorId).filter(Boolean))) if(!profiles.some(p=>p.id===tutorId)) { const tutor=await collection(db,'profiles').doc(id(tutorId)).get(); if(tutor.exists) profiles.push({id:tutor.id,kind:'tutor',name:tutor.data().name,active:tutor.data().active}); }
-    const modules=await readModules(db,account,profiles,personalSessions,storage);
+    // Keep the full relationship data for server-side authorization. `profiles`
+    // may be redacted for the API response (e.g. guardianIds for families).
+    const authorizationProfiles=[...profiles];
+    const modules=await readModules(db,account,authorizationProfiles,personalSessions,storage);
     // Calendar metadata can be visible to every account, but attendance stays
     // scoped to the attendees already filtered for this account above.
     const attendance=await readAttendance(db,sessionsWithAuthorizedAttendees(sessions));
