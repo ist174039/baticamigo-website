@@ -21,7 +21,7 @@ try {
   for(let attempt=0;attempt<120;attempt++){try{const response=await fetch(host+'/api/platform');if(response.status===401)break;}catch{}if(attempt===119)throw new Error('Local server did not start.');await new Promise(resolve=>setTimeout(resolve,500));}
   for(const [name,role,profileIds] of fixtures){const email=name.toLowerCase()+'@example.invalid';await auth.createUser({uid:name,email,password:'Synthetic-fixture-password-42',emailVerified:true});await db.collection('platform_accounts').doc(name).set({roles:[role],role,profileIds,active:true});const response=await fetch('http://'+process.env.FIREBASE_AUTH_EMULATOR_HOST+'/identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=emulator-only',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password:'Synthetic-fixture-password-42',returnSecureToken:true})});const result=await response.json();assert.ok(result.idToken,'Emulated sign-in failed.');tokens[name]=result.idToken;}
   for(const [id,kind,name,guardians] of [['s1','student','Aluno de teste A',['g1']],['s2','student','Aluno de teste B',['g2']],['s3','student','Aluno de teste C',['g3']],['g1','guardian','Encarregado de teste A',[]],['g2','guardian','Encarregado de teste B',[]],['g3','guardian','Encarregado de teste C',[]],['t1','tutor','Explicador de teste A',[]],['t2','tutor','Explicador de teste B',[]],['m1','member','Sócio de teste',[]]])await db.collection('platform_profiles').doc(id).set({kind,name,guardianIds:guardians,active:true});
-  await db.collection('platform_access_settings').doc('profiles').set({profiles:{...defaultAccessProfiles,member:['overview','finance']}});
+  await db.collection('platform_access_settings').doc('profiles').set({profiles:{...defaultAccessProfiles,member:['overview','finance','document']}});
   await expect(null,null,401);
   const start=new Date(Date.now()-86400000).toISOString(),end=new Date(Date.now()-82800000).toISOString();
   const session={title:'Sessão de teste',studentIds:['s1','s2'],tutorId:'t1',room:'Teste A',startsAt:start,endsAt:end};
@@ -60,7 +60,7 @@ try {
   assert.equal(otherTutorView.attendance.some(record=>['s1','s2'].includes(record.studentId)),false,'A tutor must not receive attendance from another tutor’s session.');
   assert.equal(otherTutorView.profiles.some(profile=>profile.id==='t1'),false,'A tutor must not receive another tutor profile through the shared calendar.');
   const memberView=await expect('member');
-  assert.deepEqual(memberView.account.modules,['overview','sessions','finance'],'Customized profile menus are loaded while the shared calendar remains available.');
+  assert.deepEqual(memberView.account.modules,['overview','sessions','finance','document'],'Customized profile menus are loaded, the shared calendar remains available, and unassigned menus are removed.');
   assert.equal(memberView.sessions.length,2,'Profiles without the learning modules still receive the shared calendar.');
   assert.ok(memberView.sessions.every(item=>item.studentIds.length===0),'Calendar sessions must not disclose attendee identities to unrelated profiles.');
   assert.ok(memberView.sessions.every(item=>!('tutorId' in item)),'Calendar sessions must not disclose unrelated tutor identities.');
