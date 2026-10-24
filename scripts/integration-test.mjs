@@ -60,7 +60,7 @@ try {
   assert.equal(otherTutorView.attendance.some(record=>['s1','s2'].includes(record.studentId)),false,'A tutor must not receive attendance from another tutor’s session.');
   assert.equal(otherTutorView.profiles.some(profile=>profile.id==='t1'),false,'A tutor must not receive another tutor profile through the shared calendar.');
   const memberView=await expect('member');
-  assert.ok(memberView.account.modules.includes('sessions'),'The shared calendar remains available when the member profile is customized without sessions.');
+  assert.deepEqual(memberView.account.modules,['overview','sessions','finance'],'Customized profile menus are loaded while the shared calendar remains available.');
   assert.equal(memberView.sessions.length,2,'Profiles without the learning modules still receive the shared calendar.');
   assert.ok(memberView.sessions.every(item=>item.studentIds.length===0),'Calendar sessions must not disclose attendee identities to unrelated profiles.');
   assert.ok(memberView.sessions.every(item=>!('tutorId' in item)),'Calendar sessions must not disclose unrelated tutor identities.');
