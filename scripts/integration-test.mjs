@@ -14,8 +14,8 @@ const server=spawn(process.execPath,['node_modules/next/dist/bin/next','dev','--
 let serverLog='';for(const stream of [server.stdout,server.stderr])stream.on('data',chunk=>{serverLog=(serverLog+chunk.toString()).slice(-12000);});
 const tokens={};
 const fixtures=[['admin','admin',[]],['student','student',['s1']],['otherStudent','student',['s2']],['guardian','guardian',['g1']],['otherGuardian','guardian',['g2']],['tutor','tutor',['t1']],['otherTutor','tutor',['t2']],['member','member',['m1']]];
-async function request(who,body) {const response=await fetch(host+'/api/platform',{method:body?'POST':'GET',headers:{...(who ? {Authorization:'Bearer '+tokens[who]} : {}),...(body?{'Content-Type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})});return {status:response.status,body:await response.json()};}
-async function expect(who,body,status=200) {const result=await request(who,body);assert.equal(result.status,status,result.body.error);return result.body;}
+async function request(who,body,path='/api/platform') {const response=await fetch(host+path,{method:body?'POST':'GET',headers:{...(who ? {Authorization:'Bearer '+tokens[who]} : {}),...(body?{'Content-Type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})});return {status:response.status,body:await response.json()};}
+async function expect(who,body,status=200,path='/api/platform') {const result=await request(who,body,path);assert.equal(result.status,status,result.body.error);return result.body;}
 try {
   for(let attempt=0;attempt<120;attempt++){try{const response=await fetch(host+'/api/platform');if(response.status===401)break;}catch{}if(attempt===119)throw new Error('Local server did not start.');await new Promise(resolve=>setTimeout(resolve,500));}
   for(const [name,role,profileIds] of fixtures){const email=name.toLowerCase()+'@example.invalid';await auth.createUser({uid:name,email,password:'Synthetic-fixture-password-42',emailVerified:true});await db.collection('platform_accounts').doc(name).set({roles:[role],role,profileIds,active:true});const response=await fetch('http://'+process.env.FIREBASE_AUTH_EMULATOR_HOST+'/identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=emulator-only',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password:'Synthetic-fixture-password-42',returnSecureToken:true})});const result=await response.json();assert.ok(result.idToken,'Emulated sign-in failed.');tokens[name]=result.idToken;}
@@ -83,7 +83,7 @@ try {
   assert.equal((await expect('member')).records.length,1);assert.equal((await expect('student')).records.some(r=>r.studentId==='m1'),false);
   await expect('student',{action:'save-record',record:{kind:'message',studentId:'s1',title:'Mensagem de teste',content:'Mensagem sintética'}});
   assert.ok((await expect('tutor')).records.some(r=>r.kind==='message'));
-  await expect('student',{action:'save-account',account:{uid:'otherStudent',roles:['admin'],profileIds:[],active:true}},403);
+  await expect('student',{action:'create-person-records'},403,'/api/platform/users');
   await expect('admin',{action:'save-profile',profile:{kind:'member',name:'Novo sócio sintético',active:true,memberNumber:'TEST',membershipStatus:'pending'}});
   assert.ok((await db.collection('platform_audit').get()).size>=8);
   console.log('PASS: member documents, messaging, account privilege protection and audit writes.');
