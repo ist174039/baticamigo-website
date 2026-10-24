@@ -59,9 +59,9 @@ function ProfileDraftFields({ draft, onChange, guardians }) {
 function AccessPreview({roles,accessProfiles,compact=false}) {
   const allowed=new Set(defaultAreasForRoles(roles,accessProfiles));
   return <section className={`user-manager-module-options${compact ? " user-manager-permission-preview" : ""}`} aria-label="Menus herdados dos perfis">
-    <header><div><h3>{compact ? "Acesso resultante" : "Menus atribuídos automaticamente"}{compact && <small>Menus combinados a partir dos perfis selecionados.</small>}</h3></div>{compact && <Badge variant="outline">{allowed.size} menus</Badge>}</header>
-    {compact && roles.length > 0 && <div className="user-manager-permission-roles"><span>Perfis</span><div>{roles.map(role=><Badge variant="secondary" key={role}>{roleLabels[role] || role}</Badge>)}</div></div>}
-    {roles.length?areaGroups.map(group=>({...group,modules:group.modules.filter(module=>allowed.has(module))})).filter(group=>group.modules.length>0).map(group=><section className="user-manager-module-group" key={group.label}><h4>{group.label}</h4><div>{group.modules.map(module=><Badge variant="secondary" key={module}>{moduleLabels[module]}</Badge>)}</div></section>):<p>Associe um perfil na aba Perfis para consultar os menus disponíveis.</p>}
+    <header><div><h3>{compact ? "Permissões incluídas" : "Menus atribuídos automaticamente"}{compact && <small>O acesso é calculado pelos perfis associados.</small>}</h3></div>{compact && <Badge variant="outline">{allowed.size} {allowed.size === 1 ? "menu" : "menus"}</Badge>}</header>
+    {compact && roles.length > 0 && <div className="user-manager-permission-roles"><span>Perfis ativos nesta conta</span><div>{roles.map(role=><Badge variant="secondary" key={role}>{roleLabels[role] || role}</Badge>)}</div></div>}
+    {roles.length?areaGroups.map(group=>({...group,modules:group.modules.filter(module=>allowed.has(module))})).filter(group=>group.modules.length>0).map(group=><section className="user-manager-module-group" key={group.label}><h4>{group.label}</h4><div>{group.modules.map(module=><span className="user-manager-permission-menu" key={module}>{moduleLabels[module]}</span>)}</div></section>):<p>Associe um perfil na aba Perfis para consultar os menus disponíveis.</p>}
     {!compact && <p className="platform-hint">Os dados e as ações continuam sujeitos às regras de acesso de cada perfil.</p>}
   </section>;
 }

@@ -408,6 +408,17 @@
 .user-manager-associated-profiles > .user-manager-inline-pagination { grid-column: 1 / -1; }
 .user-manager-associated-profiles .user-manager-table { min-width: 520px; }
 .user-manager-profile-edit > .user-manager-role-options { margin: 0; padding: 12px 14px; background: #fff; }
+.user-manager-permission-preview { display: grid; gap: 14px; padding: 18px; border: 1px solid var(--private-line); border-radius: 14px; background: #fff; }
+.user-manager-permission-preview > header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding-bottom: 14px; border-bottom: 1px solid var(--private-line); }
+.user-manager-permission-preview > header h3 { margin: 0; color: var(--private-deep); font-size: 15px; }
+.user-manager-permission-preview > header small { display: block; margin-top: 5px; color: var(--private-muted); font-size: 12px; font-weight: 450; line-height: 1.45; }
+.user-manager-permission-roles { display: grid; gap: 8px; }
+.user-manager-permission-roles > span { color: var(--private-muted); font-size: 10px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; }
+.user-manager-permission-roles > div { display: flex; flex-wrap: wrap; gap: 7px; }
+.user-manager-permission-preview .user-manager-module-group { margin: 0; padding: 12px 0 0; border-top: 1px solid #f0eaf1; }
+.user-manager-permission-preview .user-manager-module-group h4 { margin-bottom: 8px; }
+.user-manager-permission-preview .user-manager-module-group > div { display: grid; grid-template-columns: repeat(auto-fit, minmax(145px, 1fr)); gap: 7px; }
+.user-manager-permission-menu { display: flex; min-height: 38px; align-items: center; padding: 8px 11px; border: 1px solid #eee7f0; border-radius: 9px; background: #fcfafc; color: var(--private-deep); font-size: 12px; line-height: 1.35; }
 .user-manager-profile-section { display: grid; gap: 10px; min-width: 0; padding: 14px; border: 1px solid var(--private-line); border-radius: 12px; background: #fff; }
 .user-manager-profile-section-heading { display: flex; align-items: center; justify-content: space-between; gap: 14px; min-width: 0; }
 .user-manager-profile-section-heading > div:first-child { display: grid; gap: 4px; }
@@ -551,7 +562,7 @@
 .platform :is(button, a):focus-visible { outline: 3px solid var(--private-lime); outline-offset: 3px; }
 
 .platform-session-workspace { min-width: 0; }
-.platform-session-dialog { width: min(760px, 100vw); }
+.platform-session-dialog { width: min(880px, 100vw); }
 .platform-session-editor .platform-list-heading { position: sticky; top: -32px; z-index: 3; margin: -32px -32px 22px; padding: 24px 32px 18px; border-bottom: 1px solid var(--private-line); background: hsl(var(--card)); }
 .platform-session-stepper { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 4px 0 18px; padding: 0; list-style: none; }
 .platform-session-stepper li { display: flex; min-width: 0; align-items: center; gap: 9px; padding: 9px 6px; border-bottom: 2px solid var(--private-line); color: var(--private-muted); }
@@ -559,12 +570,13 @@
 .platform-session-stepper li small { overflow: hidden; font-size: 11px; font-weight: 650; text-overflow: ellipsis; }
 .platform-session-stepper li.is-current { border-color: var(--private-forest); color: var(--private-deep); }
 .platform-session-stepper li.is-current > span, .platform-session-stepper li.is-complete > span { border-color: var(--private-forest); background: var(--private-forest); color: #fff; }
-.platform-session-form-section { display: grid; gap: 14px; margin: 22px 0; padding: 20px; border: 1px solid var(--private-line); border-radius: 14px; background: #fff; }
+.platform-session-form-section { display: grid; width: 100%; box-sizing: border-box; align-content: start; gap: 16px; margin: 22px 0; padding: clamp(20px, 3vw, 28px); border: 1px solid var(--private-line); border-radius: 14px; background: #fff; }
 .platform-session-form-section[hidden] { display: none; }
 .platform-session-form-section > h3 { margin: 0; color: var(--private-forest); font-size: 16px; }
-.platform-session-details-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.platform-session-details-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.platform-session-details-fields .platform-field:first-child { grid-column: 1 / -1; }
 .platform-session-details-fields .platform-field { min-width: 0; margin: 0; }
-.platform-session-time-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.platform-session-time-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
 .platform-session-form-section .platform-choices { margin: 0; }
 .platform-session-recurrence { display: grid; gap: 14px; padding-top: 16px; border-top: 1px solid var(--private-line); }
 .platform-session-recurrence > h3 { margin: 0; color: var(--private-forest); font-size: 14px; }
