@@ -13,5 +13,5 @@ test('domain plan records current external DNS diagnosis without authorizing cha
 
 test('domain remediation requires release SHA verification and safe rollback',()=>{
   for(const phrase of ['release SHA aprovado','verified=true','TLS/HTTPS','Rollback DNS','não remover records de email']) assert.ok(plan.includes(phrase));
-  assert.match(plan,/recomendada.*mudar/i);
+  assert.match(plan,/recomendação DNS pode mudar/i);
 });
