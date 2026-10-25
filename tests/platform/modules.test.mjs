@@ -61,7 +61,9 @@ test('admin rendering escapes stored text and attributes and disallows executabl
   assert.equal(escapeHtml('<img src=x onerror="x">'), '&lt;img src=x onerror=&quot;x&quot;&gt;');
   assert.equal(safeMediaUrl('javascript:alert(1)'), '');
   assert.equal(safeMediaUrl('data:text/html;base64,AAAA'), '');
-  assert.equal(safeMediaUrl('https://example.org/a" onerror="x'), 'https://example.org/a%22%20onerror=%22x');
+  assert.equal(safeMediaUrl('https://example.org/a" onerror="x'), '');
+  assert.equal(safeMediaUrl('https://firebasestorage.googleapis.com/v0/b/baticamigo-c0384.firebasestorage.app/o/test.jpg?alt=media'), 'https://firebasestorage.googleapis.com/v0/b/baticamigo-c0384.firebasestorage.app/o/test.jpg?alt=media');
+  assert.equal(safeMediaUrl('https://storage.googleapis.com/baticamigo-c0384.firebasestorage.app/test.webp'), 'https://storage.googleapis.com/baticamigo-c0384.firebasestorage.app/test.webp');
 });
 
 test('assessment chronology uses the pedagogical date rather than entry order',()=>{

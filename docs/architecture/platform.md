@@ -4,7 +4,7 @@
 
 ## Fronteiras e componentes (C4, nível de componentes)
 
-Pessoa → interface React da área → token Firebase → `/api/platform` → contexto de autenticação/autorização → domínio puro → adaptador Firestore/Admin SDK. `domain.mjs` e `modules.mjs` contêm validação e políticas sem importar Firebase/Next. `modules-server.js` gere persistência e auditoria. Home/admin legados ainda têm acesso direto ao Firebase: as regras remotas não foram inspecionadas nesta entrega.
+Pessoa → interface React da área → token Firebase → `/api/platform` → contexto de autenticação/autorização → domínio puro → adaptador Firestore/Admin SDK. `domain.mjs` e `modules.mjs` contêm validação e políticas sem importar Firebase/Next. `modules-server.js` gere persistência e auditoria. O website público lê conteúdo editorial sanitizado por `/api/public-content` e envia contactos por `/api/contact`; o CMS administrativo mantém escritas editoriais sujeitas às Rules versionadas. As Rules são testadas em emuladores, mas Rules/IAM realmente implantadas no ambiente de produção continuam por validar.
 
 O servidor valida tokens, revogação, conta ativa, papéis e perfis ativos. Autorizações por aluno são verificadas independentemente da interface. Aluno: apenas próprio perfil; encarregado: educandos associados; explicador/voluntário: alunos das próprias sessões; sócio: próprios documentos/mensagens; coordenação/admin: gestão pedagógica; apenas admin atribui acessos. Não publicar documentos pessoais com links públicos: os links externos dependem também das permissões do fornecedor.
 

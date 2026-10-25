@@ -1,0 +1,68 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    function isAdmin() {
+      let accountPath = /databases/(default)/documents/platform_accounts/$(request.auth.uid);
+      return request.auth != null && request.auth.token.get('email_verified', false) == true && (
+        (
+          firestore.exists(accountPath) &&
+          firestore.get(accountPath).data.get('active', false) == true &&
+          firestore.get(accountPath).data.get('suspended', false) != true &&
+          (
+            firestore.get(accountPath).data.get('role', '') == 'admin' ||
+            firestore.get(accountPath).data.get('roles', []).hasAny(['admin'])
+          )
+        ) ||
+        (!firestore.exists(accountPath) && request.auth.token.get('admin', false) == true)
+      );
+    }
+
+    function validPublicMedia() {
+      return request.resource == null || (
+        request.resource.contentType != null &&
+        (
+          (
+            request.resource.contentType.matches('image/(jpeg|png|gif|webp)') &&
+            request.resource.size <= 10485760
+          ) ||
+          (
+            request.resource.contentType.matches('video/(mp4|webm)') &&
+            request.resource.size <= 104857600
+          )
+        )
+      );
+    }
+
+    // CMS-managed public media. Tokenized download URLs remain usable by the
+    // public site; SDK reads are also intentionally public for these paths.
+    match /eventos/{path=**} {
+      allow read: if true;
+      allow write: if isAdmin() && validPublicMedia();
+    }
+    match /agendas/{path=**} {
+      allow read: if true;
+      allow write: if isAdmin() && validPublicMedia();
+    }
+    match /noticias/{path=**} {
+      allow read: if true;
+      allow write: if isAdmin() && validPublicMedia();
+    }
+    match /membros/{path=**} {
+      allow read: if true;
+      allow write: if isAdmin() && validPublicMedia();
+    }
+    match /parceiros/{path=**} {
+      allow read: if true;
+      allow write: if isAdmin() && validPublicMedia();
+    }
+
+    // Private platform uploads are handled only by the server Admin SDK.
+    match /platform-files/{path=**} {
+      allow read, write: if false;
+    }
+    match /{object=**} {
+      allow read, write: if false;
+    }
+  }
+}

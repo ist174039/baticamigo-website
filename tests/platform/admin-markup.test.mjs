@@ -11,7 +11,7 @@ test('admin dashboard script parses before attaching data and navigation handler
 });
 
 test('admin panels are independent so hidden Contacto cannot hide members or partners',()=>{
-  const markup=renderAdminMarkup(readFileSync(new URL('../../public/admin/dashboard.html',import.meta.url),'utf8'));
+  const markup=renderAdminMarkup(readFileSync(new URL('../../app/admin/dashboard/dashboard-template.html',import.meta.url),'utf8'));
   const dashboard=readFileSync(new URL('../../app/admin/dashboard/page.js',import.meta.url),'utf8');
   const stack=[], panels=[];
   for(const match of markup.matchAll(/<div\b[^>]*>|<\/div\s*>/gi)) {

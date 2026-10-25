@@ -6,6 +6,7 @@ import { Textarea } from "@/app/components/ui/textarea";
 export default function ContactForm() {
   return (
     <form id="contactForm" className="contact-form">
+      <input className="contact-honeypot" type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" />
       <div className="form-grid">
         <Label>Nome<Input type="text" id="name" name="name" maxLength={100} aria-describedby="name-error" autoComplete="name" placeholder="O seu nome" required /><span id="name-error" className="form-error">Por favor, indique o seu nome.</span></Label>
         <Label>Email<Input type="email" id="email" name="email" maxLength={254} aria-describedby="email-error email-format-error" autoComplete="email" placeholder="nome@email.com" required /><span id="email-error" className="form-error">Por favor, indique o seu email.</span><span id="email-format-error" className="form-error">Indique um email válido.</span></Label>

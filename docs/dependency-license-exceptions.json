@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "exceptions": [
+    {
+      "package": "limiter",
+      "version": "1.1.5",
+      "lockfileLicense": "",
+      "observedLicense": "MIT",
+      "status": "verified",
+      "evidence": [
+        "https://security.snyk.io/package/npm/limiter/1.1.5",
+        "https://www.npmjs.com/package/limiter"
+      ],
+      "note": "Technical verification identifies MIT for limiter package lineage and exact 1.1.5 in Snyk. Compliance/legal approval remains separate and production readiness must stay fail-closed until approved.",
+      "verifiedAt": "2026-10-25"
+    }
+  ]
+}

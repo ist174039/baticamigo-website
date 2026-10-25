@@ -1,0 +1,21 @@
+{
+  "id": "",
+  "participantId": "synthetic-",
+  "profile": "",
+  "version": "",
+  "environment": "",
+  "executedAt": "",
+  "moderator": "",
+  "reviewer": "",
+  "tasks": [
+    {
+      "id": "",
+      "outcome": "failed",
+      "confidence": null,
+      "comprehension": null,
+      "notes": ""
+    }
+  ],
+  "findings": [],
+  "artifact": ""
+}
