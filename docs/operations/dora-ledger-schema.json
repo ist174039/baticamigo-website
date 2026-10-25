@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "description": "Esquema para eventos de produção usados nas métricas DORA. Não contém métricas inventadas.",
+  "eventTypes": [
+    "deployment",
+    "incident",
+    "recovery"
+  ],
+  "requiredByType": {
+    "deployment": [
+      "environment",
+      "version",
+      "commitSha",
+      "startedAt",
+      "completedAt",
+      "result"
+    ],
+    "incident": [
+      "environment",
+      "startedAt",
+      "detectedAt",
+      "severity",
+      "service"
+    ],
+    "recovery": [
+      "environment",
+      "incidentId",
+      "restoredAt"
+    ]
+  },
+  "notes": "Preencher apenas com eventos verificáveis de produção. Preview/build não conta como deployment de produção."
+}
