@@ -30,6 +30,7 @@ test('OpenAPI 3.1 documents every application API route and bearer auth defaults
   assert.deepEqual(documented,codePaths,'OpenAPI paths must exactly match app/api route files');
   assert.equal(spec.components.securitySchemes.bearerAuth.scheme,'bearer');
   assert.deepEqual(spec.paths['/api/contact'].post.security,[],'public contact endpoint must explicitly opt out of bearer auth');
+  assert.deepEqual(spec.paths['/api/public-content'].get.security,[],'public content endpoint must explicitly opt out of bearer auth');
 });
 
 test('problem responses follow RFC 9457 while preserving compatibility fields',()=>{
