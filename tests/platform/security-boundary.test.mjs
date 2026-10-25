@@ -15,7 +15,12 @@ test('production Firebase configuration separates public CMS from private platfo
   for(const name of ['membros','parceiros','eventos','programas','agenda','noticias','site_config'])
     assert.ok(firestore.includes(`match /${name}/{document}`),`missing explicit CMS rule for ${name}`);
   assert.match(firestore,/allow read: if true/);
-  assert.match(firestore,/allow create, update, delete: if isAdmin\(\)/);
+  assert.match(firestore,/function allowedCreate\(fields\)/);
+  assert.match(firestore,/function allowedUpdate\(fields\)/);
+  assert.match(firestore,/allow create: if isAdmin\(\) && allowedCreate\(/);
+  assert.match(firestore,/allow update: if isAdmin\(\) && allowedUpdate\(/);
+  assert.match(firestore,/allow delete: if isAdmin\(\)/);
+  assert.match(firestore,/document == 'contact'/);
   assert.match(firestore,/match \/contato\/\{document\}/);
   assert.match(firestore,/allow read, create, update, delete: if isAdmin\(\)/);
   assert.match(firestore,/match \/\{document=\*\*\}/);
@@ -23,6 +28,8 @@ test('production Firebase configuration separates public CMS from private platfo
 
   const storage=read('storage.rules');
   assert.match(storage,/function isAdmin\(\)/);
+  assert.match(storage,/image\/\(jpeg\|png\|gif\|webp\)/);
+  assert.match(storage,/video\/\(mp4\|webm\)/);
   assert.match(storage,/match \/platform-files\/\{path=\*\*\}/);
   assert.match(storage,/allow read, write: if false/);
 });
