@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
 import {spawn} from 'node:child_process';
+import {performance} from 'node:perf_hooks';
+import {percentile,qualityBudgets} from '../lib/platform/quality-budgets.mjs';
 
 const host='http://127.0.0.1:3102';
 const server=spawn(process.execPath,['node_modules/next/dist/bin/next','start','--hostname','127.0.0.1','--port','3102'],{stdio:['ignore','pipe','pipe']});
@@ -31,6 +33,11 @@ try{
     assert.match(html,/<main\b/);
     assert.match(html,/<h1\b/);
   }
+  const timings=[];
+  for(let i=0;i<5;i++){const start=performance.now();const response=await fetch(host+'/');assert.equal(response.status,200);await response.arrayBuffer();timings.push(performance.now()-start);}
+  const p95=percentile(timings,.95);
+  assert.ok(p95<=qualityBudgets.localHttpP95Ms,`Local production smoke p95 ${Math.round(p95)}ms exceeds ${qualityBudgets.localHttpP95Ms}ms budget.`);
+  console.log(`Local production smoke p95: ${Math.round(p95)}ms.`);
   const home=await (await fetch(host+'/')).text();
   assert.match(home,/Saltar para o conteúdo/);
   assert.match(home,/id="conteudo"/);
