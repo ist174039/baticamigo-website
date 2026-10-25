@@ -4,7 +4,7 @@ service firebase.storage {
   match /b/{bucket}/o {
     function isAdmin() {
       let accountPath = /databases/(default)/documents/platform_accounts/$(request.auth.uid);
-      return request.auth != null && (
+      return request.auth != null && request.auth.token.get('email_verified', false) == true && (
         request.auth.token.get('admin', false) == true ||
         (
           firestore.exists(accountPath) &&
