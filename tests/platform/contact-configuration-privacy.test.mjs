@@ -31,3 +31,14 @@ test('legacy mail transport failures do not return raw provider errors',()=>{
     assert.match(source,/error\?\.code \|\| "mail-send-failed"/);
   }
 });
+
+test('legacy administrative email callable honors persisted revocation and verified email',()=>{
+  for(const path of ['../../functions/index.js','../../public/firebase-functions/index.js']){
+    const source=readFileSync(new URL(path,import.meta.url),'utf8');
+    assert.match(source,/platform_accounts/);
+    assert.match(source,/email_verified !== true/);
+    assert.match(source,/value\.active === true/);
+    assert.match(source,/value\.suspended !== true/);
+    assert.match(source,/roles\.includes\("admin"\)/);
+  }
+});
