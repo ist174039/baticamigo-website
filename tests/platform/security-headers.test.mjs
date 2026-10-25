@@ -9,6 +9,10 @@ test('HTTP baseline includes restrictive security headers',()=>{
     'Content-Security-Policy','Strict-Transport-Security','Cross-Origin-Opener-Policy',
     'Cross-Origin-Resource-Policy','X-Permitted-Cross-Domain-Policies'
   ]) assert.ok(config.includes(header),`missing ${header}`);
+  assert.match(config,/default-src 'self'/);
   assert.match(config,/frame-ancestors 'none'/);
   assert.match(config,/object-src 'none'/);
+  assert.match(config,/connect-src 'self'/);
+  assert.match(config,/form-action 'self'/);
+  assert.match(config,/upgrade-insecure-requests/);
 });
