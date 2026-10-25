@@ -14,7 +14,7 @@
     "check:secrets": "node scripts/check-secrets.mjs",
     "check:production-readiness": "node scripts/check-production-readiness.mjs",
     "check:release": "node scripts/check-release-policy.mjs",
-    "check:sbom": "npm sbom --omit=dev --sbom-format cyclonedx > /tmp/baticamigo-sbom.json && node scripts/check-sbom.mjs /tmp/baticamigo-sbom.json"
+    "check:sbom": "node scripts/generate-sbom.mjs /tmp/baticamigo-sbom.json && node scripts/check-sbom.mjs /tmp/baticamigo-sbom.json"
   },
   "dependencies": {
     "class-variance-authority": "^0.7.1",
