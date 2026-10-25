@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "assets": [
+    {
+      "path": "public/images/african-pattern.png",
+      "purpose": "Public website decorative pattern",
+      "rightsStatus": "review-required",
+      "source": "",
+      "owner": "",
+      "evidence": ""
+    },
+    {
+      "path": "public/images/logo.png",
+      "purpose": "BaticAmigo public logo",
+      "rightsStatus": "review-required",
+      "source": "",
+      "owner": "",
+      "evidence": ""
+    }
+  ]
+}
