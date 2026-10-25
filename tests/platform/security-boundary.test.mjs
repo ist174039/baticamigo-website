@@ -22,7 +22,7 @@ test('production Firebase configuration separates public CMS from private platfo
   assert.match(firestore,/allow delete: if isAdmin\(\)/);
   assert.match(firestore,/document == 'contact'/);
   assert.match(firestore,/match \/contato\/\{document\}/);
-  assert.match(firestore,/allow read, create, update, delete: if isAdmin\(\)/);
+  assert.match(firestore,/allow read, update, delete: if isAdmin\(\)/);
   assert.match(firestore,/match \/\{document=\*\*\}/);
   assert.match(firestore,/allow read, write: if false/);
 
