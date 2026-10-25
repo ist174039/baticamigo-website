@@ -49,3 +49,10 @@ Required by `npm run check:production-readiness` in addition to the policy/QA ch
 - `BATIC_READINESS_EVIDENCE_URL`: HTTPS link to the consolidated evidence record.
 
 Syntactic passage of this command is not permission to fabricate evidence. Each value must point to an approved record for the same release SHA.
+
+
+### Repository and public-asset governance
+- `BATIC_REPOSITORY_GOVERNANCE_APPROVED_AT`: date on which repository visibility, licensing/ownership and review governance were approved.
+- `BATIC_ASSET_RIGHTS_APPROVED_AT`: date on which provenance/rights for all assets in `docs/asset-rights.json` were approved.
+
+These values are evidence references only. Do not set them to make the gate pass before the corresponding decisions/evidence exist.
