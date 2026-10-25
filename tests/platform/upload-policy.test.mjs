@@ -14,8 +14,14 @@ test('private upload route enforces authorization, size, generated path and inte
 });
 test('upload validation uses an allowlist and content signatures rather than trusting MIME alone',()=>{
   for(const mime of ['image/jpeg','image/png','image/webp','application/pdf']) assert.ok(validation.includes(mime));
-  assert.match(validation,/signature|magic|startsWith|bytes/i);
-  assert.match(validation,/docx|xlsx|pptx/);
+  assert.ok(validation.includes("%PDF-"));
+  assert.ok(validation.includes("buffer[0]===0xff"));
+  assert.ok(validation.includes("Buffer.from([0x89,0x50,0x4e,0x47"));
+  assert.ok(validation.includes("RIFF")&&validation.includes("WEBP"));
+  assert.ok(validation.includes("[Content_Types].xml"));
+  assert.ok(validation.includes("word/document.xml"));
+  assert.ok(validation.includes("ppt/presentation.xml"));
+  assert.ok(validation.includes("xl/workbook.xml"));
   assert.equal(validation.includes('application/x-msdownload'),false);
   assert.equal(validation.includes('application/javascript'),false);
 });
