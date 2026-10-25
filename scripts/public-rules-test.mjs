@@ -65,6 +65,7 @@ try {
   assert.equal((await getDoc(doc(accountAdmin.db,'noticias','legacy-test'))).data().legacyMetadata,'preservar','unchanged legacy metadata may remain during migration');
   await rejected(updateDoc(doc(accountAdmin.db,'noticias','legacy-test'),{legacyMetadata:'alterado'}),'admin CMS must not mutate unknown legacy fields');
   await updateDoc(doc(accountAdmin.db,'contato','contact-test'),{lido:true});
+  await rejected(setDoc(doc(accountAdmin.db,'contato','admin-created'),{nome:'No'}),'admin CMS must not create contact submissions directly');
 
   const png=Uint8Array.from([0x89,0x50,0x4e,0x47,0x0d,0x0a,0x1a,0x0a]);
   await rejected(uploadBytes(ref(anon.storage,mediaPath),png,{contentType:'image/png'}),'anonymous CMS media write must fail');
@@ -81,7 +82,7 @@ try {
   for(const [collectionName,id] of [
     ['noticias','public-test'],['noticias','legacy-test'],['noticias','claim-write'],['noticias','claim-extra'],['noticias','claim-oversized'],['noticias','claim-wrong-type'],['noticias','account-write'],['eventos','claim-wrong-list'],
     ['noticias','anon-write'],['platform_profiles','private-test'],['platform_accounts','account-admin'],
-    ['contato','contact-test'],['contato','public-write']
+    ['contato','contact-test'],['contato','public-write'],['contato','admin-created']
   ]) { try{await adminDb.collection(collectionName).doc(id).delete();}catch{} }
   for(const value of [claimAdmin,accountAdmin]) try{await signOut(value.auth);}catch{}
   for(const uid of ['claim-admin','account-admin']) try{await adminAuth.deleteUser(uid);}catch{}
