@@ -43,6 +43,13 @@ try{
   assert.match(home,/id="conteudo"/);
   const login=await (await fetch(host+'/platform/login')).text();
   assert.match(login,/noindex/);
+  const security=await fetch(host+'/.well-known/security.txt');
+  assert.equal(security.status,200);
+  assert.match(security.headers.get('content-type')||'',/text\/plain/);
+  const securityText=await security.text();
+  assert.match(securityText,/^Contact:/m);
+  assert.match(securityText,/^Expires:/m);
+  assert.match(securityText,/^Canonical:/m);
   const api=await fetch(host+'/api/platform');
   assert.equal(api.status,401);
   assert.match(api.headers.get('content-type')||'',/application\/problem\+json/);
