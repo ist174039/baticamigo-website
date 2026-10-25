@@ -67,10 +67,16 @@ exports.sendContactEmail = functions.firestore.document("contato/{contactId}").o
   const subject = String(contactData.assunto || "").slice(0, 200)
   const message = String(contactData.mensagem || "").slice(0, 10000)
 
+  const contactRecipient = String(functions.config().email?.contact_to || "").trim()
+  if (!validEmail(contactRecipient)) {
+    console.error("Destinatário de contacto não configurado.")
+    return { success: false, error: "contact-recipient-not-configured" }
+  }
+
   // Configurar email
   const mailOptions = {
     from: functions.config().email.user,
-    to: "carlos.gomes@baticamigo.com",
+    to: contactRecipient,
     subject: `Nova mensagem de contacto: ${subject.replace(/[\r\n]/g, " ")}`,
     text: `
                 Nome: ${name}
