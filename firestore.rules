@@ -2,9 +2,63 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // The private platform is server-mediated. Firebase client SDKs must not
-    // read or write operational data directly. The Admin SDK used by the
-    // authenticated Next.js API is governed by IAM, not these rules.
+    // Public website content is intentionally readable without authentication.
+    // Keep this list explicit: private platform data uses the platform_* prefix
+    // and is never readable or writable directly from the browser.
+    match /membros/{document} {
+      allow read: if true;
+      allow write: if false;
+    }
+    match /parceiros/{document} {
+      allow read: if true;
+      allow write: if false;
+    }
+    match /eventos/{document} {
+      allow read: if true;
+      allow write: if false;
+    }
+    match /programas/{document} {
+      allow read: if true;
+      allow write: if false;
+    }
+    match /agenda/{document} {
+      allow read: if true;
+      allow write: if false;
+    }
+    match /noticias/{document} {
+      allow read: if true;
+      allow write: if false;
+    }
+    match /site_config/{document} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // Public contact form: create-only, constrained to the exact schema used by
+    // the website. Existing messages are never client-readable or editable.
+    match /contato/{document} {
+      allow create: if
+        request.resource.data.keys().hasAll(['nome','email','assunto','mensagem','data','lido']) &&
+        request.resource.data.keys().hasOnly(['nome','email','assunto','mensagem','data','lido']) &&
+        request.resource.data.nome is string &&
+        request.resource.data.nome.size() > 0 &&
+        request.resource.data.nome.size() <= 100 &&
+        request.resource.data.email is string &&
+        request.resource.data.email.size() > 3 &&
+        request.resource.data.email.size() <= 254 &&
+        request.resource.data.email.matches('^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$') &&
+        request.resource.data.assunto is string &&
+        request.resource.data.assunto.size() > 0 &&
+        request.resource.data.assunto.size() <= 160 &&
+        request.resource.data.mensagem is string &&
+        request.resource.data.mensagem.size() > 0 &&
+        request.resource.data.mensagem.size() <= 6000 &&
+        request.resource.data.data == request.time &&
+        request.resource.data.lido == false;
+      allow read, update, delete: if false;
+    }
+
+    // Everything not explicitly published above is private by default.
     match /{document=**} {
       allow read, write: if false;
     }
