@@ -4,14 +4,27 @@ const nodemailer = require("nodemailer")
 
 admin.initializeApp()
 
-const htmlEscape = (value) => String(value ?? "")
-  .replace(/&/g, "&amp;")
-  .replace(/</g, "&lt;")
-  .replace(/>/g, "&gt;")
-  .replace(/"/g, "&quot;")
-  .replace(/'/g, "&#39;")
-
 const validEmail = (value) => typeof value === "string" && value.length <= 254 && /^\S+@\S+\.\S+$/.test(value)
+
+async function requireAdmin(context) {
+  if (!context.auth) throw new functions.https.HttpsError("unauthenticated", "Inicie sessão para continuar.")
+  if (context.auth.token.email_verified !== true) throw new functions.https.HttpsError("permission-denied", "Confirme o email antes de continuar.")
+
+  const accountRef = admin.firestore().collection("platform_accounts").doc(context.auth.uid)
+  const accountSnapshot = await accountRef.get()
+  if (accountSnapshot.exists) {
+    const account = accountSnapshot.data() || {}
+    const roles = Array.isArray(account.roles) ? account.roles : [account.role].filter(Boolean)
+    if (account.active !== true || account.suspended === true || !roles.includes("admin")) {
+      throw new functions.https.HttpsError("permission-denied", "Sem permissão para enviar emails.")
+    }
+    return
+  }
+
+  if (context.auth.token.admin !== true) {
+    throw new functions.https.HttpsError("permission-denied", "Sem permissão para enviar emails.")
+  }
+}
 
 async function canSendAdministrativeEmail(context) {
   if (!context.auth || context.auth.token.email_verified !== true) return false
