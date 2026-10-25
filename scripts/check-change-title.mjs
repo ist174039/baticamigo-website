@@ -1,5 +1,5 @@
 const value=String(process.argv.slice(2).join(' ')||'').trim();
-const conventional=/^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\([a-z0-9._/-]+\))?!?: .{3,}$/;
+const conventional=/^[a-z][a-z0-9-]*(\([a-z0-9._/-]+\))?!?: .{3,}$/;
 if(!conventional.test(value)) {
   console.error('Change title must follow Conventional Commits, e.g. feat(platform): complete requirements');
   process.exit(1);
