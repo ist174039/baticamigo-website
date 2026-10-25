@@ -67,6 +67,15 @@ document.addEventListener("DOMContentLoaded", async () => {
       return ["http:", "https:"].includes(url.protocol) ? url.href : ""
     } catch { return "" }
   }
+  function safeMediaUrl(value) {
+    if (typeof value !== "string") return ""
+    try {
+      const url = new URL(value, window.location.origin)
+      if (url.origin === window.location.origin) return url.href
+      if (url.protocol !== "https:") return ""
+      return ["firebasestorage.googleapis.com", "storage.googleapis.com"].includes(url.hostname) ? url.href : ""
+    } catch { return "" }
+  }
   function text(value) { return typeof value === "string" ? value.trim() : "" }
   function searchable(record, fields, term) {
     return fields.some((field) => {
@@ -76,7 +85,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     })
   }
   function imageElement(url, alt, className) {
-    const safe = safeUrl(url)
+    const safe = safeMediaUrl(url)
     if (!safe) return null
     const img = document.createElement("img")
     img.src = safe
@@ -323,13 +332,13 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       if (item.tipo === "imagem") {
         const img = document.createElement("img")
-        img.src = safeUrl(item.url)
+        img.src = safeMediaUrl(item.url)
         img.alt = text(item.legenda)
         img.className = "modal-image"
         mediaContainer.appendChild(img)
       } else if (item.tipo === "video") {
         const video = document.createElement("video")
-        video.src = safeUrl(item.url)
+        video.src = safeMediaUrl(item.url)
         video.controls = true
         video.autoplay = true
         video.className = "modal-video"
@@ -403,7 +412,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     galleryContent.setAttribute("aria-label", `${text(title) || "Galeria"} — fotografias`)
 
     item.galeria.forEach((media, index) => {
-      const thumbnailUrl = safeUrl(media.tipo === "video" ? media.thumbnail : media.url)
+      const thumbnailUrl = safeMediaUrl(media.tipo === "video" ? media.thumbnail : media.url)
       if (!thumbnailUrl) return
       const galleryItem = document.createElement("button")
       galleryItem.type = "button"
@@ -480,7 +489,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
           eventCard.innerHTML = `
             <div class="event-image">
-              <img src="${safeUrl(event.imagem)}" alt="${escapeHtml(event.nome)}">
+              <img src="${safeMediaUrl(event.imagem)}" alt="${escapeHtml(event.nome)}">
             </div>
             <div class="event-info">
               <p class="event-date">${formatDate(event.data)}</p>
