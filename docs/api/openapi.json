@@ -46,6 +46,9 @@
           "error": {
             "type": "string",
             "description": "Compatibilidade temporária com clientes existentes; igual a detail."
+          },
+          "code": {
+            "type": "string"
           }
         },
         "additionalProperties": false
@@ -383,6 +386,67 @@
             "$ref": "#/components/responses/Problem"
           },
           "500": {
+            "$ref": "#/components/responses/Problem"
+          }
+        }
+      }
+    },
+    "/api/admin/users": {
+      "get": {
+        "summary": "Validar acesso administrativo e obter conteúdo administrativo legado autorizado",
+        "responses": {
+          "200": {
+            "description": "Acesso válido/dados autorizados"
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "410": {
+            "$ref": "#/components/responses/Problem"
+          }
+        }
+      },
+      "post": {
+        "summary": "Operação administrativa legada limitada (recuperação da própria conta)",
+        "responses": {
+          "200": {
+            "description": "Operação concluída"
+          },
+          "400": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "410": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "413": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "415": {
+            "$ref": "#/components/responses/Problem"
+          }
+        }
+      },
+      "patch": {
+        "summary": "Gestão de utilizadores movida para a Área",
+        "responses": {
+          "410": {
+            "$ref": "#/components/responses/Problem"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Gestão de utilizadores movida para a Área",
+        "responses": {
+          "410": {
             "$ref": "#/components/responses/Problem"
           }
         }
