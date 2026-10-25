@@ -46,7 +46,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (typeof settings.instagram === "string") {
         try {
           const url = new URL(settings.instagram)
-          if (["http:", "https:"].includes(url.protocol)) document.querySelectorAll("[data-contact-instagram]").forEach((element) => { element.href = url.href })
+          if (url.protocol === "https:") document.querySelectorAll("[data-contact-instagram]").forEach((element) => { element.href = url.href })
         } catch { /* Keep the default link when a stored URL is invalid. */ }
       }
     } catch (error) {
@@ -64,7 +64,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (typeof value !== "string") return ""
     try {
       const url = new URL(value, window.location.origin)
-      return ["http:", "https:"].includes(url.protocol) ? url.href : ""
+      if (url.origin === window.location.origin) return url.href
+      return url.protocol === "https:" ? url.href : ""
     } catch { return "" }
   }
   function safeMediaUrl(value) {
