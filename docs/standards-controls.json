@@ -222,22 +222,18 @@
     "BA-STD-018": {
       "mode": "manual-validation-required",
       "evidence": [
-        "app/area/platform.js",
+        "docs/design-system.md",
         "app/area/platform.css",
-        "app/area/modules.js",
-        "docs/operations/ui-ux-review.md",
-        "lib/platform/readiness.mjs"
+        "tests/platform/security-headers.test.mjs"
       ],
       "blocker": "Requer execução manual/assistiva ou validação de aplicabilidade com utilizadores/partes competentes."
     },
     "BA-STD-020": {
       "mode": "manual-validation-required",
       "evidence": [
+        "docs/operations/interaction-checklist.md",
         "app/area/platform.js",
-        "app/area/platform.css",
-        "app/area/modules.js",
-        "docs/operations/ui-ux-review.md",
-        "lib/platform/readiness.mjs"
+        "tests/platform/request-boundary.test.mjs"
       ],
       "blocker": "Requer execução manual/assistiva ou validação de aplicabilidade com utilizadores/partes competentes."
     },
@@ -264,9 +260,10 @@
     "BA-STD-033": {
       "mode": "manual-validation-required",
       "evidence": [
-        "docs/operations/ui-ux-review.md",
-        "tests/platform/architecture-gates.test.mjs",
-        "lib/platform/readiness.mjs"
+        "lib/platform/quality-budgets.mjs",
+        "scripts/production-smoke.mjs",
+        "tests/platform/quality-budgets.test.mjs",
+        "docs/operations/ui-ux-review.md"
       ],
       "blocker": "Qualidade global exige medições e validações para além dos testes automatizados."
     },
@@ -337,8 +334,8 @@
       "mode": "operational-validation-required",
       "evidence": [
         "docs/operations/recovery-and-incidents.md",
-        ".github/workflows/quality-gate.yml",
-        "lib/platform/readiness.mjs"
+        "lib/platform/incident.mjs",
+        "tests/platform/incident.test.mjs"
       ],
       "blocker": "Requer processo operacional, owners, métricas ou ensaio real antes de qualquer declaração de conformidade."
     },
