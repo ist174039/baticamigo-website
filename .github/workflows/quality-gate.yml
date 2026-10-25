@@ -20,6 +20,10 @@ jobs:
       - run: npm ci
       - run: npm run check:secrets
       - run: npm audit --omit=dev --audit-level=high
+      - name: Validate change title
+        env:
+          CHANGE_TITLE: ${{ github.event.pull_request.title || github.event.head_commit.message }}
+        run: node scripts/check-change-title.mjs "$CHANGE_TITLE"
       - run: npm run check:release
       - run: npm run check:sbom
       - run: npm test
