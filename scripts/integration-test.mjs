@@ -20,6 +20,12 @@ async function expect(who,body,status=200,path='/api/platform') {const result=aw
 try {
   for(let attempt=0;attempt<120;attempt++){try{const response=await fetch(host+'/api/platform');if(response.status===401)break;}catch{}if(attempt===119)throw new Error('Local server did not start.');await new Promise(resolve=>setTimeout(resolve,500));}
   for(const [name,role,profileIds] of fixtures){const email=name.toLowerCase()+'@example.invalid';await auth.createUser({uid:name,email,password:'Synthetic-fixture-password-42',emailVerified:true});await db.collection('platform_accounts').doc(name).set({roles:[role],role,profileIds,active:true});const response=await fetch('http://'+process.env.FIREBASE_AUTH_EMULATOR_HOST+'/identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=emulator-only',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password:'Synthetic-fixture-password-42',returnSecureToken:true})});const result=await response.json();assert.ok(result.idToken,'Emulated sign-in failed.');tokens[name]=result.idToken;}
+  await auth.createUser({uid:'unverified',email:'unverified@example.invalid',password:'Synthetic-fixture-password-42',emailVerified:false});
+  await db.collection('platform_accounts').doc('unverified').set({roles:['member'],role:'member',profileIds:[],active:true});
+  {
+    const response=await fetch('http://'+process.env.FIREBASE_AUTH_EMULATOR_HOST+'/identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=emulator-only',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:'unverified@example.invalid',password:'Synthetic-fixture-password-42',returnSecureToken:true})});
+    const result=await response.json();assert.ok(result.idToken,'Unverified emulated sign-in failed.');tokens.unverified=result.idToken;
+  }
   for(const [id,kind,name,guardians] of [['s1','student','Aluno de teste A',['g1']],['s2','student','Aluno de teste B',['g2']],['s3','student','Aluno de teste C',['g3']],['g1','guardian','Encarregado de teste A',[]],['g2','guardian','Encarregado de teste B',[]],['g3','guardian','Encarregado de teste C',[]],['t1','tutor','Explicador de teste A',[]],['t2','tutor','Explicador de teste B',[]],['m1','member','Sócio de teste',[]]])await db.collection('platform_profiles').doc(id).set({kind,name,guardianIds:guardians,active:true});
   await db.collection('platform_access_settings').doc('profiles').set({profiles:{...defaultAccessProfiles,member:['overview','finance','document']}});
   const unauthorized=await fetch(host+'/api/platform');
@@ -31,6 +37,8 @@ try {
   assert.equal(unauthorizedProblem.error,unauthorizedProblem.detail);
   console.log('PASS: RFC 9457 unauthorized problem response.');
   await expect(null,null,401);
+  await expect('unverified',null,403);
+  console.log('PASS: unverified email is blocked from private platform access.');
   const contactEmail='synthetic-contact@example.invalid';
   const contactResponse=await fetch(host+'/api/contact',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:'Contacto sintético',email:contactEmail,subject:'Teste de integração',message:'Mensagem sintética sem dados reais.',website:''})});
   assert.equal(contactResponse.status,201);
@@ -116,6 +124,8 @@ try {
   console.log('PASS: direct client access denied by local fixture rules.');
   console.log('Integration tests completed against local emulators only.');
 } catch(error) {console.error('Integration test failed:',error.message);process.exitCode=1;} finally {
+  try { await auth.deleteUser('unverified'); } catch {}
+  try { await db.collection('platform_accounts').doc('unverified').delete(); } catch {}
   try { const contacts=await db.collection('contato').where('email','in',['synthetic-contact@example.invalid','bot@example.invalid']).get();await Promise.all(contacts.docs.map(item=>item.ref.delete())); } catch {}
   server.kill('SIGTERM');await app.delete();
 }
