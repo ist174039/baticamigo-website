@@ -21,3 +21,9 @@ test('observability can only become ready with explicit operational evidence',()
   assert.equal(result.ready,true);
   assert.deepEqual(result.missing,[]);
 });
+
+test('application observability signals are bound to emitted PII-safe event names',()=>{
+  const byId=Object.fromEntries(config.signals.map(signal=>[signal.id,signal]));
+  assert.equal(byId['auth-failures'].eventName,'auth-failure');
+  assert.equal(byId['platform-api-errors'].eventName,'platform-api-error');
+});
