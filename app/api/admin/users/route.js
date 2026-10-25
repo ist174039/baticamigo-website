@@ -1,6 +1,6 @@
 import { getFirestore } from "firebase-admin/firestore";
 import { adminServices, assertJsonRequest } from "../../../../lib/platform/server";
-import { adminAuthorization } from "../../../../lib/platform/access.mjs";
+import { adminAuthorization, isBootstrapAdmin } from "../../../../lib/platform/access.mjs";
 import { platformContinueUrl } from "../../../../lib/platform/continue-url.mjs";
 
 export const runtime = "nodejs";
@@ -53,7 +53,7 @@ async function requireAdmin(request) {
   const authorization = adminAuthorization(decoded, account);
   if (authorization.verificationRequired) throw new ApiError(403, "Confirme o email da conta antes de gerir o site.");
   if (!authorization.authorized) throw new ApiError(403, "A sua conta não tem acesso à gestão do site.");
-  return { auth, decoded };
+  return { auth, decoded, account };
 }
 
 function json(data, status = 200) {
@@ -84,9 +84,17 @@ function movedResponse() {
 
 export async function GET(request) {
   try {
-    const { auth } = await requireAdmin(request);
+    const { auth, decoded, account } = await requireAdmin(request);
     const url = new URL(request.url);
-    if (url.searchParams.get("check") === "1") return json({ authorized: true, refreshToken: false });
+    if (url.searchParams.get("check") === "1") {
+      let refreshToken = false;
+      if (!account && isBootstrapAdmin(decoded.email, decoded.email_verified) && decoded.admin !== true) {
+        const user = await auth.getUser(decoded.uid);
+        await auth.setCustomUserClaims(decoded.uid, { ...(user.customClaims || {}), admin: true });
+        refreshToken = true;
+      }
+      return json({ authorized: true, refreshToken });
+    }
     const collectionName = url.searchParams.get("collection");
     if (collectionName === "membros" || collectionName === "parceiros") {
       const snapshot = await getFirestore(auth.app).collection(collectionName).get();
