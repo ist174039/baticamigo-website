@@ -23,3 +23,11 @@ test('contact notification emails contain no submitted personal content',()=>{
     assert.doesNotMatch(handler,/Nome:\s*\$\{|Email:\s*\$\{|Mensagem:\s*\$\{/);
   }
 });
+
+test('legacy mail transport failures do not return raw provider errors',()=>{
+  for(const path of ['../../functions/index.js','../../public/firebase-functions/index.js']){
+    const source=readFileSync(new URL(path,import.meta.url),'utf8');
+    assert.doesNotMatch(source,/HttpsError\("internal",\s*"Erro ao enviar email\.",\s*error\)/);
+    assert.match(source,/error\?\.code \|\| "mail-send-failed"/);
+  }
+});
