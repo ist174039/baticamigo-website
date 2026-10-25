@@ -89,7 +89,7 @@ service cloud.firestore {
     // Contact submissions are mediated by /api/contact using the Admin SDK.
     // The CMS may read/update/delete messages after its administrator checks.
     match /contato/{document} {
-      allow read, create, update, delete: if isAdmin();
+      allow read, update, delete: if isAdmin();
     }
 
     // The private platform uses the platform_* namespace and is not listed in
