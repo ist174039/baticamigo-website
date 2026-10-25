@@ -30,6 +30,8 @@ test('production Firebase configuration separates public CMS from private platfo
   assert.match(storage,/function isAdmin\(\)/);
   assert.match(storage,/image\/\(jpeg\|png\|gif\|webp\)/);
   assert.match(storage,/video\/\(mp4\|webm\)/);
+  assert.match(storage,/request\.resource\.size <= 10485760/);
+  assert.match(storage,/request\.resource\.size <= 104857600/);
   assert.match(storage,/match \/platform-files\/\{path=\*\*\}/);
   assert.match(storage,/allow read, write: if false/);
 });
