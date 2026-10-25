@@ -31,5 +31,12 @@ jobs:
           export JAVA_HOME="$JAVA_HOME_21_X64"
           export PATH="$JAVA_HOME/bin:$PATH"
           npx --yes firebase-tools@14.22.0 emulators:exec --project baticamigo-c0384 --config tests/emulators/firebase.json --only auth,firestore 'node scripts/integration-test.mjs && node scripts/recovery-test.mjs'
+      - name: Verify production Firestore public/private rules
+        env:
+          FIREBASE_EMULATORS_PATH: /tmp/baticamigo-emulators
+        run: |
+          export JAVA_HOME="$JAVA_HOME_21_X64"
+          export PATH="$JAVA_HOME/bin:$PATH"
+          npx --yes firebase-tools@14.22.0 emulators:exec --project baticamigo-c0384 --config firebase.json --only firestore 'node scripts/public-rules-test.mjs'
       - run: npm run build
       - run: node scripts/production-smoke.mjs
