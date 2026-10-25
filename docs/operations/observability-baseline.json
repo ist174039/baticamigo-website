@@ -17,7 +17,8 @@
       "windowMinutes": 15,
       "threshold": "to-approve",
       "piiAllowed": false,
-      "runbook": "docs/operations/recovery-and-incidents.md"
+      "runbook": "docs/operations/recovery-and-incidents.md",
+      "eventName": "auth-failure"
     },
     {
       "id": "platform-api-errors",
@@ -26,7 +27,8 @@
       "windowMinutes": 5,
       "threshold": "to-approve",
       "piiAllowed": false,
-      "runbook": "docs/operations/recovery-and-incidents.md"
+      "runbook": "docs/operations/recovery-and-incidents.md",
+      "eventName": "platform-api-error"
     },
     {
       "id": "security-audit-high",
