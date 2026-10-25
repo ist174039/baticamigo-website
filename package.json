@@ -11,7 +11,8 @@
     "start": "next start",
     "lint": "next lint",
     "test": "node --test tests/platform/*.test.mjs",
-    "check:secrets": "node scripts/check-secrets.mjs"
+    "check:secrets": "node scripts/check-secrets.mjs",
+    "check:production-readiness": "node scripts/check-production-readiness.mjs"
   },
   "dependencies": {
     "class-variance-authority": "^0.7.1",
