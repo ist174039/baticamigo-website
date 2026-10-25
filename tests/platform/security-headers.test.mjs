@@ -12,6 +12,9 @@ test('HTTP baseline includes restrictive security headers',()=>{
   assert.match(config,/default-src 'self'/);
   assert.match(config,/frame-ancestors 'none'/);
   assert.match(config,/object-src 'none'/);
+  assert.match(config,/script-src 'self' 'unsafe-inline' https:\/\/www\.gstatic\.com/);
+  assert.match(config,/img-src 'self' data: https:/);
+  assert.match(config,/media-src 'self' https:/);
   assert.match(config,/connect-src 'self'/);
   assert.match(config,/form-action 'self'/);
   assert.match(config,/upgrade-insecure-requests/);
