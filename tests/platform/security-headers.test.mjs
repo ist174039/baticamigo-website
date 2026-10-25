@@ -11,6 +11,7 @@ test('HTTP baseline includes restrictive security headers',()=>{
   ]) assert.ok(config.includes(header),`missing ${header}`);
   assert.match(config,/default-src 'self'/);
   assert.match(config,/frame-ancestors 'none'/);
+  assert.match(config,/frame-src 'self' https:\/\/baticamigo-c0384\.firebaseapp\.com/);
   assert.match(config,/object-src 'none'/);
   assert.match(config,/script-src 'self' 'unsafe-inline' https:\/\/www\.gstatic\.com/);
   assert.match(config,/img-src 'self' data: https:/);
