@@ -18,20 +18,30 @@ document.addEventListener("DOMContentLoaded", async () => {
   // not an empty collection.
   const collectionIds = ["events-container", "programs-container", "agenda-container", "members-container", "partners-container", "news-container"]
   collectionIds.forEach((id) => setCollectionState(id, "loading"))
-  if (typeof firebase === "undefined") {
-    collectionIds.forEach((id) => setCollectionState(id, "error"))
-    console.error("Firebase não está inicializado. Verifique se os scripts do Firebase foram carregados.")
-    return
-  }
 
-  // Referência ao Firestore
-  const db = firebase.firestore()
+  async function publicRequest(collection, id = "") {
+    const params = new URLSearchParams({ collection })
+    if (id) params.set("id", id)
+    const response = await fetch(`/api/public-content?${params.toString()}`, {
+      headers: { Accept: "application/json" },
+      credentials: "same-origin",
+    })
+    if (!response.ok) throw new Error("public-content-unavailable")
+    return response.json()
+  }
+  async function publicCollection(collection) {
+    const payload = await publicRequest(collection)
+    return Array.isArray(payload.items) ? payload.items : []
+  }
+  async function publicDocument(collection, id) {
+    const payload = await publicRequest(collection, id)
+    return payload.item || null
+  }
 
   async function loadContactSettings() {
     try {
-      const snapshot = await db.collection("site_config").doc("contact").get()
-      if (!snapshot.exists) return
-      const settings = snapshot.data() || {}
+      const settings = await publicDocument("site_config", "contact")
+      if (!settings) return
       const intro = document.querySelector("[data-contact-intro]")
       if (intro && typeof settings.intro === "string") intro.textContent = settings.intro
       const email = document.querySelectorAll("[data-contact-email]")
@@ -182,12 +192,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Função para carregar e exibir membros
   async function loadMembers() {
     try {
-      const membersSnapshot = await db.collection("membros").get()
+      const members = await publicCollection("membros")
       const container = document.getElementById("members-container")
 
       if (!container) return
-      const members = []
-      membersSnapshot.forEach((doc) => members.push({ ...doc.data(), id: doc.id }))
       // Ignore incomplete Firestore documents. A document with no displayable
       // information must not create a blank card or keep an empty section open.
       const visibleMembers = members.filter((member) => text(member.nome))
@@ -230,12 +238,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Função para carregar e exibir parceiros
   async function loadPartners() {
     try {
-      const partnersSnapshot = await db.collection("parceiros").get()
+      const partners = await publicCollection("parceiros")
       const container = document.getElementById("partners-container")
 
       if (!container) return
-      const partners = []
-      partnersSnapshot.forEach((doc) => partners.push({ ...doc.data(), id: doc.id }))
       // Keep only records that can render useful partner information.
       const visiblePartners = partners.filter((partner) => text(partner.nome))
       if (!visiblePartners.length) {
@@ -449,7 +455,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Função para carregar e exibir eventos
   async function loadEvents() {
     try {
-      const eventsSnapshot = await db.collection("eventos").get()
+      const events = await publicCollection("eventos")
       const container = document.getElementById("events-container")
       const searchInput = document.getElementById("eventos-search")
 
@@ -457,11 +463,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         return
       }
-
-      const events = []
-      eventsSnapshot.forEach((doc) => {
-        events.push({ ...doc.data(), id: doc.id })
-      })
       sortNewest(events, ["data", "data_inicio", "data_publicacao", "dataPublicacao", "createdAt", "created_at"])
 
       setCollectionState("events-container", events.length ? "loaded" : "empty", events.length)
@@ -536,7 +537,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Função para carregar e exibir programas
   async function loadPrograms() {
     try {
-      const programsSnapshot = await db.collection("programas").get()
+      const programs = await publicCollection("programas")
       const container = document.getElementById("programs-container")
       const searchInput = document.getElementById("programas-search")
 
@@ -544,11 +545,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         return
       }
-
-      const programs = []
-      programsSnapshot.forEach((doc) => {
-        programs.push({ ...doc.data(), id: doc.id })
-      })
       sortNewest(programs, ["data_inicio", "data", "data_publicacao", "dataPublicacao", "createdAt", "created_at"])
 
       setCollectionState("programs-container", programs.length ? "loaded" : "empty", programs.length)
@@ -607,7 +603,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Função para carregar e exibir agenda
   async function loadAgenda() {
     try {
-      const agendaSnapshot = await db.collection("agenda").get()
+      const agendaItems = await publicCollection("agenda")
       const container = document.getElementById("agenda-container")
       const searchInput = document.getElementById("agenda-search")
 
@@ -615,11 +611,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         return
       }
-
-      const agendaItems = []
-      agendaSnapshot.forEach((doc) => {
-        agendaItems.push({ ...doc.data(), id: doc.id })
-      })
       sortNewest(agendaItems, ["data_inicio", "data", "data_publicacao", "dataPublicacao", "createdAt", "created_at"])
 
       setCollectionState("agenda-container", agendaItems.length ? "loaded" : "empty", agendaItems.length)
@@ -692,18 +683,13 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Função para carregar e exibir notícias
   async function loadNews() {
     try {
-      const newsSnapshot = await db.collection("noticias").get()
+      const news = await publicCollection("noticias")
       const container = document.getElementById("news-container")
 
       if (!container) {
 
         return
       }
-
-      const news = []
-      newsSnapshot.forEach((doc) => {
-        news.push({ ...doc.data(), id: doc.id })
-      })
       sortNewest(news, ["data", "data_publicacao", "dataPublicacao", "createdAt", "created_at", "updatedAt", "updated_at"])
 
       setCollectionState("news-container", news.length ? "loaded" : "empty", news.length)
