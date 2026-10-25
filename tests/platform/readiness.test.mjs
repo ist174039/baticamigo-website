@@ -5,11 +5,13 @@ import {productionReadiness} from '../../lib/platform/readiness.mjs';
 test('production readiness fails closed when human/operational evidence is absent',()=>{
   const result=productionReadiness({});
   assert.equal(result.ready,false);
-  for(const key of ['BATIC_STANDARDS_REVIEWED_AT','BATIC_SECURITY_RISK_REVIEWED_AT','BATIC_PIA_REVIEWED_AT','BATIC_PRIVACY_APPROVED_AT','BATIC_RETENTION_POLICY_VERSION','BATIC_RETENTION_POLICY_APPROVED_AT','BATIC_BACKUP_RESTORE_TESTED_AT','BATIC_ACCESSIBILITY_VALIDATED_AT']) assert.ok(result.missing.includes(key));
+  for(const key of ['BATIC_RELEASE_SHA','BATIC_STANDARDS_REVIEWED_AT','BATIC_SECURITY_RISK_REVIEWED_AT','BATIC_PIA_REVIEWED_AT','BATIC_PRIVACY_APPROVED_AT','BATIC_RETENTION_POLICY_VERSION','BATIC_RETENTION_POLICY_APPROVED_AT','BATIC_BACKUP_RESTORE_TESTED_AT','BATIC_ACCESSIBILITY_VALIDATED_AT','BATIC_PRODUCTION_DEPLOYED_SHA','BATIC_PRODUCTION_DEPLOYMENT_URL','BATIC_PRODUCTION_DOMAIN_VALIDATED_AT','BATIC_ROLLBACK_VALIDATED_AT','BATIC_READINESS_REVIEWER','BATIC_READINESS_EVIDENCE_URL']) assert.ok(result.missing.includes(key));
 });
 
 test('production readiness passes only with complete explicit evidence',()=>{
+  const release='0123456789abcdef0123456789abcdef01234567';
   const result=productionReadiness({
+    BATIC_RELEASE_SHA:release,
     BATIC_STANDARDS_REVIEWED_AT:'2026-10-25',
     BATIC_SECURITY_RISK_REVIEWED_AT:'2026-10-25',
     BATIC_PIA_REVIEWED_AT:'2026-10-25',
@@ -17,15 +19,54 @@ test('production readiness passes only with complete explicit evidence',()=>{
     BATIC_RETENTION_POLICY_VERSION:'2026-10-v1',
     BATIC_RETENTION_POLICY_APPROVED_AT:'2026-10-25',
     BATIC_IAM_REVIEWED_AT:'2026-10-25',
-    BATIC_FIRESTORE_RULES_DEPLOYED_SHA:'abc123',
-    BATIC_STORAGE_RULES_DEPLOYED_SHA:'def456',
+    BATIC_FIRESTORE_RULES_DEPLOYED_SHA:release,
+    BATIC_STORAGE_RULES_DEPLOYED_SHA:release,
     BATIC_BACKUP_RPO_HOURS:'24',
     BATIC_BACKUP_RTO_HOURS:'8',
     BATIC_BACKUP_RESTORE_TESTED_AT:'2026-10-25',
     BATIC_RESPONSIVE_VALIDATED_AT:'2026-10-25',
     BATIC_ACCESSIBILITY_VALIDATED_AT:'2026-10-25',
     BATIC_USABILITY_VALIDATED_AT:'2026-10-25',
+    BATIC_PRODUCTION_DEPLOYED_SHA:release,
+    BATIC_PRODUCTION_DEPLOYMENT_URL:'https://baticamigo.pt',
+    BATIC_PRODUCTION_DOMAIN_VALIDATED_AT:'2026-10-25',
+    BATIC_ROLLBACK_VALIDATED_AT:'2026-10-25',
+    BATIC_READINESS_REVIEWER:'responsável autorizado',
+    BATIC_READINESS_EVIDENCE_URL:'https://example.org/evidence/release',
   });
   assert.equal(result.ready,true);
   assert.deepEqual(result.missing,[]);
+});
+
+
+test('production readiness rejects Rules or deployment evidence from another SHA',()=>{
+  const release='0123456789abcdef0123456789abcdef01234567';
+  const other='89abcdef0123456789abcdef0123456789abcdef';
+  const base={
+    BATIC_RELEASE_SHA:release,
+    BATIC_STANDARDS_REVIEWED_AT:'2026-10-25',
+    BATIC_SECURITY_RISK_REVIEWED_AT:'2026-10-25',
+    BATIC_PIA_REVIEWED_AT:'2026-10-25',
+    BATIC_PRIVACY_APPROVED_AT:'2026-10-25',
+    BATIC_RETENTION_POLICY_VERSION:'2026-10-v1',
+    BATIC_RETENTION_POLICY_APPROVED_AT:'2026-10-25',
+    BATIC_IAM_REVIEWED_AT:'2026-10-25',
+    BATIC_FIRESTORE_RULES_DEPLOYED_SHA:release,
+    BATIC_STORAGE_RULES_DEPLOYED_SHA:release,
+    BATIC_BACKUP_RPO_HOURS:'24',
+    BATIC_BACKUP_RTO_HOURS:'8',
+    BATIC_BACKUP_RESTORE_TESTED_AT:'2026-10-25',
+    BATIC_RESPONSIVE_VALIDATED_AT:'2026-10-25',
+    BATIC_ACCESSIBILITY_VALIDATED_AT:'2026-10-25',
+    BATIC_USABILITY_VALIDATED_AT:'2026-10-25',
+    BATIC_PRODUCTION_DEPLOYED_SHA:release,
+    BATIC_PRODUCTION_DEPLOYMENT_URL:'https://baticamigo.pt',
+    BATIC_PRODUCTION_DOMAIN_VALIDATED_AT:'2026-10-25',
+    BATIC_ROLLBACK_VALIDATED_AT:'2026-10-25',
+    BATIC_READINESS_REVIEWER:'responsável autorizado',
+    BATIC_READINESS_EVIDENCE_URL:'https://example.org/evidence/release',
+  };
+  assert.equal(productionReadiness({...base,BATIC_FIRESTORE_RULES_DEPLOYED_SHA:other}).ready,false);
+  assert.equal(productionReadiness({...base,BATIC_STORAGE_RULES_DEPLOYED_SHA:other}).ready,false);
+  assert.equal(productionReadiness({...base,BATIC_PRODUCTION_DEPLOYED_SHA:other}).ready,false);
 });
