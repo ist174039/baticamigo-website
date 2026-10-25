@@ -28,7 +28,8 @@
         ".github/workflows/quality-gate.yml",
         "scripts/check-secrets.mjs",
         "scripts/check-sbom.mjs",
-        "CHANGELOG.md"
+        "CHANGELOG.md",
+        "scripts/build-evidence.mjs"
       ]
     },
     "BA-STD-011": {
@@ -71,7 +72,9 @@
       "evidence": [
         ".github/workflows/quality-gate.yml",
         "scripts/check-sbom.mjs",
-        "package-lock.json"
+        "package-lock.json",
+        "scripts/build-evidence.mjs",
+        "tests/platform/build-evidence.test.mjs"
       ]
     },
     "BA-STD-023": {
@@ -96,7 +99,8 @@
       "evidence": [
         "CHANGELOG.md",
         "docs/requirements-evidence.json",
-        ".github/workflows/quality-gate.yml"
+        ".github/workflows/quality-gate.yml",
+        "scripts/build-evidence.mjs"
       ]
     },
     "BA-STD-034": {
