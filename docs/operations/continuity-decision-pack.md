@@ -39,6 +39,8 @@ Não contar `snapshotCollections` do Emulator como backup real.
 
 ## Exercício de restauro
 
+Registar a execução em `docs/operations/restore-evidence-template.json` e validar com `validateRestoreEvidence`. O resultado `passed` é inválido se RPO/RTO observados excederem os aprovados ou se integridade, autorização e rollback não estiverem confirmados.
+
 Usar `docs/operations/continuity-exercise-template.md`.
 
 Ordem:
