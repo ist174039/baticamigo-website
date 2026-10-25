@@ -4,21 +4,28 @@ import {readFileSync} from 'node:fs';
 
 const read=path=>readFileSync(new URL(`../../${path}`,import.meta.url),'utf8');
 
-test('production Firebase configuration versions deny-all private data rules',()=>{
+test('production Firebase configuration explicitly separates public and private data',()=>{
   const config=JSON.parse(read('firebase.json'));
   assert.equal(config.firestore.rules,'firestore.rules');
   assert.equal(config.storage.rules,'storage.rules');
 
-  for(const path of ['firestore.rules','storage.rules']) {
-    const rules=read(path);
-    assert.match(rules,/rules_version\s*=\s*'2'/);
-    assert.match(rules,/allow read, write:\s*if false/);
-  }
+  const firestore=read('firestore.rules');
+  assert.match(firestore,/rules_version\s*=\s*'2'/);
+  for(const name of ['membros','parceiros','eventos','programas','agenda','noticias','site_config'])
+    assert.match(firestore,new RegExp(`match \\\/${name}\\\\/\\\\{document\\\\}`),`missing explicit public rule for ${name}`);
+  assert.match(firestore,/match \/contato\/\{document\}/);
+  assert.match(firestore,/allow create:/);
+  assert.match(firestore,/hasOnly\(\['nome','email','assunto','mensagem','data','lido'\]\)/);
+  assert.match(firestore,/allow read, update, delete: if false/);
+  assert.match(firestore,/match \/\{document=\*\*\}/);
+  assert.match(firestore,/allow read, write: if false/);
+
+  const storage=read('storage.rules');
+  assert.match(storage,/rules_version\s*=\s*'2'/);
+  assert.match(storage,/allow read, write:\s*if false/);
 });
 
-test('emulator Firestore boundary matches the production direct-access posture',()=>{
-  const production=read('firestore.rules').replace(/\/\/.*$/gm,'').replace(/\s+/g,' ').trim();
-  const emulator=read('tests/emulators/firestore.rules').replace(/\/\/.*$/gm,'').replace(/\s+/g,' ').trim();
-  assert.match(production,/allow read, write: if false/);
+test('private integration emulator remains deny-all for direct client data access',()=>{
+  const emulator=read('tests/emulators/firestore.rules');
   assert.match(emulator,/allow read, write: if false/);
 });
