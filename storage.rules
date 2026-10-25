@@ -20,11 +20,16 @@ service firebase.storage {
 
     function validPublicMedia() {
       return request.resource == null || (
-        request.resource.size <= 104857600 &&
         request.resource.contentType != null &&
         (
-          request.resource.contentType.matches('image/(jpeg|png|gif|webp)') ||
-          request.resource.contentType.matches('video/(mp4|webm)')
+          (
+            request.resource.contentType.matches('image/(jpeg|png|gif|webp)') &&
+            request.resource.size <= 10485760
+          ) ||
+          (
+            request.resource.contentType.matches('video/(mp4|webm)') &&
+            request.resource.size <= 104857600
+          )
         )
       );
     }
