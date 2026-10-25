@@ -54,5 +54,7 @@ jobs:
             sleep 0.5
           done
           curl --fail --silent http://127.0.0.1:3104/ >/dev/null
-          npx --yes @axe-core/cli@4.14.0 http://127.0.0.1:3104/ --tags wcag2a,wcag2aa,wcag22aa --chrome-options="no-sandbox,disable-dev-shm-usage" --load-delay=1000 --timeout=60 --exit
-          npx --yes @axe-core/cli@4.14.0 http://127.0.0.1:3104/platform/login --tags wcag2a,wcag2aa,wcag22aa --chrome-options="no-sandbox,disable-dev-shm-usage" --load-delay=1000 --timeout=60 --exit
+          CHROMEDRIVER_PATH="$(npx --yes --package=chromedriver@155.0.1 -- which chromedriver)"
+          "$CHROMEDRIVER_PATH" --version
+          npx --yes @axe-core/cli@4.14.0 http://127.0.0.1:3104/ --tags wcag2a,wcag2aa,wcag22aa --chromedriver-path="$CHROMEDRIVER_PATH" --chrome-options="no-sandbox,disable-dev-shm-usage" --load-delay=1000 --timeout=60 --exit
+          npx --yes @axe-core/cli@4.14.0 http://127.0.0.1:3104/platform/login --tags wcag2a,wcag2aa,wcag22aa --chromedriver-path="$CHROMEDRIVER_PATH" --chrome-options="no-sandbox,disable-dev-shm-usage" --load-delay=1000 --timeout=60 --exit
