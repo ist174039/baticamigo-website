@@ -486,3 +486,5 @@ body{background:var(--paper)}
 .form-note{color:#625568!important}
 
 .image-caption strong{background:#fff;color:#211028;padding:3px 6px;border-radius:4px}
+
+.no-results{color:#554c59}
