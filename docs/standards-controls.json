@@ -121,8 +121,11 @@
       "mode": "external-validation-required",
       "evidence": [
         "docs/security/data-governance-draft.md",
-        "lib/platform/readiness.mjs",
-        "tests/platform/readiness.test.mjs"
+        "docs/security/data-subject-rights.md",
+        "docs/security/privacy-impact-assessment.md",
+        "lib/platform/privacy-assessment.mjs",
+        "lib/platform/privacy-export.mjs",
+        "lib/platform/readiness.mjs"
       ],
       "blocker": "Requer decisão/aprovação organizacional, jurídica, de risco ou de privacidade; código não substitui essa validação."
     },
@@ -130,17 +133,20 @@
       "mode": "external-validation-required",
       "evidence": [
         "docs/security/data-governance-draft.md",
-        "lib/platform/readiness.mjs",
-        "tests/platform/readiness.test.mjs"
+        "docs/security/data-subject-rights.md",
+        "docs/security/privacy-impact-assessment.md",
+        "lib/platform/readiness.mjs"
       ],
       "blocker": "Requer decisão/aprovação organizacional, jurídica, de risco ou de privacidade; código não substitui essa validação."
     },
     "BA-STD-003": {
       "mode": "external-validation-required",
       "evidence": [
-        "docs/security/data-governance-draft.md",
-        "lib/platform/readiness.mjs",
-        "tests/platform/readiness.test.mjs"
+        "docs/security/children-digital-safeguards.md",
+        "lib/platform/access.mjs",
+        "lib/platform/privacy-export.mjs",
+        "tests/platform/children-safeguards.test.mjs",
+        "scripts/integration-test.mjs"
       ],
       "blocker": "Requer decisão/aprovação organizacional, jurídica, de risco ou de privacidade; código não substitui essa validação."
     },
@@ -148,9 +154,10 @@
       "mode": "external-validation-required",
       "evidence": [
         "lib/platform/retention.mjs",
+        "lib/platform/retention-plan.mjs",
         "docs/security/retention-policy-template.json",
         "tests/platform/retention.test.mjs",
-        "lib/platform/readiness.mjs"
+        "tests/platform/retention-plan.test.mjs"
       ],
       "blocker": "Requer decisão/aprovação organizacional, jurídica, de risco ou de privacidade; código não substitui essa validação."
     },
@@ -158,8 +165,9 @@
       "mode": "external-validation-required",
       "evidence": [
         "docs/security/vendor-inventory.md",
-        "docs/security/data-governance-draft.md",
-        "tests/platform/vendor-inventory.test.mjs"
+        "docs/security/cloud-responsibility-matrix.json",
+        "lib/platform/cloud-governance.mjs",
+        "tests/platform/cloud-governance.test.mjs"
       ],
       "blocker": "Requer decisão/aprovação organizacional, jurídica, de risco ou de privacidade; código não substitui essa validação."
     },
@@ -167,8 +175,9 @@
       "mode": "external-validation-required",
       "evidence": [
         "docs/security/vendor-inventory.md",
+        "docs/security/cloud-responsibility-matrix.json",
         "docs/security/firebase-boundary.md",
-        "docs/security/data-governance-draft.md"
+        "lib/platform/cloud-governance.mjs"
       ],
       "blocker": "Requer validação de fornecedores, IAM, contratos e responsabilidades partilhadas."
     },
@@ -176,8 +185,10 @@
       "mode": "external-validation-required",
       "evidence": [
         "docs/security/data-governance-draft.md",
-        "lib/platform/readiness.mjs",
-        "tests/platform/readiness.test.mjs"
+        "docs/security/privacy-impact-assessment.md",
+        "docs/security/data-subject-rights.md",
+        "lib/platform/privacy-assessment.mjs",
+        "lib/platform/cloud-governance.mjs"
       ],
       "blocker": "Requer decisão/aprovação organizacional, jurídica, de risco ou de privacidade; código não substitui essa validação."
     },
@@ -185,8 +196,9 @@
       "mode": "operational-validation-required",
       "evidence": [
         "docs/security/risk-management.md",
-        "docs/operations/recovery-and-incidents.md",
-        "lib/platform/readiness.mjs"
+        "docs/security/risk-register-template.json",
+        "lib/platform/risk-register.mjs",
+        "tests/platform/risk-register.test.mjs"
       ],
       "blocker": "Requer processo operacional, owners, métricas ou ensaio real antes de qualquer declaração de conformidade."
     },
@@ -203,8 +215,8 @@
       "mode": "external-validation-required",
       "evidence": [
         "docs/security/privacy-impact-assessment.md",
-        "docs/security/data-governance-draft.md",
-        "lib/platform/readiness.mjs"
+        "lib/platform/privacy-assessment.mjs",
+        "tests/platform/privacy-assessment.test.mjs"
       ],
       "blocker": "Requer decisão/aprovação organizacional, jurídica, de risco ou de privacidade; código não substitui essa validação."
     },
@@ -278,9 +290,10 @@
     "BA-STD-040": {
       "mode": "manual-validation-required",
       "evidence": [
+        "docs/security/children-digital-safeguards.md",
         "docs/accessibility/conformance-plan.md",
-        "docs/security/pii-controls.md",
-        "app/area/platform.js"
+        "tests/platform/children-safeguards.test.mjs",
+        "lib/platform/privacy-export.mjs"
       ],
       "blocker": "Requer revisão explícita dos fluxos usados por menores e encarregados; não basta o controlo técnico de acesso."
     },
@@ -290,6 +303,7 @@
         "docs/operations/business-continuity.md",
         "lib/platform/backup.mjs",
         "scripts/recovery-test.mjs",
+        "tests/platform/backup-integrity.test.mjs",
         "lib/platform/readiness.mjs"
       ],
       "blocker": "Requer processo operacional, owners, métricas ou ensaio real antes de qualquer declaração de conformidade."
@@ -349,9 +363,10 @@
     "BA-STD-012": {
       "mode": "technical-evidence",
       "evidence": [
-        "app/area/modules.js",
+        "docs/operations/records-management.md",
+        "lib/platform/records-management.mjs",
         "lib/platform/modules-server.js",
-        "tests/platform/modules.test.mjs"
+        "tests/platform/records-management.test.mjs"
       ]
     },
     "BA-STD-022": {
