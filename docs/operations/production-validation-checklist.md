@@ -62,6 +62,8 @@ Estado: template operacional. **Não é prova de validação até estar preenchi
 - Critério de aceitação:
 
 ## Deployment / domínio / rollback
+
+Executar `BATIC_RELEASE_SHA=<sha> BATIC_PRODUCTION_DEPLOYMENT_URL=https://... npm run verify:production` no deployment selecionado e preservar a saída como evidence record. O comando exige HTTPS, health SHA exato, homepage, security.txt e headers de segurança.
 - [ ] deployment de produção corresponde exatamente ao release SHA;
 - [ ] domínio público e TLS validados nesse deployment;
 - [ ] smoke HTTP sem 5xx nos fluxos públicos críticos;
