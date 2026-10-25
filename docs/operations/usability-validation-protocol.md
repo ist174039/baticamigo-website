@@ -86,6 +86,8 @@ Estes critérios são operacionais e devem ser confirmados pelo Product Owner an
 
 ## Evidência obrigatória
 
+Cada sessão deve usar `docs/operations/usability-session-template.json` e passar `validateUsabilitySession`. O campo `participantId` tem de ser sintético e não pode conter nome/email/identificador real.
+
 Para cada sessão:
 - ID sintético do participante;
 - perfil representado;
