@@ -48,7 +48,7 @@ export default function LegacyFirebaseScripts() {
     }
 
     loadInOrder().catch((error) => {
-      console.error("Erro ao iniciar os recursos do site:", error);
+      console.error("Erro ao iniciar os recursos do site.");
       ["members-container", "partners-container"].forEach((id) => {
         const container = document.getElementById(id);
         if (!container) return;
