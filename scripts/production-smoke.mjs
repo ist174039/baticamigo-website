@@ -28,6 +28,10 @@ try{
     assert.match(response.headers.get('strict-transport-security')||'',/max-age=31536000/);
     const csp=response.headers.get('content-security-policy')||'';
     assert.match(csp,/object-src 'none'/); assert.match(csp,/frame-ancestors 'none'/);
+    if(path==='/platform/login'){
+      assert.match(response.headers.get('x-robots-tag')||'',/noindex/);
+      assert.match(response.headers.get('cache-control')||'',/no-store/);
+    }
     const html=await response.text();
     assert.match(html,/<html[^>]+lang="pt"/);
     assert.match(html,/<main\b/);
