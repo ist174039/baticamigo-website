@@ -32,3 +32,20 @@ Before production:
 3. confirm Rules/IAM in the real environment;
 4. record the exact SHA and evidence;
 5. do not copy secret values into GitHub, Notion or CI logs.
+
+
+## Release-bound readiness evidence
+
+A production candidate must set evidence metadata for the exact release being assessed. Values are identifiers/references only; never put secret values in these variables.
+
+Required by `npm run check:production-readiness` in addition to the policy/QA checks:
+- `BATIC_RELEASE_SHA`: exact 40-character Git SHA under assessment;
+- `BATIC_FIRESTORE_RULES_DEPLOYED_SHA` and `BATIC_STORAGE_RULES_DEPLOYED_SHA`: must equal `BATIC_RELEASE_SHA`;
+- `BATIC_PRODUCTION_DEPLOYED_SHA`: must equal `BATIC_RELEASE_SHA`;
+- `BATIC_PRODUCTION_DEPLOYMENT_URL`: HTTPS production URL;
+- `BATIC_PRODUCTION_DOMAIN_VALIDATED_AT`: date of domain/TLS/smoke validation;
+- `BATIC_ROLLBACK_VALIDATED_AT`: date rollback was validated;
+- `BATIC_READINESS_REVIEWER`: accountable reviewer identity/role reference;
+- `BATIC_READINESS_EVIDENCE_URL`: HTTPS link to the consolidated evidence record.
+
+Syntactic passage of this command is not permission to fabricate evidence. Each value must point to an approved record for the same release SHA.
