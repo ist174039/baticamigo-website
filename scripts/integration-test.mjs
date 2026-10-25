@@ -37,7 +37,7 @@ try {
   assert.equal((await contactResponse.json()).accepted,true);
   const storedContact=await db.collection('contato').where('email','==',contactEmail).get();
   assert.equal(storedContact.size,1,'Valid server-mediated contact must be persisted.');
-  const honeypotResponse=await fetch(host+'/api/contact',{method:'POST',headers:{'Content-Type':'application/json',Origin:host},body:JSON.stringify({name:'Bot',email:'bot@example.invalid',subject:'Spam',message:'Spam',website:'https://spam.invalid'})});
+  const honeypotResponse=await fetch(host+'/api/contact',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:'Bot',email:'bot@example.invalid',subject:'Spam',message:'Spam',website:'https://spam.invalid'})});
   assert.equal(honeypotResponse.status,202);
   assert.equal((await db.collection('contato').where('email','==','bot@example.invalid').get()).size,0,'Honeypot submissions must not be persisted.');
   console.log('PASS: server-mediated public contact form and honeypot.');
