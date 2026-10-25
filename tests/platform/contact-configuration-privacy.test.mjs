@@ -13,3 +13,13 @@ test('privileged bootstrap and notification contacts are not hardcoded in source
   const fn=readFileSync(new URL('../../functions/index.js',import.meta.url),'utf8');
   assert.match(fn,/contact_to/);
 });
+
+test('contact notification emails contain no submitted personal content',()=>{
+  for(const path of ['../../functions/index.js','../../public/firebase-functions/index.js']){
+    const source=readFileSync(new URL(path,import.meta.url),'utf8');
+    const handler=source.slice(source.indexOf('exports.sendContactEmail'));
+    assert.match(handler,/Consulte-a no painel administrativo/);
+    assert.doesNotMatch(handler,/contactData\.nome|contactData\.email|contactData\.assunto|contactData\.mensagem/);
+    assert.doesNotMatch(handler,/Nome:\s*\$\{|Email:\s*\$\{|Mensagem:\s*\$\{/);
+  }
+});
