@@ -10,7 +10,7 @@ test('market readiness sign-off lists every mandatory release gate and fails clo
     'BA-REL-001','BA-OBS-001','BA-IR-001','BA-PRIV-001','BA-PIA-001','BA-RET-001',
     'BA-VENDOR-001','BA-RIGHTS-001','BA-BCP-001','BA-A11Y-001','BA-UX-001'
   ]) assert.ok(signoff.includes(id),`missing gate ${id}`);
-  assert.match(signoff,/GO only is admissible|GO só é admissível/);
+  assert.match(signoff,/\*\*GO\*\* só é admissível|GO só é admissível/);
   assert.match(signoff,/NO-GO/);
   assert.match(signoff,/Blocked \/ Requires Decision/);
 });
