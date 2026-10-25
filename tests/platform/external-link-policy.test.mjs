@@ -12,8 +12,10 @@ test('CMS validates external editorial links as HTTPS without embedded credentia
   for(const snippet of ['isHttpsUrl(values.instagram)','isHttpsUrl(inscricao)','isHttpsUrl(link)','isHttpsUrl(website)']) assert.ok(admin.includes(snippet),`missing ${snippet}`);
 });
 
-test('public loader accepts same-origin navigation but requires HTTPS for external links',()=>{
+test('public loader accepts same-origin navigation but requires credential-free HTTPS externally',()=>{
   assert.match(loader,/url\.origin === window\.location\.origin/);
-  assert.match(loader,/return url\.protocol === "https:" \? url\.href : ""/);
-  assert.match(loader,/url\.protocol === "https:"\) document\.querySelectorAll\("\[data-contact-instagram\]"/);
+  assert.match(loader,/return url\.protocol === "https:" && !url\.username && !url\.password \? url\.href : ""/);
+  assert.match(loader,/url\.protocol !== "https:" \|\| url\.username \|\| url\.password/);
+  assert.match(loader,/firebasestorage\.googleapis\.com/);
+  assert.match(loader,/storage\.googleapis\.com/);
 });
