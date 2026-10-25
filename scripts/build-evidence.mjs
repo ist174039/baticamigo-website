@@ -7,6 +7,10 @@ const pkg=JSON.parse(readFileSync(new URL('../package.json',import.meta.url),'ut
 const lock=readFileSync(new URL('../package-lock.json',import.meta.url));
 const sbomPath=process.env.BATIC_SBOM_PATH||'/tmp/baticamigo-sbom.json';
 const sbom=readFileSync(sbomPath);
+const firestoreRules=readFileSync(new URL('../firestore.rules',import.meta.url));
+const storageRules=readFileSync(new URL('../storage.rules',import.meta.url));
+const openapi=readFileSync(new URL('../docs/api/openapi.json',import.meta.url));
+const dataModel=readFileSync(new URL('../docs/data-model.json',import.meta.url));
 const sha256=value=>createHash('sha256').update(value).digest('hex');
 const evidence={
   schemaVersion:1,
@@ -18,6 +22,10 @@ const evidence={
   npmUserAgent:String(process.env.npm_config_user_agent||''),
   packageLockSha256:sha256(lock),
   runtimeSbomSha256:sha256(sbom),
+  firestoreRulesSha256:sha256(firestoreRules),
+  storageRulesSha256:sha256(storageRules),
+  openapiSha256:sha256(openapi),
+  dataModelSha256:sha256(dataModel),
   generatedAt:new Date().toISOString(),
   note:'Build evidence only; this is not a signed SLSA provenance attestation.'
 };
