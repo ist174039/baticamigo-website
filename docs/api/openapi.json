@@ -451,6 +451,54 @@
           }
         }
       }
+    },
+    "/api/public-content": {
+      "get": {
+        "summary": "Ler conteúdo editorial público sanitizado",
+        "security": [],
+        "parameters": [
+          {
+            "name": "collection",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "membros",
+                "parceiros",
+                "eventos",
+                "programas",
+                "agenda",
+                "noticias",
+                "site_config"
+              ]
+            }
+          },
+          {
+            "name": "id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Aceite apenas como contact para site_config."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Conteúdo público com allowlist de campos"
+          },
+          "400": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "500": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "503": {
+            "$ref": "#/components/responses/Problem"
+          }
+        }
+      }
     }
   }
 }
