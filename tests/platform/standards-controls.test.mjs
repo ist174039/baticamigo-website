@@ -6,7 +6,7 @@ import {resolve,dirname} from 'node:path';
 
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'../..');
 const manifest=JSON.parse(readFileSync(resolve(root,'docs/standards-controls.json'),'utf8'));
-const expected=Array.from({length:40},(_,i)=>`BA-STD-${String(i+1).padStart(3,'0')}`);
+const expected=Array.from({length:42},(_,i)=>`BA-STD-${String(i+1).padStart(3,'0')}`);
 
 test('all canonical standards have repository traceability',()=>{
   assert.deepEqual(new Set(Object.keys(manifest.controls)),new Set(expected));
