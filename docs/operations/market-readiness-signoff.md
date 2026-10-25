@@ -7,11 +7,12 @@ Este documento organiza a decisão final. Não substitui aprovação do órgão 
 ## Release candidate
 
 - PR: #4 `release/market-readiness-2026-10-25 -> main`
-- main baseline: `74053bc30d10c1d4fb1fbf88591e6ce5d0ec3bf4`
-- checkpoint técnico verde: `cacd60ede0ed75ee886d697b8a965d2a8b68c6fa`
-- Quality Gate: #654 — passou
+- main baseline inicial desta campanha: `74053bc30d10c1d4fb1fbf88591e6ce5d0ec3bf4`
+- SHA final: **obter do HEAD atual do PR #4 no momento da decisão**
+- Quality Gate: **tem de estar verde no mesmo SHA final**
+- evidence run: **obter da base canónica Executions & Evidence para esse SHA**
 
-Antes da decisão, substituir estes valores pelo SHA final e respetiva execução verde se a branch avançar.
+O documento não fixa o próprio HEAD porque qualquer edição deste ficheiro criaria um novo SHA. A decisão usa sempre o PR head e a execução verde correspondente no momento do sign-off.
 
 ## Gates obrigatórios
 
