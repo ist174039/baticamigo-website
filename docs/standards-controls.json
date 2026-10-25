@@ -37,7 +37,10 @@
       "evidence": [
         "lib/platform/server.js",
         "tests/platform/audit-minimization.test.mjs",
-        "scripts/integration-test.mjs"
+        "scripts/integration-test.mjs",
+        "lib/platform/audit-classification.mjs",
+        "tests/platform/audit-classification.test.mjs",
+        "docs/operations/audit-monitoring.md"
       ]
     },
     "BA-STD-014": {
@@ -355,7 +358,10 @@
       "evidence": [
         "docs/security/nist-csf-profile.md",
         "docs/security/threat-model.md",
-        "docs/security/risk-management.md"
+        "docs/security/risk-management.md",
+        "lib/platform/audit-classification.mjs",
+        "tests/platform/audit-classification.test.mjs",
+        "docs/operations/audit-monitoring.md"
       ],
       "blocker": "Requer processo operacional, owners, métricas ou ensaio real antes de qualquer declaração de conformidade."
     },
@@ -386,7 +392,10 @@
       "evidence": [
         "docs/operations/recovery-and-incidents.md",
         "lib/platform/incident.mjs",
-        "tests/platform/incident.test.mjs"
+        "tests/platform/incident.test.mjs",
+        "lib/platform/audit-classification.mjs",
+        "tests/platform/audit-classification.test.mjs",
+        "docs/operations/audit-monitoring.md"
       ],
       "blocker": "Requer processo operacional, owners, métricas ou ensaio real antes de qualquer declaração de conformidade."
     },
