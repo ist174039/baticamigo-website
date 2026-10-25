@@ -75,7 +75,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     try {
       const url = new URL(value, window.location.origin)
       if (url.origin === window.location.origin) return url.href
-      return url.protocol === "https:" ? url.href : ""
+      return url.protocol === "https:" && !url.username && !url.password ? url.href : ""
     } catch { return "" }
   }
   function safeMediaUrl(value) {
@@ -83,7 +83,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     try {
       const url = new URL(value, window.location.origin)
       if (url.origin === window.location.origin) return url.href
-      if (url.protocol !== "https:") return ""
+      if (url.protocol !== "https:" || url.username || url.password) return ""
       return ["firebasestorage.googleapis.com", "storage.googleapis.com"].includes(url.hostname) ? url.href : ""
     } catch { return "" }
   }
