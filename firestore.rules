@@ -44,43 +44,43 @@ service cloud.firestore {
     // BaticAmigo administrators may mutate them from the CMS, and only through
     // the fields used by the current editorial model.
     match /membros/{document} {
-      allow read: if true;
+      allow read: if isAdmin();
       allow create: if isAdmin() && allowedCreate(['nome','cargo','descricao','imagem']) && textField('nome',120) && textField('cargo',120) && textField('descricao',4000) && textField('imagem',2000);
       allow update: if isAdmin() && allowedUpdate(['nome','cargo','descricao','imagem']) && textField('nome',120) && textField('cargo',120) && textField('descricao',4000) && textField('imagem',2000);
       allow delete: if isAdmin();
     }
     match /parceiros/{document} {
-      allow read: if true;
+      allow read: if isAdmin();
       allow create: if isAdmin() && allowedCreate(['nome','descricao','website','logo']) && textField('nome',160) && textField('descricao',4000) && textField('website',2000) && textField('logo',2000);
       allow update: if isAdmin() && allowedUpdate(['nome','descricao','website','logo']) && textField('nome',160) && textField('descricao',4000) && textField('website',2000) && textField('logo',2000);
       allow delete: if isAdmin();
     }
     match /eventos/{document} {
-      allow read: if true;
+      allow read: if isAdmin();
       allow create: if isAdmin() && allowedCreate(['nome','tipo','data','descricao','parceiros','flags','destaque','imagem','galeria']) && textField('nome',180) && textField('tipo',100) && textField('descricao',8000) && textField('imagem',2000) && listField('parceiros',50) && listField('flags',30) && listField('galeria',50) && boolField('destaque');
       allow update: if isAdmin() && allowedUpdate(['nome','tipo','data','descricao','parceiros','flags','destaque','imagem','galeria']) && textField('nome',180) && textField('tipo',100) && textField('descricao',8000) && textField('imagem',2000) && listField('parceiros',50) && listField('flags',30) && listField('galeria',50) && boolField('destaque');
       allow delete: if isAdmin();
     }
     match /programas/{document} {
-      allow read: if true;
+      allow read: if isAdmin();
       allow create: if isAdmin() && allowedCreate(['nome','descricao','data_inicio','data_fim','patrocinadores']) && textField('nome',180) && textField('descricao',8000) && listField('patrocinadores',50);
       allow update: if isAdmin() && allowedUpdate(['nome','descricao','data_inicio','data_fim','patrocinadores']) && textField('nome',180) && textField('descricao',8000) && listField('patrocinadores',50);
       allow delete: if isAdmin();
     }
     match /agenda/{document} {
-      allow read: if true;
+      allow read: if isAdmin();
       allow create: if isAdmin() && allowedCreate(['nome','tipo','flag','descricao','data_inicio','data_fim','parceiros','inscricao','destaque','galeria']) && textField('nome',180) && textField('tipo',100) && textField('flag',100) && textField('descricao',8000) && textField('inscricao',2000) && listField('parceiros',50) && listField('galeria',50) && boolField('destaque');
       allow update: if isAdmin() && allowedUpdate(['nome','tipo','flag','descricao','data_inicio','data_fim','parceiros','inscricao','destaque','galeria']) && textField('nome',180) && textField('tipo',100) && textField('flag',100) && textField('descricao',8000) && textField('inscricao',2000) && listField('parceiros',50) && listField('galeria',50) && boolField('destaque');
       allow delete: if isAdmin();
     }
     match /noticias/{document} {
-      allow read: if true;
+      allow read: if isAdmin();
       allow create: if isAdmin() && allowedCreate(['titulo','data','descricao','link','destaque','imagem']) && textField('titulo',220) && textField('descricao',8000) && textField('link',2000) && textField('imagem',2000) && boolField('destaque');
       allow update: if isAdmin() && allowedUpdate(['titulo','data','descricao','link','destaque','imagem']) && textField('titulo',220) && textField('descricao',8000) && textField('link',2000) && textField('imagem',2000) && boolField('destaque');
       allow delete: if isAdmin();
     }
     match /site_config/{document} {
-      allow read: if true;
+      allow read: if isAdmin();
       allow create: if isAdmin() && document == 'contact' && allowedCreate(['intro','email','address','instagram']) && textField('intro',2000) && textField('email',254) && textField('address',500) && textField('instagram',2000);
       allow update: if isAdmin() && document == 'contact' && allowedUpdate(['intro','email','address','instagram']) && textField('intro',2000) && textField('email',254) && textField('address',500) && textField('instagram',2000);
       allow delete: if isAdmin() && document == 'contact';
