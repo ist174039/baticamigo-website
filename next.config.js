@@ -15,8 +15,18 @@ const nextConfig = {
         { key: "Cross-Origin-Resource-Policy", value: "same-origin" },
         { key: "X-Permitted-Cross-Domain-Policies", value: "none" },
       ] },
-      { source: "/area", headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }] },
-      { source: "/admin/:path*", headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }] },
+      { source: "/area/:path*", headers: [
+        { key: "X-Robots-Tag", value: "noindex, nofollow" },
+        { key: "Cache-Control", value: "private, no-store, max-age=0" },
+      ] },
+      { source: "/admin/:path*", headers: [
+        { key: "X-Robots-Tag", value: "noindex, nofollow" },
+        { key: "Cache-Control", value: "private, no-store, max-age=0" },
+      ] },
+      { source: "/platform/:path*", headers: [
+        { key: "X-Robots-Tag", value: "noindex, nofollow" },
+        { key: "Cache-Control", value: "private, no-store, max-age=0" },
+      ] },
     ];
   },
   async redirects() {
