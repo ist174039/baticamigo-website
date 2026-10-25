@@ -3,10 +3,13 @@
 Estado: template operacional. **Não é prova de validação até estar preenchido com evidência verificável.**
 
 ## Identificação
-- versão/SHA:
+- release SHA (40 caracteres):
 - ambiente:
+- production deployment URL:
+- production deployed SHA:
 - executor:
 - revisor:
+- evidence record URL:
 - data:
 
 ## Segurança / cloud
@@ -55,6 +58,14 @@ Estado: template operacional. **Não é prova de validação até estar preenchi
 - [ ] leitor de ecrã em fluxos críticos;
 - [ ] browser/mobile matrix;
 - [ ] teste com representantes dos perfis quando aplicável.
+- Evidência:
+- Critério de aceitação:
+
+## Deployment / domínio / rollback
+- [ ] deployment de produção corresponde exatamente ao release SHA;
+- [ ] domínio público e TLS validados nesse deployment;
+- [ ] smoke HTTP sem 5xx nos fluxos públicos críticos;
+- [ ] rollback para versão anterior validado e documentado;
 - Evidência:
 - Critério de aceitação:
 
