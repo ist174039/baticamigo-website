@@ -1107,6 +1107,28 @@ document.addEventListener("DOMContentLoaded", () => {
   setupFileUpload("membro-imagem", "membro-imagem-preview", "membro-imagem-progress")
   setupFileUpload("parceiro-logo", "parceiro-logo-preview", "parceiro-logo-progress")
 
+  const publicMediaExtensions = Object.freeze({
+    "image/jpeg": ".jpg",
+    "image/png": ".png",
+    "image/gif": ".gif",
+    "image/webp": ".webp",
+    "video/mp4": ".mp4",
+    "video/webm": ".webm",
+  });
+
+  function randomMediaId() {
+    if (globalThis.crypto?.randomUUID) return globalThis.crypto.randomUUID();
+    const bytes = new Uint8Array(16);
+    globalThis.crypto.getRandomValues(bytes);
+    return [...bytes].map((value) => value.toString(16).padStart(2, "0")).join("");
+  }
+
+  function safeUploadFileName(file) {
+    const extension = publicMediaExtensions[file?.type];
+    if (!extension) throw new Error("Tipo de ficheiro não permitido.");
+    return randomMediaId() + extension;
+  }
+
   // Função para fazer upload de arquivo para o Firebase Storage
   async function uploadFile(file, path, progressBarId) {
     return new Promise((resolve, reject) => {
@@ -1176,7 +1198,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (imagemInput.files.length > 0) {
         const file = imagemInput.files[0];
-        const path = `eventos/${id || Date.now()}/imagem/${file.name}`;
+        const path = `eventos/${id || Date.now()}/imagem/${safeUploadFileName(file)}`;
         imagemURL = await uploadFile(file, path, "evento-imagem-progress");
       }
 
@@ -1186,7 +1208,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (galeriaImagensInput.files.length > 0) {
         for (const file of galeriaImagensInput.files) {
-          const path = `eventos/${id || Date.now()}/galeria/imagens/${file.name}`;
+          const path = `eventos/${id || Date.now()}/galeria/imagens/${safeUploadFileName(file)}`;
           const url = await uploadFile(file, path, "evento-galeria-imagens-progress");
           galeria.push({ tipo: "imagem", legenda: file.name, thumbnail: url, url });
         }
@@ -1194,7 +1216,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (galeriaVideosInput.files.length > 0) {
         for (const file of galeriaVideosInput.files) {
-          const path = `eventos/${id || Date.now()}/galeria/videos/${file.name}`;
+          const path = `eventos/${id || Date.now()}/galeria/videos/${safeUploadFileName(file)}`;
           const url = await uploadFile(file, path, "evento-galeria-videos-progress");
           galeria.push({ tipo: "video", legenda: file.name, thumbnail: null, url });
         }
@@ -1294,7 +1316,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (galeriaImagensInput.files.length > 0) {
         for (const file of galeriaImagensInput.files) {
-          const path = `agendas/${id || Date.now()}/galeria/imagens/${file.name}`;
+          const path = `agendas/${id || Date.now()}/galeria/imagens/${safeUploadFileName(file)}`;
           const url = await uploadFile(file, path, "agenda-galeria-imagens-progress");
           galeria.push({ tipo: "imagem", legenda: file.name, thumbnail: url, url });
         }
@@ -1302,7 +1324,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (galeriaVideosInput.files.length > 0) {
         for (const file of galeriaVideosInput.files) {
-          const path = `agendas/${id || Date.now()}/galeria/videos/${file.name}`;
+          const path = `agendas/${id || Date.now()}/galeria/videos/${safeUploadFileName(file)}`;
           const url = await uploadFile(file, path, "agenda-galeria-videos-progress");
           galeria.push({ tipo: "video", legenda: file.name, thumbnail: null, url });
         }
@@ -1355,7 +1377,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (imagemInput.files.length > 0) {
         const file = imagemInput.files[0]
-        const path = `noticias/${id || Date.now()}/imagem/${file.name}`
+        const path = `noticias/${id || Date.now()}/imagem/${safeUploadFileName(file)}`
         imagemURL = await uploadFile(file, path, "noticia-imagem-progress")
       } else if (document.getElementById("noticia-imagem-preview").innerHTML !== "") {
         // Manter a imagem atual se não foi removida
@@ -1411,7 +1433,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (imagemInput.files.length > 0) {
         const file = imagemInput.files[0]
-        const path = `membros/${id || Date.now()}/imagem/${file.name}`
+        const path = `membros/${id || Date.now()}/imagem/${safeUploadFileName(file)}`
         imagemURL = await uploadFile(file, path, "membro-imagem-progress")
       } else if (document.getElementById("membro-imagem-preview").innerHTML !== "") {
         // Manter a imagem atual se não foi removida
@@ -1465,7 +1487,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (logoInput.files.length > 0) {
         const file = logoInput.files[0]
-        const path = `parceiros/${id || Date.now()}/logo/${file.name}`
+        const path = `parceiros/${id || Date.now()}/logo/${safeUploadFileName(file)}`
         logoURL = await uploadFile(file, path, "parceiro-logo-progress")
       } else if (document.getElementById("parceiro-logo-preview").innerHTML !== "") {
         // Manter o logo atual se não foi removida
