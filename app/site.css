@@ -475,3 +475,12 @@ body{background:var(--paper)}
 .empty-state p{color:#554c59}
 .partner-section .community-intro h2 em,#partners-title em{color:#55336c}
 .contact-form .form-note{color:#675b6d}
+
+
+/* WCAG 2.2 AA contrast hardening for the public editorial surface. */
+.image-caption{background:#3b214f!important;color:#fff!important}
+.image-caption strong,.image-caption span{color:#fff!important}
+.collection-heading-copy>.eyebrow,.about-copy>.eyebrow,.section-heading>.eyebrow{color:#58386f!important}
+.collection-heading-copy .section-heading>p,.section-heading>p,.empty-state>p{color:#5d5363!important}
+.partner-section #partners-title em,.partner-section .community-intro h2 em{color:#55306e!important}
+.form-note{color:#625568!important}
