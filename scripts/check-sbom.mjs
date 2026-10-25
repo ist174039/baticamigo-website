@@ -1,0 +1,10 @@
+import {readFileSync} from 'node:fs';
+const file=process.argv[2];
+if(!file) throw new Error('SBOM path required.');
+const value=JSON.parse(readFileSync(file,'utf8'));
+if(value.bomFormat!=='CycloneDX') throw new Error('Expected CycloneDX SBOM.');
+if(!value.metadata?.component?.name) throw new Error('SBOM metadata component is missing.');
+if(!Array.isArray(value.components)||value.components.length===0) throw new Error('SBOM contains no components.');
+const names=new Set(value.components.map(component=>component.name));
+for(const dependency of ['next','react','firebase','firebase-admin']) if(!names.has(dependency)) throw new Error(`SBOM missing runtime dependency: ${dependency}`);
+console.log(`CycloneDX SBOM validated with ${value.components.length} components.`);
