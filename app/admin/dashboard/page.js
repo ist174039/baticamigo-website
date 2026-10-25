@@ -7,7 +7,7 @@ import { PrivateShell } from "../../components/private/private-shell";
 import { PrivateWorkspaceTemplate } from "../../components/private/private-workspace-template";
 import { CalendarDays, ContactRound, Handshake, Newspaper, PanelsTopLeft, UsersRound, Workflow } from "lucide-react";
 
-const html = fs.readFileSync(path.join(process.cwd(), "public/admin/dashboard.html"), "utf8");
+const html = fs.readFileSync(path.join(process.cwd(), "app/admin/dashboard/dashboard-template.html"), "utf8");
 const markup = renderAdminMarkup(html);
 
 export const metadata = { title: "Painel administrativo | BaticAmigo" };

@@ -18,7 +18,6 @@ document.addEventListener("DOMContentLoaded", () => {
     storageBucket: "baticamigo-c0384.firebasestorage.app",
     messagingSenderId: "710064415749",
     appId: "1:710064415749:web:064e7ff27b4359a4a3686c",
-    measurementId: "G-75HE0LN9JF",
   }
 
   // Inicializar Firebase se ainda não foi inicializado

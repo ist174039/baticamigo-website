@@ -10,16 +10,29 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4.2.2
         with:
           persist-credentials: false
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v4.4.0
         with:
           node-version: '24'
           cache: npm
       - run: npm ci
       - run: npm run check:secrets
       - run: npm audit --omit=dev --audit-level=high
+      - name: Validate change title
+        env:
+          CHANGE_TITLE: ${{ github.event.pull_request.title || github.event.head_commit.message }}
+        run: node scripts/check-change-title.mjs "$CHANGE_TITLE"
+      - run: npm run check:release
+      - run: npm run check:sbom
+      - name: Preserve runtime SBOM evidence
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: baticamigo-runtime-sbom-${{ github.sha }}
+          path: /tmp/baticamigo-sbom.json
+          if-no-files-found: error
+          retention-days: 14
       - run: npm test
       - run: npm run lint
       - name: Verify authenticated flows in isolated Firebase emulators
@@ -28,5 +41,36 @@ jobs:
         run: |
           export JAVA_HOME="$JAVA_HOME_21_X64"
           export PATH="$JAVA_HOME/bin:$PATH"
-          npx --yes firebase-tools@14.22.0 emulators:exec --project baticamigo-c0384 --config tests/emulators/firebase.json --only auth,firestore 'node scripts/integration-test.mjs'
+          npx --yes firebase-tools@14.22.0 emulators:exec --project baticamigo-c0384 --config tests/emulators/firebase.json --only auth,firestore 'node scripts/integration-test.mjs && node scripts/recovery-test.mjs'
+      - name: Verify production Firestore public/private rules
+        env:
+          FIREBASE_EMULATORS_PATH: /tmp/baticamigo-emulators
+        run: |
+          export JAVA_HOME="$JAVA_HOME_21_X64"
+          export PATH="$JAVA_HOME/bin:$PATH"
+          npx --yes firebase-tools@14.22.0 emulators:exec --project baticamigo-c0384 --config firebase.json --only auth,firestore,storage 'node scripts/public-rules-test.mjs'
       - run: npm run build
+      - name: Generate build evidence
+        run: node scripts/build-evidence.mjs /tmp/baticamigo-build-evidence.json
+      - name: Preserve build evidence
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: baticamigo-build-evidence-${{ github.sha }}
+          path: /tmp/baticamigo-build-evidence.json
+          if-no-files-found: error
+          retention-days: 14
+      - run: node scripts/production-smoke.mjs
+      - name: Automated WCAG smoke with axe
+        run: |
+          node node_modules/next/dist/bin/next start --hostname 127.0.0.1 --port 3104 >/tmp/baticamigo-a11y.log 2>&1 &
+          NEXT_PID=$!
+          trap 'kill $NEXT_PID 2>/dev/null || true' EXIT
+          for i in $(seq 1 40); do
+            if curl --fail --silent http://127.0.0.1:3104/ >/dev/null; then break; fi
+            sleep 0.5
+          done
+          curl --fail --silent http://127.0.0.1:3104/ >/dev/null
+          CHROMEDRIVER_PATH="$(npx --yes --package=chromedriver@155.0.1 -- which chromedriver)"
+          "$CHROMEDRIVER_PATH" --version
+          npx --yes @axe-core/cli@4.14.0 http://127.0.0.1:3104/ --tags wcag2a,wcag2aa,wcag22aa --chromedriver-path="$CHROMEDRIVER_PATH" --chrome-options="no-sandbox,disable-dev-shm-usage" --load-delay=1000 --timeout=60 --exit
+          npx --yes @axe-core/cli@4.14.0 http://127.0.0.1:3104/platform/login --tags wcag2a,wcag2aa,wcag22aa --chromedriver-path="$CHROMEDRIVER_PATH" --chrome-options="no-sandbox,disable-dev-shm-usage" --load-delay=1000 --timeout=60 --exit

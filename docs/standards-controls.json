@@ -1,0 +1,444 @@
+{
+  "schemaVersion": 1,
+  "source": "Notion Standards & Controls",
+  "reviewedAt": "2026-10-25",
+  "controls": {
+    "BA-STD-004": {
+      "mode": "technical-evidence",
+      "evidence": [
+        "docs/security/threat-model.md",
+        "docs/api/openapi.json",
+        "next.config.js",
+        "tests/platform/security-headers.test.mjs",
+        "scripts/integration-test.mjs"
+      ]
+    },
+    "BA-STD-006": {
+      "mode": "technical-evidence",
+      "evidence": [
+        "lib/platform/server.js",
+        "app/api/platform/route.js",
+        "tests/platform/architecture-gates.test.mjs",
+        "docs/security/firebase-boundary.md"
+      ]
+    },
+    "BA-STD-007": {
+      "mode": "technical-evidence",
+      "evidence": [
+        ".github/workflows/quality-gate.yml",
+        "scripts/check-secrets.mjs",
+        "scripts/check-sbom.mjs",
+        "CHANGELOG.md",
+        "scripts/build-evidence.mjs"
+      ]
+    },
+    "BA-STD-011": {
+      "mode": "technical-evidence",
+      "evidence": [
+        "lib/platform/server.js",
+        "tests/platform/audit-minimization.test.mjs",
+        "scripts/integration-test.mjs",
+        "lib/platform/audit-classification.mjs",
+        "tests/platform/audit-classification.test.mjs",
+        "docs/operations/audit-monitoring.md"
+      ]
+    },
+    "BA-STD-014": {
+      "mode": "technical-evidence",
+      "evidence": [
+        "lib/platform/server.js",
+        "app/api/platform/route.js",
+        "tests/platform/architecture-gates.test.mjs",
+        "docs/security/firebase-boundary.md"
+      ]
+    },
+    "BA-STD-015": {
+      "mode": "technical-evidence",
+      "evidence": [
+        "docs/api/openapi.json",
+        "lib/platform/server.js",
+        "tests/platform/api-contract.test.mjs",
+        "tests/platform/request-boundary.test.mjs"
+      ]
+    },
+    "BA-STD-017": {
+      "mode": "technical-evidence",
+      "evidence": [
+        "lib/platform/server.js",
+        "app/api/platform/route.js",
+        "tests/platform/architecture-gates.test.mjs",
+        "docs/security/firebase-boundary.md"
+      ]
+    },
+    "BA-STD-019": {
+      "mode": "technical-evidence",
+      "evidence": [
+        ".github/workflows/quality-gate.yml",
+        "scripts/check-sbom.mjs",
+        "package-lock.json",
+        "scripts/build-evidence.mjs",
+        "tests/platform/build-evidence.test.mjs"
+      ]
+    },
+    "BA-STD-023": {
+      "mode": "technical-evidence",
+      "evidence": [
+        "lib/platform/server.js",
+        "app/api/platform/route.js",
+        "tests/platform/architecture-gates.test.mjs",
+        "docs/security/firebase-boundary.md"
+      ]
+    },
+    "BA-STD-029": {
+      "mode": "technical-evidence",
+      "evidence": [
+        "docs/architecture/platform.md",
+        "docs/architecture/adr/0001-server-mediated-private-data.md",
+        "docs/architecture/adr/0002-fail-closed-readiness.md"
+      ]
+    },
+    "BA-STD-030": {
+      "mode": "technical-evidence",
+      "evidence": [
+        "CHANGELOG.md",
+        "docs/requirements-evidence.json",
+        ".github/workflows/quality-gate.yml",
+        "scripts/build-evidence.mjs"
+      ]
+    },
+    "BA-STD-034": {
+      "mode": "technical-evidence",
+      "evidence": [
+        "docs/security/iso-27002-control-map.md",
+        "docs/security/controls-assessment.md",
+        "tests/platform/architecture-gates.test.mjs"
+      ]
+    },
+    "BA-STD-038": {
+      "mode": "technical-evidence",
+      "evidence": [
+        "docs/security/pii-controls.md",
+        "lib/platform/server.js",
+        "firestore.rules",
+        "storage.rules",
+        "tests/platform/security-boundary.test.mjs",
+        "docs/security/tracking-minimization.md",
+        "tests/platform/browser-storage-minimization.test.mjs"
+      ]
+    },
+    "BA-STD-001": {
+      "mode": "external-validation-required",
+      "evidence": [
+        "docs/security/data-governance-draft.md",
+        "docs/security/data-subject-rights.md",
+        "docs/security/privacy-impact-assessment.md",
+        "lib/platform/privacy-assessment.mjs",
+        "lib/platform/privacy-export.mjs",
+        "lib/platform/readiness.mjs",
+        "docs/security/tracking-minimization.md",
+        "tests/platform/tracking-minimization.test.mjs",
+        "tests/platform/browser-storage-minimization.test.mjs",
+        "docs/security/privacy-approval-template.md",
+        "docs/operations/production-validation-checklist.md"
+      ],
+      "blocker": "Requer decisão/aprovação organizacional, jurídica, de risco ou de privacidade; código não substitui essa validação."
+    },
+    "BA-STD-002": {
+      "mode": "external-validation-required",
+      "evidence": [
+        "docs/security/data-governance-draft.md",
+        "docs/security/data-subject-rights.md",
+        "docs/security/privacy-impact-assessment.md",
+        "lib/platform/readiness.mjs",
+        "docs/security/privacy-approval-template.md",
+        "docs/operations/production-validation-checklist.md"
+      ],
+      "blocker": "Requer decisão/aprovação organizacional, jurídica, de risco ou de privacidade; código não substitui essa validação."
+    },
+    "BA-STD-003": {
+      "mode": "external-validation-required",
+      "evidence": [
+        "docs/security/children-digital-safeguards.md",
+        "lib/platform/access.mjs",
+        "lib/platform/privacy-export.mjs",
+        "tests/platform/children-safeguards.test.mjs",
+        "scripts/integration-test.mjs",
+        "docs/security/tracking-minimization.md",
+        "tests/platform/browser-storage-minimization.test.mjs",
+        "docs/security/privacy-approval-template.md",
+        "docs/operations/production-validation-checklist.md"
+      ],
+      "blocker": "Requer decisão/aprovação organizacional, jurídica, de risco ou de privacidade; código não substitui essa validação."
+    },
+    "BA-STD-009": {
+      "mode": "external-validation-required",
+      "evidence": [
+        "lib/platform/retention.mjs",
+        "lib/platform/retention-plan.mjs",
+        "docs/security/retention-policy-template.json",
+        "tests/platform/retention.test.mjs",
+        "tests/platform/retention-plan.test.mjs",
+        "docs/security/retention-approval-template.md",
+        "docs/operations/production-validation-checklist.md"
+      ],
+      "blocker": "Requer decisão/aprovação organizacional, jurídica, de risco ou de privacidade; código não substitui essa validação."
+    },
+    "BA-STD-016": {
+      "mode": "external-validation-required",
+      "evidence": [
+        "docs/security/vendor-inventory.md",
+        "docs/security/cloud-responsibility-matrix.json",
+        "lib/platform/cloud-governance.mjs",
+        "tests/platform/cloud-governance.test.mjs",
+        "docs/security/privacy-approval-template.md",
+        "docs/operations/production-validation-checklist.md"
+      ],
+      "blocker": "Requer decisão/aprovação organizacional, jurídica, de risco ou de privacidade; código não substitui essa validação."
+    },
+    "BA-STD-028": {
+      "mode": "external-validation-required",
+      "evidence": [
+        "docs/security/vendor-inventory.md",
+        "docs/security/cloud-responsibility-matrix.json",
+        "docs/security/firebase-boundary.md",
+        "lib/platform/cloud-governance.mjs",
+        "docs/operations/production-validation-checklist.md"
+      ],
+      "blocker": "Requer validação de fornecedores, IAM, contratos e responsabilidades partilhadas."
+    },
+    "BA-STD-032": {
+      "mode": "external-validation-required",
+      "evidence": [
+        "docs/security/data-governance-draft.md",
+        "docs/security/governance-register-template.json",
+        "lib/platform/governance-register.mjs",
+        "docs/security/privacy-impact-assessment.md",
+        "docs/security/data-subject-rights.md",
+        "docs/security/privacy-approval-template.md",
+        "docs/operations/production-validation-checklist.md"
+      ],
+      "blocker": "Requer decisão/aprovação organizacional, jurídica, de risco ou de privacidade; código não substitui essa validação."
+    },
+    "BA-STD-035": {
+      "mode": "operational-validation-required",
+      "evidence": [
+        "docs/security/risk-management.md",
+        "docs/security/risk-register-template.json",
+        "lib/platform/risk-register.mjs",
+        "tests/platform/risk-register.test.mjs",
+        "lib/platform/evidence-record.mjs",
+        "docs/operations/production-validation-checklist.md"
+      ],
+      "blocker": "Requer processo operacional, owners, métricas ou ensaio real antes de qualquer declaração de conformidade."
+    },
+    "BA-STD-036": {
+      "mode": "external-validation-required",
+      "evidence": [
+        "docs/security/pii-controls.md",
+        "docs/security/data-governance-draft.md",
+        "lib/platform/readiness.mjs",
+        "docs/security/tracking-minimization.md",
+        "docs/security/data-subject-rights.md",
+        "lib/platform/privacy-export.mjs"
+      ],
+      "blocker": "Requer decisão/aprovação organizacional, jurídica, de risco ou de privacidade; código não substitui essa validação."
+    },
+    "BA-STD-037": {
+      "mode": "external-validation-required",
+      "evidence": [
+        "docs/security/privacy-impact-assessment.md",
+        "lib/platform/privacy-assessment.mjs",
+        "tests/platform/privacy-assessment.test.mjs",
+        "lib/platform/evidence-record.mjs",
+        "docs/security/privacy-approval-template.md",
+        "docs/operations/production-validation-checklist.md"
+      ],
+      "blocker": "Requer decisão/aprovação organizacional, jurídica, de risco ou de privacidade; código não substitui essa validação."
+    },
+    "BA-STD-005": {
+      "mode": "manual-validation-required",
+      "evidence": [
+        "docs/accessibility/conformance-plan.md",
+        "lib/platform/evidence-record.mjs",
+        "docs/operations/evidence-record-template.json",
+        "app/area/platform.css"
+      ],
+      "blocker": "Requer execução manual/assistiva ou validação de aplicabilidade com utilizadores/partes competentes."
+    },
+    "BA-STD-018": {
+      "mode": "manual-validation-required",
+      "evidence": [
+        "docs/design-system.md",
+        "app/area/platform.css",
+        "tests/platform/security-headers.test.mjs"
+      ],
+      "blocker": "Requer execução manual/assistiva ou validação de aplicabilidade com utilizadores/partes competentes."
+    },
+    "BA-STD-020": {
+      "mode": "manual-validation-required",
+      "evidence": [
+        "docs/operations/interaction-checklist.md",
+        "app/area/platform.js",
+        "tests/platform/request-boundary.test.mjs"
+      ],
+      "blocker": "Requer execução manual/assistiva ou validação de aplicabilidade com utilizadores/partes competentes."
+    },
+    "BA-STD-021": {
+      "mode": "manual-validation-required",
+      "evidence": [
+        "docs/security/children-digital-safeguards.md",
+        "docs/operations/interaction-checklist.md",
+        "lib/platform/evidence-record.mjs",
+        "docs/operations/evidence-record-template.json",
+        "docs/operations/production-validation-checklist.md"
+      ],
+      "blocker": "Requer execução manual/assistiva ou validação de aplicabilidade com utilizadores/partes competentes."
+    },
+    "BA-STD-031": {
+      "mode": "manual-validation-required",
+      "evidence": [
+        "docs/accessibility/conformance-plan.md",
+        "lib/platform/evidence-record.mjs",
+        "docs/operations/evidence-record-template.json",
+        "lib/platform/readiness.mjs"
+      ],
+      "blocker": "Requer execução manual/assistiva ou validação de aplicabilidade com utilizadores/partes competentes."
+    },
+    "BA-STD-033": {
+      "mode": "manual-validation-required",
+      "evidence": [
+        "lib/platform/quality-budgets.mjs",
+        "scripts/production-smoke.mjs",
+        "tests/platform/quality-budgets.test.mjs",
+        "docs/operations/ui-ux-review.md"
+      ],
+      "blocker": "Qualidade global exige medições e validações para além dos testes automatizados."
+    },
+    "BA-STD-039": {
+      "mode": "manual-validation-required",
+      "evidence": [
+        "docs/accessibility/conformance-plan.md",
+        "lib/platform/readiness.mjs"
+      ],
+      "blocker": "Requer execução manual/assistiva ou validação de aplicabilidade com utilizadores/partes competentes."
+    },
+    "BA-STD-040": {
+      "mode": "manual-validation-required",
+      "evidence": [
+        "docs/security/children-digital-safeguards.md",
+        "docs/accessibility/conformance-plan.md",
+        "tests/platform/children-safeguards.test.mjs",
+        "lib/platform/privacy-export.mjs"
+      ],
+      "blocker": "Requer revisão explícita dos fluxos usados por menores e encarregados; não basta o controlo técnico de acesso."
+    },
+    "BA-STD-008": {
+      "mode": "operational-validation-required",
+      "evidence": [
+        "docs/operations/business-continuity.md",
+        "lib/platform/backup.mjs",
+        "scripts/recovery-test.mjs",
+        "tests/platform/backup-integrity.test.mjs",
+        "lib/platform/readiness.mjs",
+        "docs/operations/continuity-exercise-template.md",
+        "docs/operations/production-validation-checklist.md"
+      ],
+      "blocker": "Requer processo operacional, owners, métricas ou ensaio real antes de qualquer declaração de conformidade."
+    },
+    "BA-STD-013": {
+      "mode": "operational-validation-required",
+      "evidence": [
+        "docs/operations/dora-ledger-schema.json",
+        "docs/operations/recovery-and-incidents.md"
+      ],
+      "blocker": "Requer processo operacional, owners, métricas ou ensaio real antes de qualquer declaração de conformidade."
+    },
+    "BA-STD-024": {
+      "mode": "operational-validation-required",
+      "evidence": [
+        "docs/security/nist-csf-profile.md",
+        "docs/security/threat-model.md",
+        "docs/security/risk-management.md",
+        "lib/platform/audit-classification.mjs",
+        "tests/platform/audit-classification.test.mjs",
+        "docs/operations/audit-monitoring.md"
+      ],
+      "blocker": "Requer processo operacional, owners, métricas ou ensaio real antes de qualquer declaração de conformidade."
+    },
+    "BA-STD-025": {
+      "mode": "operational-validation-required",
+      "evidence": [
+        "package.json",
+        "CHANGELOG.md",
+        "scripts/check-release-policy.mjs",
+        "tests/platform/release-policy.test.mjs"
+      ],
+      "blocker": "Requer processo operacional, owners, métricas ou ensaio real antes de qualquer declaração de conformidade."
+    },
+    "BA-STD-026": {
+      "mode": "operational-validation-required",
+      "evidence": [
+        "docs/security/iso-27001-soa-draft.md",
+        "docs/security/governance-register-template.json",
+        "lib/platform/governance-register.mjs",
+        "docs/security/risk-management.md",
+        "docs/security/iso-27002-control-map.md",
+        "docs/operations/production-validation-checklist.md"
+      ],
+      "blocker": "Requer processo operacional, owners, métricas ou ensaio real antes de qualquer declaração de conformidade."
+    },
+    "BA-STD-027": {
+      "mode": "operational-validation-required",
+      "evidence": [
+        "docs/operations/recovery-and-incidents.md",
+        "lib/platform/incident.mjs",
+        "tests/platform/incident.test.mjs",
+        "lib/platform/audit-classification.mjs",
+        "tests/platform/audit-classification.test.mjs",
+        "docs/operations/audit-monitoring.md"
+      ],
+      "blocker": "Requer processo operacional, owners, métricas ou ensaio real antes de qualquer declaração de conformidade."
+    },
+    "BA-STD-010": {
+      "mode": "not-applicable",
+      "evidence": [
+        "docs/requirements-evidence.json"
+      ],
+      "blocker": "Fora do âmbito atual; reavaliar se pagamentos/serviços financeiros entrarem no produto."
+    },
+    "BA-STD-012": {
+      "mode": "technical-evidence",
+      "evidence": [
+        "docs/operations/records-management.md",
+        "lib/platform/records-management.mjs",
+        "lib/platform/modules-server.js",
+        "tests/platform/records-management.test.mjs"
+      ]
+    },
+    "BA-STD-022": {
+      "mode": "organizational-improvement",
+      "evidence": [
+        "docs/security/controls-assessment.md",
+        ".github/workflows/quality-gate.yml"
+      ],
+      "blocker": "Requer assessment SAMM e plano organizacional aprovado."
+    },
+    "BA-STD-041": {
+      "mode": "technical-evidence",
+      "evidence": [
+        "public/.well-known/security.txt",
+        "tests/platform/security-txt.test.mjs",
+        "docs/operations/recovery-and-incidents.md"
+      ]
+    },
+    "BA-STD-042": {
+      "mode": "technical-evidence",
+      "evidence": [
+        "lib/platform/file-validation.mjs",
+        "app/api/platform/files/route.js",
+        "tests/platform/file-validation.test.mjs",
+        "tests/platform/security-boundary.test.mjs"
+      ]
+    }
+  }
+}

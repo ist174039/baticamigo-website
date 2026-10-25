@@ -2,15 +2,7 @@
 
 import { useEffect } from "react";
 
-const firebaseApp = "https://www.gstatic.com/firebasejs/13.0.0/firebase-app-compat.js";
-const firebaseServices = [
-  "https://www.gstatic.com/firebasejs/13.0.0/firebase-auth-compat.js",
-  "https://www.gstatic.com/firebasejs/13.0.0/firebase-firestore-compat.js",
-  "https://www.gstatic.com/firebasejs/13.0.0/firebase-storage-compat.js",
-];
 const pageScripts = [
-  "/js/firebase-config.js",
-  "/js/firebase-init.js",
   "/js/main.js",
   "/js/firebase-data-loader.js",
   "/js/contact-form-firebase.js",
@@ -38,8 +30,6 @@ export default function LegacyFirebaseScripts() {
   useEffect(() => {
     let cancelled = false;
     async function loadInOrder() {
-      await loadScript(firebaseApp);
-      await Promise.all(firebaseServices.map(loadScript));
       for (const src of pageScripts) {
         if (cancelled) return;
         await loadScript(src);
@@ -48,7 +38,7 @@ export default function LegacyFirebaseScripts() {
     }
 
     loadInOrder().catch((error) => {
-      console.error("Erro ao iniciar os recursos do site:", error);
+      console.error("Erro ao iniciar os recursos do site.");
       ["members-container", "partners-container"].forEach((id) => {
         const container = document.getElementById(id);
         if (!container) return;

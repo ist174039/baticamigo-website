@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "risks": [
+    {
+      "id": "RISK-EXAMPLE",
+      "asset": "",
+      "threat": "",
+      "vulnerability": "",
+      "impact": "",
+      "likelihoodEvidence": "",
+      "controls": "",
+      "treatment": "reduce",
+      "status": "open",
+      "owner": "",
+      "dueDate": "",
+      "acceptanceCriterion": "",
+      "evidence": "",
+      "reviewedAt": ""
+    }
+  ]
+}

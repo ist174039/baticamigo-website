@@ -20,9 +20,68 @@ async function expect(who,body,status=200,path='/api/platform') {const result=aw
 try {
   for(let attempt=0;attempt<120;attempt++){try{const response=await fetch(host+'/api/platform');if(response.status===401)break;}catch{}if(attempt===119)throw new Error('Local server did not start.');await new Promise(resolve=>setTimeout(resolve,500));}
   for(const [name,role,profileIds] of fixtures){const email=name.toLowerCase()+'@example.invalid';await auth.createUser({uid:name,email,password:'Synthetic-fixture-password-42',emailVerified:true});await db.collection('platform_accounts').doc(name).set({roles:[role],role,profileIds,active:true});const response=await fetch('http://'+process.env.FIREBASE_AUTH_EMULATOR_HOST+'/identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=emulator-only',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password:'Synthetic-fixture-password-42',returnSecureToken:true})});const result=await response.json();assert.ok(result.idToken,'Emulated sign-in failed.');tokens[name]=result.idToken;}
+  await auth.createUser({uid:'unverified',email:'unverified@example.invalid',password:'Synthetic-fixture-password-42',emailVerified:false});
+  await db.collection('platform_accounts').doc('unverified').set({roles:['member'],role:'member',profileIds:[],active:true});
+  {
+    const response=await fetch('http://'+process.env.FIREBASE_AUTH_EMULATOR_HOST+'/identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=emulator-only',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:'unverified@example.invalid',password:'Synthetic-fixture-password-42',returnSecureToken:true})});
+    const result=await response.json();assert.ok(result.idToken,'Unverified emulated sign-in failed.');tokens.unverified=result.idToken;
+  }
   for(const [id,kind,name,guardians] of [['s1','student','Aluno de teste A',['g1']],['s2','student','Aluno de teste B',['g2']],['s3','student','Aluno de teste C',['g3']],['g1','guardian','Encarregado de teste A',[]],['g2','guardian','Encarregado de teste B',[]],['g3','guardian','Encarregado de teste C',[]],['t1','tutor','Explicador de teste A',[]],['t2','tutor','Explicador de teste B',[]],['m1','member','Sócio de teste',[]]])await db.collection('platform_profiles').doc(id).set({kind,name,guardianIds:guardians,active:true});
   await db.collection('platform_access_settings').doc('profiles').set({profiles:{...defaultAccessProfiles,member:['overview','finance','document']}});
+  await db.collection('noticias').doc('public-api-test').set({
+    titulo:'Notícia pública sintética',
+    descricao:'Descrição pública.',
+    link:'https://example.invalid/public',
+    destaque:false,
+    privateNotes:'NUNCA_EXPOR'
+  });
+  await db.collection('eventos').doc('public-api-event').set({
+    nome:'Evento público sintético',
+    tipo:'Teste',
+    descricao:'Descrição pública.',
+    parceiros:['Parceiro sintético'],
+    flags:['teste'],
+    destaque:false,
+    privateNotes:'NUNCA_EXPOR_EVENTO',
+    galeria:[{tipo:'imagem',legenda:'Imagem sintética',url:'https://firebasestorage.googleapis.com/example.jpg',privateNote:'NUNCA_EXPOR_GALERIA'}]
+  });
+  const publicNewsResponse=await fetch(host+'/api/public-content?collection=noticias');
+  assert.equal(publicNewsResponse.status,200);
+  assert.match(publicNewsResponse.headers.get('cache-control')||'',/s-maxage=60/);
+  const publicNews=await publicNewsResponse.json();
+  const publicNewsItem=publicNews.items.find(item=>item.id==='public-api-test');
+  assert.equal(publicNewsItem.titulo,'Notícia pública sintética');
+  assert.equal('privateNotes' in publicNewsItem,false,'Unknown legacy fields must not leave the server.');
+  const publicEventResponse=await fetch(host+'/api/public-content?collection=eventos');
+  assert.equal(publicEventResponse.status,200);
+  const publicEvent=(await publicEventResponse.json()).items.find(item=>item.id==='public-api-event');
+  assert.equal('privateNotes' in publicEvent,false);
+  assert.deepEqual(Object.keys(publicEvent.galeria[0]).sort(),['legenda','tipo','url']);
+  assert.equal(JSON.stringify(publicEvent).includes('NUNCA_EXPOR'),false);
+  const invalidPublic=await fetch(host+'/api/public-content?collection=platform_profiles');
+  assert.equal(invalidPublic.status,400,'Private collections must never be addressable through the public API.');
+  console.log('PASS: public editorial API exposes only allowlisted fields.');
+  const unauthorized=await fetch(host+'/api/platform');
+  assert.equal(unauthorized.status,401);
+  assert.match(unauthorized.headers.get('content-type')||'',/application\/problem\+json/);
+  const unauthorizedProblem=await unauthorized.json();
+  assert.equal(unauthorizedProblem.status,401);
+  assert.equal(unauthorizedProblem.type,'about:blank');
+  assert.equal(unauthorizedProblem.error,unauthorizedProblem.detail);
+  console.log('PASS: RFC 9457 unauthorized problem response.');
   await expect(null,null,401);
+  await expect('unverified',null,403);
+  console.log('PASS: unverified email is blocked from private platform access.');
+  const contactEmail='synthetic-contact@example.invalid';
+  const contactResponse=await fetch(host+'/api/contact',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:'Contacto sintético',email:contactEmail,subject:'Teste de integração',message:'Mensagem sintética sem dados reais.',website:''})});
+  assert.equal(contactResponse.status,201);
+  assert.equal((await contactResponse.json()).accepted,true);
+  const storedContact=await db.collection('contato').where('email','==',contactEmail).get();
+  assert.equal(storedContact.size,1,'Valid server-mediated contact must be persisted.');
+  const honeypotResponse=await fetch(host+'/api/contact',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:'Bot',email:'bot@example.invalid',subject:'Spam',message:'Spam',website:'https://spam.invalid'})});
+  assert.equal(honeypotResponse.status,202);
+  assert.equal((await db.collection('contato').where('email','==','bot@example.invalid').get()).size,0,'Honeypot submissions must not be persisted.');
+  console.log('PASS: server-mediated public contact form and honeypot.');
   const start=new Date(Date.now()-86400000).toISOString(),end=new Date(Date.now()-82800000).toISOString();
   const session={title:'Sessão de teste',studentIds:['s1','s2'],tutorId:'t1',room:'Teste A',startsAt:start,endsAt:end};
   const created=await expect('admin',{action:'create-session',session});
@@ -97,4 +156,10 @@ try {
   assert.equal(direct.status,403,'Direct client access must be denied by emulator fixture rules.');
   console.log('PASS: direct client access denied by local fixture rules.');
   console.log('Integration tests completed against local emulators only.');
-} catch(error) {console.error('Integration test failed:',error.message);process.exitCode=1;} finally {server.kill('SIGTERM');await app.delete();}
+} catch(error) {console.error('Integration test failed:',error.message);process.exitCode=1;} finally {
+  try { await auth.deleteUser('unverified'); } catch {}
+  try { await db.collection('platform_accounts').doc('unverified').delete(); } catch {}
+  try { const contacts=await db.collection('contato').where('email','in',['synthetic-contact@example.invalid','bot@example.invalid']).get();await Promise.all(contacts.docs.map(item=>item.ref.delete())); } catch {}
+  for(const [collectionName,id] of [['noticias','public-api-test'],['eventos','public-api-event']]) try { await db.collection(collectionName).doc(id).delete(); } catch {}
+  server.kill('SIGTERM');await app.delete();
+}

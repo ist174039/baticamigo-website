@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "entries": [
+    {
+      "id": "ISMS-SCOPE",
+      "title": "Escopo do SGSI",
+      "state": "draft",
+      "owner": "",
+      "evidence": "",
+      "reviewedAt": "",
+      "nextReview": ""
+    },
+    {
+      "id": "RISK-METHOD",
+      "title": "Método e critérios de risco",
+      "state": "draft",
+      "owner": "",
+      "evidence": "",
+      "reviewedAt": "",
+      "nextReview": ""
+    },
+    {
+      "id": "SOA",
+      "title": "Statement of Applicability",
+      "state": "draft",
+      "owner": "",
+      "evidence": "",
+      "reviewedAt": "",
+      "nextReview": ""
+    },
+    {
+      "id": "PIMS-SCOPE",
+      "title": "Escopo de gestão de privacidade",
+      "state": "draft",
+      "owner": "",
+      "evidence": "",
+      "reviewedAt": "",
+      "nextReview": ""
+    },
+    {
+      "id": "RETENTION",
+      "title": "Política de retenção",
+      "state": "draft",
+      "owner": "",
+      "evidence": "",
+      "reviewedAt": "",
+      "nextReview": ""
+    },
+    {
+      "id": "INCIDENTS",
+      "title": "Resposta a incidentes",
+      "state": "draft",
+      "owner": "",
+      "evidence": "",
+      "reviewedAt": "",
+      "nextReview": ""
+    },
+    {
+      "id": "CONTINUITY",
+      "title": "Continuidade e recuperação",
+      "state": "draft",
+      "owner": "",
+      "evidence": "",
+      "reviewedAt": "",
+      "nextReview": ""
+    }
+  ]
+}

@@ -1,5 +1,5 @@
 import {readModules,writeModule} from '../../../lib/platform/modules-server';
-import {context,collection,audit,json,failure} from '../../../lib/platform/server';
+import {context,collection,audit,json,failure,assertJsonRequest} from '../../../lib/platform/server';
 import {assert,id,profileInput,sessionInput,manages,hasRole,profileIds,canReadStudent,canAttend,canAddUnplannedAttendee,overlaps,attendanceVersion} from '../../../lib/platform/domain.mjs';
 import {canAccessArea,sharedCalendarMetadata,sessionsWithAuthorizedAttendees} from '../../../lib/platform/access.mjs';
 import {expandLisbonSessionRecurrence} from '../../../lib/platform/time.mjs';
@@ -7,6 +7,7 @@ export const runtime='nodejs';
 export const dynamic='force-dynamic';
 const rows=(snapshot)=>snapshot.docs.map(d=>({...d.data(),id:d.id}));
 async function readJson(request) {
+  assertJsonRequest(request);
   const length=Number(request.headers.get('content-length') || 0); assert(length<=16384,'Pedido demasiado grande.',413);
   const reader=request.body?.getReader(); assert(reader,'Pedido vazio.'); const chunks=[]; let size=0;
   try { while(true) { const {done,value}=await reader.read(); if(done) break; size+=value.byteLength; if(size>16384) { await reader.cancel(); assert(false,'Pedido demasiado grande.',413); } chunks.push(value); } }

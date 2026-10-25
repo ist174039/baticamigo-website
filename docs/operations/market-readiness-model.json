@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "model": "BaticAmigo Market Readiness",
+  "weights": {
+    "functional": 15,
+    "documentation": 10,
+    "architecture": 10,
+    "requirementsCoverage": 10,
+    "tests": 10,
+    "evidence": 15,
+    "risks": 10,
+    "traceability": 10,
+    "deliveryReadiness": 10
+  },
+  "scoring": {
+    "functional": "implemented FR / total FR",
+    "requirementsCoverage": "requirements present in canonical evidence manifest / canonical requirement count",
+    "traceability": "requirements with at least one implementation evidence path / canonical requirement count",
+    "tests": "automated quality gate plus required manual/external validation status; cannot be 100 while manual/external requirements remain",
+    "evidence": "applicable controls with completed validation mode; technical evidence counts complete only when CI is green; external/manual/operational modes count complete only with approved evidence records",
+    "deliveryReadiness": "production-readiness checks satisfied / 15",
+    "documentation": "current canonical sections and tables reconciled against the checkpoint SHA",
+    "architecture": "as-built components/APIs/ADRs/sequence/data boundaries reconciled against the checkpoint SHA",
+    "risks": "open material risks with owner, treatment, evidence and acceptance criteria resolved or formally accepted"
+  },
+  "rules": [
+    "No metric reaches 100 from CI alone when its definition requires human, operational or production evidence.",
+    "Not-applicable controls are excluded from the evidence denominator only when applicability is explicitly documented.",
+    "No task/risk is treated as closed without evidence.",
+    "Overall score is the weighted arithmetic mean of the nine metrics.",
+    "Delivery recommendation is Ready for Main only when no blocking inconsistency exists; Ready for Production additionally requires all 15 production-readiness checks."
+  ]
+}

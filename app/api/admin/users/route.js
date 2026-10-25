@@ -1,7 +1,6 @@
-import { cert, getApps, initializeApp } from "firebase-admin/app";
-import { getAuth } from "firebase-admin/auth";
 import { getFirestore } from "firebase-admin/firestore";
-import { adminAuthorization } from "../../../../lib/platform/access.mjs";
+import { adminServices, assertJsonRequest } from "../../../../lib/platform/server";
+import { adminAuthorization, isBootstrapAdmin } from "../../../../lib/platform/access.mjs";
 import { platformContinueUrl } from "../../../../lib/platform/continue-url.mjs";
 
 export const runtime = "nodejs";
@@ -17,20 +16,11 @@ class ApiError extends Error {
 }
 
 function firebaseAuth() {
-  const serializedAccount = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
-  if (!serializedAccount) throw new ApiError(503, "A gestão administrativa ainda não está configurada no servidor.", "admin/configuration-missing");
-
-  let serviceAccount;
-  try { serviceAccount = JSON.parse(serializedAccount); }
-  catch { throw new ApiError(503, "A credencial Firebase do servidor não tem um formato válido.", "admin/invalid-credentials"); }
-  if (serviceAccount.project_id !== projectId) throw new ApiError(503, "A credencial Firebase configurada pertence a outro projeto.", "admin/wrong-project");
-
-  const app = getApps().find((candidate) => candidate.name === "baticamigo-admin")
-    || initializeApp({ credential: cert(serviceAccount), projectId }, "baticamigo-admin");
-  return getAuth(app);
+  return adminServices().auth;
 }
 
 async function readJson(request) {
+  assertJsonRequest(request);
   const length = Number(request.headers.get("content-length") || 0);
   if (length > 16384) throw new ApiError(413, "Pedido demasiado grande.");
   const reader = request.body?.getReader();
@@ -63,19 +53,25 @@ async function requireAdmin(request) {
   const authorization = adminAuthorization(decoded, account);
   if (authorization.verificationRequired) throw new ApiError(403, "Confirme o email da conta antes de gerir o site.");
   if (!authorization.authorized) throw new ApiError(403, "A sua conta não tem acesso à gestão do site.");
-  return { auth, decoded };
+  return { auth, decoded, account };
 }
 
 function json(data, status = 200) {
   return Response.json(data, { status, headers: { "Cache-Control": "no-store" } });
 }
 
+function problem(detail,status,code="admin/request-rejected",title="Pedido não concluído") {
+  return Response.json(
+    {type:"about:blank",title,status,detail,error:detail,code},
+    {status,headers:{"Cache-Control":"no-store","Content-Type":"application/problem+json"}}
+  );
+}
 function handleError(error) {
-  if (error instanceof ApiError) return json({ error: error.message, code: error.code || "admin/request-rejected" }, error.status);
+  if (error instanceof ApiError || Number.isInteger(error?.status)) return problem(error.message,error.status,error.code || "admin/request-rejected");
   const code = error?.code;
-  if (code === "auth/user-not-found") return json({ error: "A conta já não existe." }, 404);
-  console.error("Erro na gestão administrativa Firebase:", code || error?.message || "unknown", error?.stack);
-  return json({ error: "Não foi possível concluir a operação. Tente novamente.", code: String(code || "admin/server-error") }, 500);
+  if (code === "auth/user-not-found") return problem("A conta já não existe.",404,String(code),"Recurso não encontrado");
+  console.error("Erro na gestão administrativa Firebase:", code || error?.message || "unknown");
+  return problem("Não foi possível concluir a operação. Tente novamente.",500,String(code || "admin/server-error"),"Erro interno");
 }
 
 function passwordResetContinueUrl() {
@@ -88,9 +84,17 @@ function movedResponse() {
 
 export async function GET(request) {
   try {
-    const { auth } = await requireAdmin(request);
+    const { auth, decoded, account } = await requireAdmin(request);
     const url = new URL(request.url);
-    if (url.searchParams.get("check") === "1") return json({ authorized: true, refreshToken: false });
+    if (url.searchParams.get("check") === "1") {
+      let refreshToken = false;
+      if (!account && isBootstrapAdmin(decoded.email, decoded.email_verified) && decoded.admin !== true) {
+        const user = await auth.getUser(decoded.uid);
+        await auth.setCustomUserClaims(decoded.uid, { ...(user.customClaims || {}), admin: true });
+        refreshToken = true;
+      }
+      return json({ authorized: true, refreshToken });
+    }
     const collectionName = url.searchParams.get("collection");
     if (collectionName === "membros" || collectionName === "parceiros") {
       const snapshot = await getFirestore(auth.app).collection(collectionName).get();
