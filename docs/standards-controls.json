@@ -379,6 +379,23 @@
         ".github/workflows/quality-gate.yml"
       ],
       "blocker": "Requer assessment SAMM e plano organizacional aprovado."
+    },
+    "BA-STD-041": {
+      "mode": "technical-evidence",
+      "evidence": [
+        "public/.well-known/security.txt",
+        "tests/platform/security-txt.test.mjs",
+        "docs/operations/recovery-and-incidents.md"
+      ]
+    },
+    "BA-STD-042": {
+      "mode": "technical-evidence",
+      "evidence": [
+        "lib/platform/file-validation.mjs",
+        "app/api/platform/files/route.js",
+        "tests/platform/file-validation.test.mjs",
+        "tests/platform/security-boundary.test.mjs"
+      ]
     }
   }
 }
