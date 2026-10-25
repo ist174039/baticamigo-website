@@ -54,5 +54,6 @@ Syntactic passage of this command is not permission to fabricate evidence. Each 
 ### Repository and public-asset governance
 - `BATIC_REPOSITORY_GOVERNANCE_APPROVED_AT`: date on which repository visibility, licensing/ownership and review governance were approved.
 - `BATIC_ASSET_RIGHTS_APPROVED_AT`: date on which provenance/rights for all assets in `docs/asset-rights.json` were approved.
+- `BATIC_DEPENDENCY_LICENSES_APPROVED_AT`: date on which runtime dependency license metadata/exceptions were reviewed and approved.
 
 These values are evidence references only. Do not set them to make the gate pass before the corresponding decisions/evidence exist.
