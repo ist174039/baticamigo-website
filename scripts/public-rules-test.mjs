@@ -52,6 +52,9 @@ try {
   await signInWithEmailAndPassword(claimAdmin.auth,'claim-admin@example.invalid',password);
   await setDoc(doc(claimAdmin.db,'noticias','claim-write'),{titulo:'Admin claim'});
   await rejected(setDoc(doc(claimAdmin.db,'noticias','claim-extra'),{titulo:'Admin claim',privateNotes:'não publicar'}),'admin CMS create with unexpected fields must fail');
+  await rejected(setDoc(doc(claimAdmin.db,'noticias','claim-oversized'),{titulo:'x'.repeat(221)}),'admin CMS oversized text must fail');
+  await rejected(setDoc(doc(claimAdmin.db,'noticias','claim-wrong-type'),{titulo:42}),'admin CMS wrong text type must fail');
+  await rejected(setDoc(doc(claimAdmin.db,'eventos','claim-wrong-list'),{nome:'Evento',parceiros:'not-a-list'}),'admin CMS wrong list type must fail');
   assert.equal((await getDoc(doc(claimAdmin.db,'contato','contact-test'))).exists(),true);
 
   await adminAuth.createUser({uid:'account-admin',email:'account-admin@example.invalid',password,emailVerified:true});
@@ -76,7 +79,7 @@ try {
 } finally {
   try{await deleteObject(ref(accountAdmin.storage,mediaPath));}catch{}
   for(const [collectionName,id] of [
-    ['noticias','public-test'],['noticias','legacy-test'],['noticias','claim-write'],['noticias','claim-extra'],['noticias','account-write'],
+    ['noticias','public-test'],['noticias','legacy-test'],['noticias','claim-write'],['noticias','claim-extra'],['noticias','claim-oversized'],['noticias','claim-wrong-type'],['noticias','account-write'],['eventos','claim-wrong-list'],
     ['noticias','anon-write'],['platform_profiles','private-test'],['platform_accounts','account-admin'],
     ['contato','contact-test'],['contato','public-write']
   ]) { try{await adminDb.collection(collectionName).doc(id).delete();}catch{} }
