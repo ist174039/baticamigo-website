@@ -1,63 +1,77 @@
 import assert from 'node:assert/strict';
 import {initializeApp as initializeAdminApp,deleteApp as deleteAdminApp} from 'firebase-admin/app';
+import {getAuth as getAdminAuth} from 'firebase-admin/auth';
 import {getFirestore as getAdminFirestore} from 'firebase-admin/firestore';
 import {initializeApp as initializeClientApp,deleteApp as deleteClientApp} from 'firebase/app';
-import {addDoc,collection,connectFirestoreEmulator,doc,getDoc,getFirestore,serverTimestamp,setDoc} from 'firebase/firestore';
+import {connectAuthEmulator,getAuth,signInWithCustomToken,signOut} from 'firebase/auth';
+import {connectFirestoreEmulator,doc,getDoc,getFirestore,setDoc,updateDoc} from 'firebase/firestore';
+import {connectStorageEmulator,deleteObject,getBytes,getStorage,ref,uploadBytes} from 'firebase/storage';
 
-const host=String(process.env.FIRESTORE_EMULATOR_HOST||'');
-assert.match(host,/^(127\.0\.0\.1|localhost):\d+$/,'Public Rules test requires the local Firestore emulator.');
-const [hostname,portText]=host.split(':');
-const port=Number(portText),projectId='baticamigo-c0384';
+const firestoreHost=String(process.env.FIRESTORE_EMULATOR_HOST||'');
+const authHost=String(process.env.FIREBASE_AUTH_EMULATOR_HOST||'');
+const storageHost=String(process.env.FIREBASE_STORAGE_EMULATOR_HOST||'');
+assert.match(firestoreHost,/^(127\.0\.0\.1|localhost):\d+$/);
+assert.match(authHost,/^(127\.0\.0\.1|localhost):\d+$/);
+assert.match(storageHost,/^(127\.0\.0\.1|localhost):\d+$/);
+const [fsName,fsPort]=firestoreHost.split(':');
+const [storageName,storagePort]=storageHost.split(':');
+const projectId='baticamigo-c0384';
 
-const adminApp=initializeAdminApp({projectId},'public-rules-admin');
+const adminApp=initializeAdminApp({projectId,storageBucket:'baticamigo-c0384.firebasestorage.app'},'production-rules-admin');
 const adminDb=getAdminFirestore(adminApp);
-const clientApp=initializeClientApp({projectId,apiKey:'emulator-only',appId:'1:synthetic:web:synthetic'},'public-rules-client');
-const clientDb=getFirestore(clientApp);
-connectFirestoreEmulator(clientDb,hostname,port);
+const adminAuth=getAdminAuth(adminApp);
 
+function client(name) {
+  const app=initializeClientApp({projectId,apiKey:'emulator-only',appId:`1:synthetic:web:${name}`,storageBucket:'baticamigo-c0384.firebasestorage.app'},name);
+  const auth=getAuth(app);connectAuthEmulator(auth,`http://${authHost}`,{disableWarnings:true});
+  const db=getFirestore(app);connectFirestoreEmulator(db,fsName,Number(fsPort));
+  const storage=getStorage(app);connectStorageEmulator(storage,storageName,Number(storagePort));
+  return {app,auth,db,storage};
+}
 async function rejected(promise,label) {
   try { await promise; assert.fail(label); }
   catch(error) { assert.notEqual(error?.name,'AssertionError',label); }
 }
-
+const anon=client('rules-anon'),claimAdmin=client('rules-claim-admin'),accountAdmin=client('rules-account-admin');
+const mediaPath='noticias/rules-test/imagem/test.png';
 try {
-  await adminDb.collection('noticias').doc('public-test').set({nome:'Notícia pública sintética'});
+  await adminDb.collection('noticias').doc('public-test').set({titulo:'Notícia pública sintética'});
   await adminDb.collection('platform_profiles').doc('private-test').set({kind:'student',name:'Privado',active:true});
-  await adminDb.collection('contato').doc('existing-test').set({nome:'X',email:'x@example.invalid',assunto:'X',mensagem:'X',data:new Date(),lido:false});
+  await adminDb.collection('contato').doc('contact-test').set({nome:'Pessoa',email:'synthetic@example.invalid',assunto:'Teste',mensagem:'Mensagem',data:new Date(),lido:false});
 
-  const publicRead=await getDoc(doc(clientDb,'noticias','public-test'));
-  assert.equal(publicRead.exists(),true,'Public editorial content must remain readable.');
+  assert.equal((await getDoc(doc(anon.db,'noticias','public-test'))).exists(),true);
+  await rejected(getDoc(doc(anon.db,'platform_profiles','private-test')),'anonymous private read must fail');
+  await rejected(getDoc(doc(anon.db,'contato','contact-test')),'anonymous contact read must fail');
+  await rejected(setDoc(doc(anon.db,'contato','public-write'),{nome:'Spam'}),'anonymous contact write must fail');
+  await rejected(setDoc(doc(anon.db,'noticias','anon-write'),{titulo:'No'}),'anonymous CMS write must fail');
 
-  await rejected(getDoc(doc(clientDb,'platform_profiles','private-test')),'Private platform collections must reject direct browser reads.');
-  await rejected(getDoc(doc(clientDb,'contato','existing-test')),'Contact messages must never be publicly readable.');
+  const claimToken=await adminAuth.createCustomToken('claim-admin',{admin:true});
+  await signInWithCustomToken(claimAdmin.auth,claimToken);
+  await setDoc(doc(claimAdmin.db,'noticias','claim-write'),{titulo:'Admin claim'});
+  assert.equal((await getDoc(doc(claimAdmin.db,'contato','contact-test'))).exists(),true);
 
-  const valid=await addDoc(collection(clientDb,'contato'),{
-    nome:'Pessoa sintética',
-    email:'synthetic@example.invalid',
-    assunto:'Teste',
-    mensagem:'Mensagem sintética sem dados reais.',
-    data:serverTimestamp(),
-    lido:false,
-  });
-  assert.ok(valid.id,'A schema-valid contact message with server timestamp must be accepted.');
+  await adminDb.collection('platform_accounts').doc('account-admin').set({uid:'account-admin',roles:['admin'],role:'admin',active:true,suspended:false,profileIds:[]});
+  const accountToken=await adminAuth.createCustomToken('account-admin');
+  await signInWithCustomToken(accountAdmin.auth,accountToken);
+  await setDoc(doc(accountAdmin.db,'noticias','account-write'),{titulo:'Admin account'});
+  await updateDoc(doc(accountAdmin.db,'contato','contact-test'),{lido:true});
 
-  await rejected(addDoc(collection(clientDb,'contato'),{
-    nome:'Pessoa sintética',email:'synthetic@example.invalid',assunto:'Teste',
-    mensagem:'Mensagem',data:serverTimestamp(),lido:false,admin:true,
-  }),'Unexpected contact fields must be rejected.');
+  const png=Uint8Array.from([0x89,0x50,0x4e,0x47,0x0d,0x0a,0x1a,0x0a]);
+  await rejected(uploadBytes(ref(anon.storage,mediaPath),png,{contentType:'image/png'}),'anonymous CMS media write must fail');
+  await uploadBytes(ref(accountAdmin.storage,mediaPath),png,{contentType:'image/png'});
+  const bytes=await getBytes(ref(anon.storage,mediaPath));
+  assert.equal(bytes.byteLength,png.byteLength,'public CMS media must remain readable');
+  await rejected(uploadBytes(ref(accountAdmin.storage,'platform-files/private/test.png'),png,{contentType:'image/png'}),'private platform media must reject direct SDK writes');
 
-  await rejected(setDoc(doc(clientDb,'contato',valid.id),{
-    nome:'Alterado',email:'synthetic@example.invalid',assunto:'Teste',
-    mensagem:'Alteração',data:serverTimestamp(),lido:false,
-  }),'Contact messages must not be client-editable after creation.');
-
-  console.log('PASS: production Firestore Rules preserve public reads/contact create and deny private platform access.');
+  console.log('PASS: production Firebase rules preserve public reads, admin CMS writes, and private platform isolation.');
 } finally {
-  for(const [collectionName,id] of [['noticias','public-test'],['platform_profiles','private-test'],['contato','existing-test']]){
-    try{await adminDb.collection(collectionName).doc(id).delete();}catch{}
-  }
-  const created=await adminDb.collection('contato').where('email','==','synthetic@example.invalid').get();
-  await Promise.all(created.docs.map(item=>item.ref.delete()));
-  await deleteClientApp(clientApp);
+  try{await deleteObject(ref(accountAdmin.storage,mediaPath));}catch{}
+  for(const [collectionName,id] of [
+    ['noticias','public-test'],['noticias','claim-write'],['noticias','account-write'],
+    ['noticias','anon-write'],['platform_profiles','private-test'],['platform_accounts','account-admin'],
+    ['contato','contact-test'],['contato','public-write']
+  ]) { try{await adminDb.collection(collectionName).doc(id).delete();}catch{} }
+  for(const value of [claimAdmin,accountAdmin]) try{await signOut(value.auth);}catch{}
+  for(const value of [anon,claimAdmin,accountAdmin]) await deleteClientApp(value.app);
   await deleteAdminApp(adminApp);
 }
