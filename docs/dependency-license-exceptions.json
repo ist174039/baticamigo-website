@@ -6,12 +6,13 @@
       "version": "1.1.5",
       "lockfileLicense": "",
       "observedLicense": "MIT",
-      "status": "review-required",
+      "status": "verified",
       "evidence": [
         "https://security.snyk.io/package/npm/limiter/1.1.5",
-        "https://assets.ctfassets.net/17si5cpawjzf/q74CsBVduoPWLis3dpi3t/5bfa65a5cc69d91a5cef04dc5b77ef4a/third-party-notices-gridscalex-saas-v2024-12.pdf"
+        "https://www.npmjs.com/package/limiter"
       ],
-      "note": "package-lock metadata omits license; external inventories identify MIT. Confirm from authoritative package/source before legal approval."
+      "note": "Technical verification identifies MIT for limiter package lineage and exact 1.1.5 in Snyk. Compliance/legal approval remains separate and production readiness must stay fail-closed until approved.",
+      "verifiedAt": "2026-10-25"
     }
   ]
 }
