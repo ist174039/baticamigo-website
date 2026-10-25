@@ -59,7 +59,7 @@ test('public API operations explicitly opt out of bearer auth while private oper
   for(const [path,item] of Object.entries(spec.paths)){
     for(const [method,operation] of Object.entries(item)){
       if(!['get','post','put','patch','delete','head','options'].includes(method)) continue;
-      const isPublic=(path==='/api/contact'&&method==='post')||(path==='/api/public-content'&&method==='get');
+      const isPublic=(path==='/api/contact'&&method==='post')||(path==='/api/public-content'&&method==='get')||(path==='/api/health'&&method==='get');
       if(isPublic) assert.deepEqual(operation.security,[],`${method.toUpperCase()} ${path} must be public explicitly`);
       else assert.notDeepEqual(operation.security,[],`${method.toUpperCase()} ${path} must not opt out of bearer auth`);
     }
