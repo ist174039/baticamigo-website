@@ -1,0 +1,14 @@
+{
+  "version": "",
+  "approvedAt": "",
+  "categories": {
+    "audit": {"days": null, "owner": "", "legalHold": false},
+    "records": {"days": null, "owner": "", "legalHold": false},
+    "messages": {"days": null, "owner": "", "legalHold": false},
+    "documents": {"days": null, "owner": "", "legalHold": false},
+    "attendance": {"days": null, "owner": "", "legalHold": false},
+    "sessions": {"days": null, "owner": "", "legalHold": false},
+    "profiles": {"days": null, "owner": "", "legalHold": false},
+    "finance": {"days": null, "owner": "", "legalHold": false}
+  }
+}
