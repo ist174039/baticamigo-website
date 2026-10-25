@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BaticAmigo - Painel Administrativo</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="css/admin.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="admin-container">
+        <div class="admin-dashboard">
+            <!-- Sidebar -->
+            <div class="admin-sidebar">
+                <div class="admin-sidebar-header">
+                    <img src="../images/logo.png" alt="BaticAmigo Logo">
+                    <h3>Painel Administrativo</h3>
+                </div>
+                <ul class="admin-sidebar-menu">
+                 
+                </ul>
+            </div>
+            
+            <!-- Content Area -->
+            <div class="admin-content">
+                <!-- Eventos Section -->
+                <div id="eventos-section" class="admin-section active">
+                    <div class="admin-card">
+                        <div class="admin-card-header">
+                            <h3>Lista de Eventos</h3>
+                            <button id="add-evento-btn" class="admin-btn primary-btn">Adicionar Evento</button>
+                        </div>
+                        <div class="admin-table-container">
+                            <table class="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>Nome</th>
+                                        <th>Tipo</th>
+                                        <th>Data</th>
+                                        <th>Destaque</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="eventos-table-body">
+                                    <!-- Dados serão carregados dinamicamente -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Programas Section -->
+                <div id="programas-section" class="admin-section">
+                    <div class="admin-card">
+                        <div class="admin-card-header">
+                            <h3>Lista de Programas</h3>
+                            <button id="add-programa-btn" class="admin-btn primary-btn">Adicionar Programa</button>
+                        </div>
+                        <div class="admin-table-container">
+                            <table class="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>Nome</th>
+                                        <th>Período</th>
+                                        <th>Patrocinadores</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="programas-table-body">
+                                    <!-- Dados serão carregados dinamicamente -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Agenda Section -->
+                <div id="agenda-section" class="admin-section">
+                    <div class="admin-card">
+                        <div class="admin-card-header">
+                            <h3>Lista de Agenda</h3>
+                            <button id="add-agenda-btn" class="admin-btn primary-btn">Adicionar Item de Agenda</button>
+                        </div>
+                        <div class="admin-table-container">
+                            <table class="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>Nome</th>
+                                        <th>Tipo</th>
+                                        <th>Período</th>
+                                        <th>Destaque</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="agenda-table-body">
+                                    <!-- Dados serão carregados dinamicamente -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Notícias Section -->
+                <div id="noticias-section" class="admin-section">
+                    <div class="admin-card">
+                        <div class="admin-card-header">
+                            <h3>Lista de Notícias</h3>
+                            <button id="add-noticia-btn" class="admin-btn primary-btn">Adicionar Notícia</button>
+                        </div>
+                        <div class="admin-table-container">
+                            <table class="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>Título</th>
+                                        <th>Data</th>
+                                        <th>Destaque</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="noticias-table-body">
+                                    <!-- Dados serão carregados dinamicamente -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Membros Section -->
+                <div id="membros-section" class="admin-section">
+                    <div class="admin-card">
+                        <div class="admin-card-header">
+                            <h3>Lista de Membros</h3>
+                            <button id="add-membro-btn" class="admin-btn primary-btn">Adicionar Membro</button>
+                        </div>
+                        <div class="admin-table-container">
+                            <table class="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>Nome</th>
+                                        <th>Cargo</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="membros-table-body">
+                                    <!-- Dados serão carregados dinamicamente -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Parceiros Section -->
+                <div id="parceiros-section" class="admin-section">
+                    <div class="admin-card">
+                        <div class="admin-card-header">
+                            <h3>Lista de Parceiros</h3>
+                            <button id="add-parceiro-btn" class="admin-btn primary-btn">Adicionar Parceiro</button>
+                        </div>
+                        <div class="admin-table-container">
+                            <table class="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>Nome</th>
+                                        <th>Website</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="parceiros-table-body">
+                                    <!-- Dados serão carregados dinamicamente -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+             
+            </div>
+        </div>
+    </div>
+
+    <!-- Modais -->
+    <!-- Modal de Evento -->
+    <div id="evento-modal" class="admin-modal">
+        <div class="admin-modal-content">
+            <div class="admin-modal-header">
+                <h3 id="evento-modal-title">Adicionar Evento</h3>
+                <button class="admin-modal-close">&times;</button>
+            </div>
+            <form id="evento-form" class="admin-form">
+                <input type="hidden" id="evento-id">
+                <div class="admin-tabs" role="tablist" aria-label="Separadores do evento">
+                    <button type="button" class="admin-tab active" id="evento-info-tab" role="tab" aria-selected="true" aria-controls="evento-info" data-tab="evento-info">Informações</button>
+                    <button type="button" class="admin-tab" id="evento-media-tab" role="tab" aria-selected="false" aria-controls="evento-media" data-tab="evento-media">Mídia</button>
+                    <button type="button" class="admin-tab" id="evento-galeria-tab" role="tab" aria-selected="false" aria-controls="evento-galeria" data-tab="evento-galeria">Galeria</button>
+                </div>
+                
+                <!-- Tab Informações -->
+                <div id="evento-info" class="admin-tab-content active" role="tabpanel" aria-labelledby="evento-info-tab" tabindex="0">
+                    <div class="admin-form-group">
+                        <label for="evento-nome">Nome do Evento</label>
+                        <input type="text" id="evento-nome" name="nome" required>
+                    </div>
+                    <div class="admin-form-row">
+                        <div class="admin-form-col">
+                            <div class="admin-form-group">
+                                <label for="evento-tipo">Tipo</label>
+                                <input type="text" id="evento-tipo" name="tipo" required>
+                            </div>
+                        </div>
+                        <div class="admin-form-col">
+                            <div class="admin-form-group">
+                                <label for="evento-data">Data</label>
+                                <input type="date" id="evento-data" name="data" class="admin-date-picker" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="admin-form-group">
+                        <label for="evento-descricao">Descrição</label>
+                        <textarea id="evento-descricao" name="descricao" rows="4" required></textarea>
+                    </div>
+                    <div class="admin-form-row">
+                        <div class="admin-form-col">
+                            <div class="admin-form-group">
+                                <label for="evento-parceiros">Parceiros (separados por vírgula)</label>
+                                <input type="text" id="evento-parceiros" name="parceiros">
+                            </div>
+                        </div>
+                        <div class="admin-form-col">
+                            <div class="admin-form-group">
+                                <label for="evento-flags">Flags (separadas por vírgula)</label>
+                                <input type="text" id="evento-flags" name="flags">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="admin-form-group">
+                        <div class="admin-checkbox-group">
+                            <label class="admin-checkbox-label">
+                                <input type="checkbox" id="evento-destaque" name="destaque">
+                                Destacar este evento no carrossel
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Tab Mídia -->
+                <div id="evento-media" class="admin-tab-content" role="tabpanel" aria-labelledby="evento-media-tab" tabindex="0">
+                    <div class="admin-file-upload">
+                        <label class="admin-file-upload-label">Imagem Principal</label>
+                        <label class="admin-file-upload-btn">
+                            <input type="file" id="evento-imagem" class="admin-file-upload-input" accept="image/*">
+                            Escolher Arquivo
+                        </label>
+                        <div id="evento-imagem-preview" class="admin-file-preview"></div>
+                        <div class="admin-progress">
+                            <div id="evento-imagem-progress" class="admin-progress-bar"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Tab Galeria -->
+                <div id="evento-galeria" class="admin-tab-content" role="tabpanel" aria-labelledby="evento-galeria-tab" tabindex="0">
+                    <div class="admin-file-upload">
+                        <label class="admin-file-upload-label">Imagens da Galeria</label>
+                        <label class="admin-file-upload-btn">
+                            <input type="file" id="evento-galeria-imagens" class="admin-file-upload-input" accept="image/*" multiple>
+                            Escolher Imagens
+                        </label>
+                        <div id="evento-galeria-imagens-preview" class="admin-file-preview"></div>
+                        <div class="admin-progress">
+                            <div id="evento-galeria-imagens-progress" class="admin-progress-bar"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="admin-file-upload">
+                        <label class="admin-file-upload-label">Vídeos da Galeria</label>
+                        <label class="admin-file-upload-btn">
+                            <input type="file" id="evento-galeria-videos" class="admin-file-upload-input" accept="video/*" multiple>
+                            Escolher Vídeos
+                        </label>
+                        <div id="evento-galeria-videos-preview" class="admin-file-preview"></div>
+                        <div class="admin-progress">
+                            <div id="evento-galeria-videos-progress" class="admin-progress-bar"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="admin-form-group">
+                    <button type="submit" class="admin-btn primary-btn">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de Programa -->
+    <div id="programa-modal" class="admin-modal">
+        <div class="admin-modal-content">
+            <div class="admin-modal-header">
+                <h3 id="programa-modal-title">Adicionar Programa</h3>
+                <button class="admin-modal-close">&times;</button>
+            </div>
+            <form id="programa-form" class="admin-form">
+                <input type="hidden" id="programa-id">
+                <div class="admin-form-group">
+                    <label for="programa-nome">Nome do Programa</label>
+                    <input type="text" id="programa-nome" name="nome" required>
+                </div>
+                <div class="admin-form-group">
+                    <label for="programa-descricao">Descrição</label>
+                    <textarea id="programa-descricao" name="descricao" rows="4" required></textarea>
+                </div>
+                <div class="admin-form-row">
+                    <div class="admin-form-col">
+                        <div class="admin-form-group">
+                            <label for="programa-data-inicio">Data de Início</label>
+                            <input type="date" id="programa-data-inicio" name="data_inicio" class="admin-date-picker" required>
+                        </div>
+                    </div>
+                    <div class="admin-form-col">
+                        <div class="admin-form-group">
+                            <label for="programa-data-fim">Data de Término</label>
+                            <input type="date" id="programa-data-fim" name="data_fim" class="admin-date-picker" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="admin-form-group">
+                    <label for="programa-patrocinadores">Patrocinadores (separados por vírgula)</label>
+                    <input type="text" id="programa-patrocinadores" name="patrocinadores">
+                </div>
+                <div class="admin-progress">
+                    <div id="agenda-galeria-imagens-progress" class="admin-progress-bar"></div>
+                </div>
+                <div class="admin-form-group">
+                    <button type="submit" class="admin-btn primary-btn">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de Agenda -->
+    <div id="agenda-modal" class="admin-modal">
+        <div class="admin-modal-content">
+            <div class="admin-modal-header">
+                <h3 id="agenda-modal-title">Adicionar Item de Agenda</h3>
+                <button class="admin-modal-close">&times;</button>
+            </div>
+            <form id="agenda-form" class="admin-form">
+                <input type="hidden" id="agenda-id">
+                <div class="admin-tabs" role="tablist" aria-label="Separadores da agenda">
+                    <button type="button" class="admin-tab active" id="agenda-info-tab" role="tab" aria-selected="true" aria-controls="agenda-info" data-tab="agenda-info">Informações</button>
+                    <button type="button" class="admin-tab" id="agenda-galeria-tab" role="tab" aria-selected="false" aria-controls="agenda-galeria" data-tab="agenda-galeria">Galeria</button>
+                </div>
+                
+                <!-- Tab Informações -->
+                <div id="agenda-info" class="admin-tab-content active" role="tabpanel" aria-labelledby="agenda-info-tab" tabindex="0">
+                    <div class="admin-form-group">
+                        <label for="agenda-nome">Nome do Evento</label>
+                        <input type="text" id="agenda-nome" name="nome" required>
+                    </div>
+                    <div class="admin-form-row">
+                        <div class="admin-form-col">
+                            <div class="admin-form-group">
+                                <label for="agenda-tipo">Tipo</label>
+                                <input type="text" id="agenda-tipo" name="tipo" required>
+                            </div>
+                        </div>
+                        <div class="admin-form-col">
+                            <div class="admin-form-group">
+                                <label for="agenda-flag">Flag</label>
+                                <input type="text" id="agenda-flag" name="flag">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="admin-form-group">
+                        <label for="agenda-descricao">Descrição</label>
+                        <textarea id="agenda-descricao" name="descricao" rows="4" required></textarea>
+                    </div>
+                    <div class="admin-form-row">
+                        <div class="admin-form-col">
+                            <div class="admin-form-group">
+                                <label for="agenda-data-inicio">Data de Início</label>
+                                <input type="date" id="agenda-data-inicio" name="data_inicio" class="admin-date-picker" required>
+                            </div>
+                        </div>
+                        <div class="admin-form-col">
+                            <div class="admin-form-group">
+                                <label for="agenda-data-fim">Data de Término</label>
+                                <input type="date" id="agenda-data-fim" name="data_fim" class="admin-date-picker" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="admin-form-row">
+                        <div class="admin-form-col">
+                            <div class="admin-form-group">
+                                <label for="agenda-parceiros">Parceiros (separados por vírgula)</label>
+                                <input type="text" id="agenda-parceiros" name="parceiros">
+                            </div>
+                        </div>
+                        <div class="admin-form-col">
+                            <div class="admin-form-group">
+                                <label for="agenda-inscricao">Link de Inscrição</label>
+                                <input type="url" id="agenda-inscricao" name="inscricao">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="admin-form-group">
+                        <div class="admin-checkbox-group">
+                            <label class="admin-checkbox-label">
+                                <input type="checkbox" id="agenda-destaque" name="destaque">
+                                Destacar este item no carrossel
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Tab Galeria -->
+                <div id="agenda-galeria" class="admin-tab-content" role="tabpanel" aria-labelledby="agenda-galeria-tab" tabindex="0">
+                    <div class="admin-file-upload">
+                        <label class="admin-file-upload-label">Imagens da Galeria</label>
+                        <label class="admin-file-upload-btn">
+                            <input type="file" id="agenda-galeria-imagens" class="admin-file-upload-input" accept="image/*" multiple>
+                            Escolher Imagens
+                        </label>
+                        <div id="agenda-galeria-imagens-preview" class="admin-file-preview"></div>
+                        <div class="admin-progress">
+                            <div id="agenda-galeria-imagens-progress" class="admin-progress-bar"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="admin-file-upload">
+                        <label class="admin-file-upload-label">Vídeos da Galeria</label>
+                        <label class="admin-file-upload-btn">
+                            <input type="file" id="agenda-galeria-videos" class="admin-file-upload-input" accept="video/*" multiple>
+                            Escolher Vídeos
+                        </label>
+                        <div id="agenda-galeria-videos-preview" class="admin-file-preview"></div>
+                        <div class="admin-progress">
+                            <div id="agenda-galeria-videos-progress" class="admin-progress-bar"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="admin-form-group">
+                    <button type="submit" class="admin-btn primary-btn">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de Notícia -->
+    <div id="noticia-modal" class="admin-modal">
+        <div class="admin-modal-content">
+            <div class="admin-modal-header">
+                <h3 id="noticia-modal-title">Adicionar Notícia</h3>
+                <button class="admin-modal-close">&times;</button>
+            </div>
+            <form id="noticia-form" class="admin-form">
+                <input type="hidden" id="noticia-id">
+                <div class="admin-form-group">
+                    <label for="noticia-titulo">Título</label>
+                    <input type="text" id="noticia-titulo" name="titulo" required>
+                </div>
+                <div class="admin-form-group">
+                    <label for="noticia-data">Data</label>
+                    <input type="date" id="noticia-data" name="data" class="admin-date-picker" required>
+                </div>
+                <div class="admin-form-group">
+                    <label for="noticia-descricao">Descrição</label>
+                    <textarea id="noticia-descricao" name="descricao" rows="4" required></textarea>
+                </div>
+                <div class="admin-form-group">
+                    <label for="noticia-link">Link</label>
+                    <input type="text" id="noticia-link" name="link" value="#noticias">
+                </div>
+                <div class="admin-file-upload">
+                    <label class="admin-file-upload-label">Imagem da Notícia</label>
+                    <label class="admin-file-upload-btn">
+                        <input type="file" id="noticia-imagem" class="admin-file-upload-input" accept="image/*">
+                        Escolher Arquivo
+                    </label>
+                    <div id="noticia-imagem-preview" class="admin-file-preview"></div>
+                    <div class="admin-progress">
+                        <div id="noticia-imagem-progress" class="admin-progress-bar"></div>
+                    </div>
+                </div>
+                <div class="admin-form-group">
+                    <div class="admin-checkbox-group">
+                        <label class="admin-checkbox-label">
+                            <input type="checkbox" id="noticia-destaque" name="destaque">
+                            Destacar esta notícia no carrossel
+                        </label>
+                    </div>
+                </div>
+                <div class="admin-progress">
+                    <div id="noticia-imagem-progress" class="admin-progress-bar"></div>
+                </div>
+                <div class="admin-form-group">
+                    <button type="submit" class="admin-btn primary-btn">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de Membro -->
+    <div id="membro-modal" class="admin-modal">
+        <div class="admin-modal-content">
+            <div class="admin-modal-header">
+                <h3 id="membro-modal-title">Adicionar Membro</h3>
+                <button class="admin-modal-close">&times;</button>
+            </div>
+            <form id="membro-form" class="admin-form">
+                <input type="hidden" id="membro-id">
+                <div class="admin-form-group">
+                    <label for="membro-nome">Nome</label>
+                    <input type="text" id="membro-nome" name="nome" required>
+                </div>
+                <div class="admin-form-group">
+                    <label for="membro-cargo">Cargo</label>
+                    <input type="text" id="membro-cargo" name="cargo" required>
+                </div>
+                <div class="admin-form-group">
+                    <label for="membro-descricao">Descrição</label>
+                    <textarea id="membro-descricao" name="descricao" rows="4" required></textarea>
+                </div>
+                <div class="admin-file-upload">
+                    <label class="admin-file-upload-label">Foto do Membro</label>
+                    <label class="admin-file-upload-btn">
+                        <input type="file" id="membro-imagem" class="admin-file-upload-input" accept="image/*">
+                        Escolher Arquivo
+                    </label>
+                    <div id="membro-imagem-preview" class="admin-file-preview"></div>
+                    <div class="admin-progress">
+                        <div id="membro-imagem-progress" class="admin-progress-bar"></div>
+                    </div>
+                </div>
+                <div class="admin-progress">
+                    <div id="membro-imagem-progress" class="admin-progress-bar"></div>
+                </div>
+                <div class="admin-form-group">
+                    <button type="submit" class="admin-btn primary-btn">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de Parceiro -->
+    <div id="parceiro-modal" class="admin-modal">
+        <div class="admin-modal-content">
+            <div class="admin-modal-header">
+                <h3 id="parceiro-modal-title">Adicionar Parceiro</h3>
+                <button class="admin-modal-close">&times;</button>
+            </div>
+            <form id="parceiro-form" class="admin-form">
+                <input type="hidden" id="parceiro-id">
+                <div class="admin-form-group">
+                    <label for="parceiro-nome">Nome</label>
+                    <input type="text" id="parceiro-nome" name="nome" required>
+                </div>
+                <div class="admin-form-group">
+                    <label for="parceiro-descricao">Descrição</label>
+                    <textarea id="parceiro-descricao" name="descricao" rows="4" required></textarea>
+                </div>
+                <div class="admin-form-group">
+                    <label for="parceiro-website">Website</label>
+                    <input type="url" id="parceiro-website" name="website">
+                </div>
+                <div class="admin-file-upload">
+                    <label class="admin-file-upload-label">Logo do Parceiro</label>
+                    <label class="admin-file-upload-btn">
+                        <input type="file" id="parceiro-logo" class="admin-file-upload-input" accept="image/*">
+                        Escolher Arquivo
+                    </label>
+                    <div id="parceiro-logo-preview" class="admin-file-preview"></div>
+                    <div class="admin-progress">
+                        <div id="parceiro-logo-progress" class="admin-progress-bar"></div>
+                    </div>
+                </div>
+                <div class="admin-progress">
+                    <div id="parceiro-logo-progress" class="admin-progress-bar"></div>
+                </div>
+                <div class="admin-form-group">
+                    <button type="submit" class="admin-btn primary-btn">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
+
+    <!-- Depois carregamos nossa configuração -->
+    <script type="module" src="js/firebaseConfig.js"></script>
+
+    <!-- E finalmente o script de administração -->
+    <script type="module" src="js/admin.js"></script>
+</body>
+</html>
+
