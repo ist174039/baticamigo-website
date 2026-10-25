@@ -23,8 +23,8 @@ service firebase.storage {
         request.resource.size <= 104857600 &&
         request.resource.contentType != null &&
         (
-          request.resource.contentType.matches('image/.*') ||
-          request.resource.contentType.matches('video/.*')
+          request.resource.contentType.matches('image/(jpeg|png|gif|webp)') ||
+          request.resource.contentType.matches('video/(mp4|webm)')
         )
       );
     }
