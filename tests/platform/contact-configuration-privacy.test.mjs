@@ -37,8 +37,8 @@ test('legacy administrative email callable honors persisted revocation and verif
     const source=readFileSync(new URL(path,import.meta.url),'utf8');
     assert.match(source,/platform_accounts/);
     assert.match(source,/email_verified !== true/);
-    assert.match(source,/account\\.active !== true/);
-    assert.match(source,/account\\.suspended === true/);
+    assert.match(source,/account\.active !== true/);
+    assert.match(source,/account\.suspended === true/);
     assert.match(source,/roles\.includes\("admin"\)/);
   }
 });
