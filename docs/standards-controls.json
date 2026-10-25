@@ -6,10 +6,11 @@
     "BA-STD-004": {
       "mode": "technical-evidence",
       "evidence": [
-        "lib/platform/server.js",
-        "app/api/platform/route.js",
-        "tests/platform/architecture-gates.test.mjs",
-        "docs/security/firebase-boundary.md"
+        "docs/security/threat-model.md",
+        "docs/api/openapi.json",
+        "next.config.js",
+        "tests/platform/security-headers.test.mjs",
+        "scripts/integration-test.mjs"
       ]
     },
     "BA-STD-006": {
@@ -24,19 +25,18 @@
     "BA-STD-007": {
       "mode": "technical-evidence",
       "evidence": [
-        "lib/platform/server.js",
-        "app/api/platform/route.js",
-        "tests/platform/architecture-gates.test.mjs",
-        "docs/security/firebase-boundary.md"
+        ".github/workflows/quality-gate.yml",
+        "scripts/check-secrets.mjs",
+        "scripts/check-sbom.mjs",
+        "CHANGELOG.md"
       ]
     },
     "BA-STD-011": {
       "mode": "technical-evidence",
       "evidence": [
         "lib/platform/server.js",
-        "app/api/platform/route.js",
-        "tests/platform/architecture-gates.test.mjs",
-        "docs/security/firebase-boundary.md"
+        "tests/platform/audit-minimization.test.mjs",
+        "scripts/integration-test.mjs"
       ]
     },
     "BA-STD-014": {
@@ -51,10 +51,10 @@
     "BA-STD-015": {
       "mode": "technical-evidence",
       "evidence": [
+        "docs/api/openapi.json",
         "lib/platform/server.js",
-        "app/api/platform/route.js",
-        "tests/platform/architecture-gates.test.mjs",
-        "docs/security/firebase-boundary.md"
+        "tests/platform/api-contract.test.mjs",
+        "tests/platform/request-boundary.test.mjs"
       ]
     },
     "BA-STD-017": {
@@ -69,10 +69,9 @@
     "BA-STD-019": {
       "mode": "technical-evidence",
       "evidence": [
-        "lib/platform/server.js",
-        "app/api/platform/route.js",
-        "tests/platform/architecture-gates.test.mjs",
-        "docs/security/firebase-boundary.md"
+        ".github/workflows/quality-gate.yml",
+        "scripts/check-sbom.mjs",
+        "package-lock.json"
       ]
     },
     "BA-STD-023": {
@@ -87,19 +86,17 @@
     "BA-STD-029": {
       "mode": "technical-evidence",
       "evidence": [
-        "lib/platform/server.js",
-        "app/api/platform/route.js",
-        "tests/platform/architecture-gates.test.mjs",
-        "docs/security/firebase-boundary.md"
+        "docs/architecture/platform.md",
+        "docs/architecture/adr/0001-server-mediated-private-data.md",
+        "docs/architecture/adr/0002-fail-closed-readiness.md"
       ]
     },
     "BA-STD-030": {
       "mode": "technical-evidence",
       "evidence": [
-        "lib/platform/server.js",
-        "app/api/platform/route.js",
-        "tests/platform/architecture-gates.test.mjs",
-        "docs/security/firebase-boundary.md"
+        "CHANGELOG.md",
+        "docs/requirements-evidence.json",
+        ".github/workflows/quality-gate.yml"
       ]
     },
     "BA-STD-034": {
@@ -150,24 +147,26 @@
     "BA-STD-009": {
       "mode": "external-validation-required",
       "evidence": [
-        "docs/security/data-governance-draft.md",
-        "lib/platform/readiness.mjs",
-        "tests/platform/readiness.test.mjs"
+        "lib/platform/retention.mjs",
+        "docs/security/retention-policy-template.json",
+        "tests/platform/retention.test.mjs",
+        "lib/platform/readiness.mjs"
       ],
       "blocker": "Requer decisão/aprovação organizacional, jurídica, de risco ou de privacidade; código não substitui essa validação."
     },
     "BA-STD-016": {
       "mode": "external-validation-required",
       "evidence": [
+        "docs/security/vendor-inventory.md",
         "docs/security/data-governance-draft.md",
-        "lib/platform/readiness.mjs",
-        "tests/platform/readiness.test.mjs"
+        "tests/platform/vendor-inventory.test.mjs"
       ],
       "blocker": "Requer decisão/aprovação organizacional, jurídica, de risco ou de privacidade; código não substitui essa validação."
     },
     "BA-STD-028": {
       "mode": "external-validation-required",
       "evidence": [
+        "docs/security/vendor-inventory.md",
         "docs/security/firebase-boundary.md",
         "docs/security/data-governance-draft.md"
       ],
@@ -292,7 +291,8 @@
       "mode": "operational-validation-required",
       "evidence": [
         "docs/operations/business-continuity.md",
-        "docs/operations/recovery-and-incidents.md",
+        "lib/platform/backup.mjs",
+        "scripts/recovery-test.mjs",
         "lib/platform/readiness.mjs"
       ],
       "blocker": "Requer processo operacional, owners, métricas ou ensaio real antes de qualquer declaração de conformidade."
@@ -300,36 +300,36 @@
     "BA-STD-013": {
       "mode": "operational-validation-required",
       "evidence": [
-        "docs/operations/recovery-and-incidents.md",
-        ".github/workflows/quality-gate.yml",
-        "lib/platform/readiness.mjs"
+        "docs/operations/dora-ledger-schema.json",
+        "docs/operations/recovery-and-incidents.md"
       ],
       "blocker": "Requer processo operacional, owners, métricas ou ensaio real antes de qualquer declaração de conformidade."
     },
     "BA-STD-024": {
       "mode": "operational-validation-required",
       "evidence": [
-        "docs/operations/recovery-and-incidents.md",
-        ".github/workflows/quality-gate.yml",
-        "lib/platform/readiness.mjs"
+        "docs/security/nist-csf-profile.md",
+        "docs/security/threat-model.md",
+        "docs/security/risk-management.md"
       ],
       "blocker": "Requer processo operacional, owners, métricas ou ensaio real antes de qualquer declaração de conformidade."
     },
     "BA-STD-025": {
       "mode": "operational-validation-required",
       "evidence": [
-        "docs/operations/recovery-and-incidents.md",
-        ".github/workflows/quality-gate.yml",
-        "lib/platform/readiness.mjs"
+        "package.json",
+        "CHANGELOG.md",
+        "scripts/check-release-policy.mjs",
+        "tests/platform/release-policy.test.mjs"
       ],
       "blocker": "Requer processo operacional, owners, métricas ou ensaio real antes de qualquer declaração de conformidade."
     },
     "BA-STD-026": {
       "mode": "operational-validation-required",
       "evidence": [
-        "docs/operations/recovery-and-incidents.md",
-        ".github/workflows/quality-gate.yml",
-        "lib/platform/readiness.mjs"
+        "docs/security/iso-27001-soa-draft.md",
+        "docs/security/iso-27002-control-map.md",
+        "docs/security/risk-management.md"
       ],
       "blocker": "Requer processo operacional, owners, métricas ou ensaio real antes de qualquer declaração de conformidade."
     },
