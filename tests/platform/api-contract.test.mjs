@@ -8,7 +8,7 @@ const server=readFileSync(new URL('../../lib/platform/server.js',import.meta.url
 test('OpenAPI 3.1 documents the private platform endpoints and bearer auth',()=>{
   assert.equal(spec.openapi,'3.1.0');
   assert.equal(spec.info.version,'1.0.0');
-  for(const path of ['/api/platform','/api/platform/finance']) assert.ok(spec.paths[path],`missing ${path}`);
+  for(const path of ['/api/platform','/api/platform/finance','/api/platform/users','/api/platform/files']) assert.ok(spec.paths[path],`missing ${path}`);
   assert.equal(spec.components.securitySchemes.bearerAuth.scheme,'bearer');
 });
 
