@@ -24,7 +24,7 @@ Estado: rascunho técnico, revisto por código; requer revisão do responsável 
 | Broken object authorization | família vê presença de outro aluno | autorização server-side + testes negativos | revisão sistemática de todas as rotas |
 | Escalada de privilégio | conta altera papel/acesso | guards admin, última conta admin protegida | rever fallback admin legado |
 | Exposição direta Firestore/Storage | SDK client lê dados privados | Rules deny-all | provar deployment/IAM produção |
-| Upload malicioso | MIME/extensão falsa | validação de assinatura/tamanho | antivírus/sandbox por avaliar |
+| Upload malicioso | MIME/extensão falsa, PDF ativo, Office com VBA/ActiveX | allowlist + assinatura/tamanho + rejeição de conteúdo ativo + Storage privado + download attachment | antivírus/sandbox continua por avaliar conforme risco/volume |
 | Log com PII | snapshots/dados financeiros em audit | allowlist + minimização | retenção/alertas |
 | Supply-chain | dependência/action comprometida | lockfile, SHA de actions, npm audit, SBOM | provenance/attestation de artefacto |
 | Perda/corrupção de dados | eliminação acidental | readiness + ensaio sintético | backup real/restauro/RPO/RTO |
