@@ -50,6 +50,15 @@ jobs:
           export PATH="$JAVA_HOME/bin:$PATH"
           npx --yes firebase-tools@14.22.0 emulators:exec --project baticamigo-c0384 --config firebase.json --only auth,firestore,storage 'node scripts/public-rules-test.mjs'
       - run: npm run build
+      - name: Generate build evidence
+        run: node scripts/build-evidence.mjs /tmp/baticamigo-build-evidence.json
+      - name: Preserve build evidence
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: baticamigo-build-evidence-${{ github.sha }}
+          path: /tmp/baticamigo-build-evidence.json
+          if-no-files-found: error
+          retention-days: 14
       - run: node scripts/production-smoke.mjs
       - name: Automated WCAG smoke with axe
         run: |
