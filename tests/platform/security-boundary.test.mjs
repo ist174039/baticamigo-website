@@ -14,7 +14,8 @@ test('production Firebase configuration separates public CMS from private platfo
   assert.match(firestore,/function isAdmin\(\)/);
   for(const name of ['membros','parceiros','eventos','programas','agenda','noticias','site_config'])
     assert.ok(firestore.includes(`match /${name}/{document}`),`missing explicit CMS rule for ${name}`);
-  assert.match(firestore,/allow read: if true/);
+  assert.equal(firestore.includes('allow read: if true;'),false);
+  assert.match(firestore,/allow read: if isAdmin\(\)/);
   assert.match(firestore,/function allowedCreate\(fields\)/);
   assert.match(firestore,/function allowedUpdate\(fields\)/);
   assert.match(firestore,/allow create: if isAdmin\(\) && allowedCreate\(/);
