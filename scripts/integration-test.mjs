@@ -31,6 +31,16 @@ try {
   assert.equal(unauthorizedProblem.error,unauthorizedProblem.detail);
   console.log('PASS: RFC 9457 unauthorized problem response.');
   await expect(null,null,401);
+  const contactEmail='synthetic-contact@example.invalid';
+  const contactResponse=await fetch(host+'/api/contact',{method:'POST',headers:{'Content-Type':'application/json',Origin:host},body:JSON.stringify({name:'Contacto sintético',email:contactEmail,subject:'Teste de integração',message:'Mensagem sintética sem dados reais.',website:''})});
+  assert.equal(contactResponse.status,201);
+  assert.equal((await contactResponse.json()).accepted,true);
+  const storedContact=await db.collection('contato').where('email','==',contactEmail).get();
+  assert.equal(storedContact.size,1,'Valid server-mediated contact must be persisted.');
+  const honeypotResponse=await fetch(host+'/api/contact',{method:'POST',headers:{'Content-Type':'application/json',Origin:host},body:JSON.stringify({name:'Bot',email:'bot@example.invalid',subject:'Spam',message:'Spam',website:'https://spam.invalid'})});
+  assert.equal(honeypotResponse.status,202);
+  assert.equal((await db.collection('contato').where('email','==','bot@example.invalid').get()).size,0,'Honeypot submissions must not be persisted.');
+  console.log('PASS: server-mediated public contact form and honeypot.');
   const start=new Date(Date.now()-86400000).toISOString(),end=new Date(Date.now()-82800000).toISOString();
   const session={title:'Sessão de teste',studentIds:['s1','s2'],tutorId:'t1',room:'Teste A',startsAt:start,endsAt:end};
   const created=await expect('admin',{action:'create-session',session});
@@ -105,4 +115,7 @@ try {
   assert.equal(direct.status,403,'Direct client access must be denied by emulator fixture rules.');
   console.log('PASS: direct client access denied by local fixture rules.');
   console.log('Integration tests completed against local emulators only.');
-} catch(error) {console.error('Integration test failed:',error.message);process.exitCode=1;} finally {server.kill('SIGTERM');await app.delete();}
+} catch(error) {console.error('Integration test failed:',error.message);process.exitCode=1;} finally {
+  try { const contacts=await db.collection('contato').where('email','in',['synthetic-contact@example.invalid','bot@example.invalid']).get();await Promise.all(contacts.docs.map(item=>item.ref.delete())); } catch {}
+  server.kill('SIGTERM');await app.delete();
+}
