@@ -1,0 +1,11 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Private platform uploads are handled by the authenticated server API.
+    // Downloads use short-lived signed URLs generated after authorization.
+    match /{object=**} {
+      allow read, write: if false;
+    }
+  }
+}
