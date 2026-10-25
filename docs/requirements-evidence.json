@@ -1,0 +1,247 @@
+{
+  "schemaVersion": 1,
+  "source": "Notion Requirements canonical set",
+  "requirements": {
+    "FR-001": {
+      "status": "implemented-observed",
+      "files": [
+        "app/platform/login/page.js",
+        "lib/platform/server.js",
+        "tests/platform/runtime.test.mjs"
+      ]
+    },
+    "FR-002": {
+      "status": "implemented-observed",
+      "files": [
+        "lib/platform/access.mjs",
+        "app/area/navigation.js",
+        "tests/platform/access-profiles.test.mjs"
+      ]
+    },
+    "FR-003": {
+      "status": "implemented-observed",
+      "files": [
+        "lib/platform/domain.mjs",
+        "app/area/platform.js",
+        "tests/platform/domain.test.mjs",
+        "tests/platform/user-links.test.mjs"
+      ]
+    },
+    "FR-004": {
+      "status": "implemented-observed",
+      "files": [
+        "lib/platform/domain.mjs",
+        "app/area/platform.js",
+        "tests/platform/domain.test.mjs"
+      ]
+    },
+    "FR-005": {
+      "status": "implemented-observed",
+      "files": [
+        "app/api/platform/route.js",
+        "app/area/session-editor.js",
+        "scripts/integration-test.mjs",
+        "tests/platform/time.test.mjs"
+      ]
+    },
+    "FR-006": {
+      "status": "implemented-observed",
+      "files": [
+        "lib/platform/domain.mjs",
+        "app/api/platform/route.js",
+        "scripts/integration-test.mjs"
+      ]
+    },
+    "FR-007": {
+      "status": "implemented-observed",
+      "files": [
+        "app/api/platform/route.js",
+        "app/area/modules.js",
+        "scripts/integration-test.mjs"
+      ]
+    },
+    "FR-008": {
+      "status": "implemented-observed",
+      "files": [
+        "app/area/platform.js",
+        "app/area/modules.js",
+        "scripts/integration-test.mjs"
+      ]
+    },
+    "FR-009": {
+      "status": "implemented-observed",
+      "files": [
+        "lib/platform/domain.mjs",
+        "lib/platform/modules.mjs",
+        "scripts/integration-test.mjs",
+        "tests/platform/modules.test.mjs"
+      ]
+    },
+    "FR-010": {
+      "status": "implemented-observed",
+      "files": [
+        "lib/platform/modules.mjs",
+        "lib/platform/modules-server.js",
+        "app/area/modules.js",
+        "tests/platform/file-validation.test.mjs",
+        "tests/platform/modules.test.mjs"
+      ]
+    },
+    "FR-011": {
+      "status": "implemented-observed",
+      "files": [
+        "lib/platform/modules.mjs",
+        "app/area/modules.js",
+        "app/area/platform.js",
+        "tests/platform/modules.test.mjs"
+      ],
+      "notes": "Mensagens persistidas e avisos in-app derivados de agenda, mensagens e prazos. Critérios de canais externos/consentimento permanecem sujeitos a decisão de produto."
+    },
+    "FR-012": {
+      "status": "implemented-observed",
+      "files": [
+        "lib/platform/domain.mjs",
+        "app/api/platform/route.js",
+        "app/area/platform.js",
+        "tests/platform/domain.test.mjs"
+      ]
+    },
+    "FR-013": {
+      "status": "implemented-observed",
+      "files": [
+        "lib/platform/finance.mjs",
+        "app/api/platform/finance/route.js",
+        "app/area/modules.js",
+        "tests/platform/finance.test.mjs"
+      ]
+    },
+    "FR-014": {
+      "status": "implemented-observed",
+      "files": [
+        "app/admin/page.js",
+        "app/admin/components/AdminFirebaseScripts.js",
+        "tests/platform/admin-markup.test.mjs"
+      ]
+    },
+    "FR-015": {
+      "status": "implemented-observed",
+      "files": [
+        "app/area/modules.js",
+        "lib/platform/print-report.mjs",
+        "tests/platform/print-report.test.mjs"
+      ]
+    },
+    "FR-016": {
+      "status": "implemented-observed",
+      "files": [
+        "lib/platform/modules.mjs",
+        "app/area/modules.js",
+        "tests/platform/modules.test.mjs"
+      ]
+    },
+    "FR-017": {
+      "status": "implemented-observed",
+      "files": [
+        "lib/platform/modules.mjs",
+        "app/area/modules.js",
+        "tests/platform/modules.test.mjs"
+      ]
+    },
+    "FR-018": {
+      "status": "implemented-observed",
+      "files": [
+        "app/area/modules.js",
+        "lib/platform/print-report.mjs",
+        "tests/platform/print-report.test.mjs"
+      ],
+      "notes": "Reporting suprime grupos com menos de cinco alunos e evita rankings/médias entre escalas diferentes."
+    },
+    "FR-019": {
+      "status": "implemented-observed",
+      "files": [
+        "lib/platform/modules.mjs",
+        "app/area/modules.js",
+        "tests/platform/modules.test.mjs"
+      ]
+    },
+    "FR-020": {
+      "status": "implemented-observed",
+      "files": [
+        "lib/platform/modules.mjs",
+        "app/area/modules.js",
+        "tests/platform/modules.test.mjs"
+      ],
+      "notes": "Síntese determinística, explicável e marcada para revisão humana; não é inferência clínica/preditiva."
+    },
+    "NFR-001": {
+      "status": "implemented-observed",
+      "files": [
+        "lib/platform/server.js",
+        "lib/platform/access.mjs",
+        "firestore.rules",
+        "storage.rules",
+        "tests/platform/security-boundary.test.mjs",
+        "scripts/integration-test.mjs"
+      ]
+    },
+    "NFR-002": {
+      "status": "external-validation-required",
+      "files": [
+        "docs/security/data-governance-draft.md",
+        "docs/security/firebase-boundary.md",
+        "lib/platform/readiness.mjs",
+        "tests/platform/readiness.test.mjs"
+      ],
+      "blocker": "Base legal/finalidades/retenção/direitos e eventual DPIA têm de ser aprovados pelo responsável competente."
+    },
+    "NFR-003": {
+      "status": "manual-validation-required",
+      "files": [
+        "app/area/platform.css",
+        "app/area/platform.js",
+        "tests/platform/architecture-gates.test.mjs"
+      ],
+      "blocker": "Executar matriz documentada de browsers, 320/375/768/1440 px e zoom antes de GO."
+    },
+    "NFR-004": {
+      "status": "manual-validation-required",
+      "files": [
+        "app/area/platform.js",
+        "app/area/modules.js",
+        "docs/operations/ui-ux-review.md",
+        "lib/platform/readiness.mjs"
+      ],
+      "blocker": "Validar tarefas críticas com representantes dos perfis e necessidades de acessibilidade."
+    },
+    "NFR-005": {
+      "status": "implemented-observed",
+      "files": [
+        "lib/platform/server.js",
+        "app/api/platform/route.js",
+        "app/api/platform/finance/route.js",
+        "lib/platform/modules-server.js",
+        "tests/platform/architecture-gates.test.mjs"
+      ]
+    },
+    "NFR-006": {
+      "status": "implemented-observed",
+      "files": [
+        "lib/platform/domain.mjs",
+        "lib/platform/modules.mjs",
+        "lib/platform/access.mjs",
+        "app/api/platform/route.js",
+        "tests/platform/architecture-gates.test.mjs"
+      ]
+    },
+    "NFR-007": {
+      "status": "external-validation-required",
+      "files": [
+        "docs/operations/recovery-and-incidents.md",
+        "lib/platform/readiness.mjs",
+        "scripts/check-production-readiness.mjs",
+        "tests/platform/readiness.test.mjs"
+      ],
+      "blocker": "Definir RPO/RTO e política aprovada, configurar backup real e executar/restaurar uma cópia antes de GO."
+    }
+  }
+}
