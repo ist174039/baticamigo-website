@@ -488,3 +488,5 @@ body{background:var(--paper)}
 .image-caption strong{background:#fff;color:#211028;padding:3px 6px;border-radius:4px}
 
 .no-results{color:#554c59}
+
+.no-results{color:#332839!important}
