@@ -40,6 +40,8 @@ A CNPD indica também que direitos relativos a dados de crianças são exercidos
 
 Antes/relação com a recolha, a informação aos titulares deve cobrir, conforme aplicável, finalidade, base, destinatários, conservação/critérios, direitos, reclamação à autoridade e outros elementos previstos nos artigos 13.º/14.º do RGPD.
 
+A CNPD indica que o exercício de direitos é dirigido ao responsável pelo tratamento e que, em regra, o titular deve obter resposta no prazo de um mês, admitindo a extensão legalmente prevista quando necessária e comunicada. O processo interno deve preservar prova do pedido/resposta sem recolher dados adicionais desnecessários.
+
 O processo técnico em docs/security/data-subject-rights.md deve ser usado apenas depois de verificar a identidade/representação e a decisão aplicável.
 
 ### Retenção
@@ -51,6 +53,8 @@ O projeto não define prazos por omissão. Os prazos/critérios têm de ser apro
 A CNPD recorda que a AIPD é obrigatória nos casos do artigo 35.º do RGPD que apresentem elevado risco, incluindo exemplos como certos tratamentos em larga escala ou profiling/decisão automatizada significativa. O BaticAmigo deve documentar a decisão sobre necessidade/âmbito; **não assumir automaticamente que é obrigatória nem dispensável**.
 
 O draft docs/security/privacy-impact-assessment.md e o validator privacyAssessmentStatus estruturam a avaliação, mas a decisão/revisão pertence ao responsável competente.
+
+Quando a AIPD conclua que permanece elevado risco apesar das medidas mitigadoras, o mapa deve encaminhar para a consulta prévia à CNPD antes do início do tratamento, nos termos do artigo 36.º do RGPD.
 
 ## Mapeamento para o sistema
 
