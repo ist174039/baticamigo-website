@@ -14,6 +14,7 @@ test('accepts supported file signatures and rejects a MIME type spoof',()=>{
   assert.equal(validateUploadedFile(Buffer.from('RIFFxxxxWEBP'), 'image/webp'),'.webp');
   assert.throws(()=>validateUploadedFile(Buffer.from('<html>'), 'application/pdf'),/não corresponde/);
   assert.throws(()=>validateUploadedFile(Buffer.from('%PDF-1.7'), 'text/html'),/Formato não suportado/);
+  assert.throws(()=>validateUploadedFile(Buffer.from('%PDF-1.7\n1 0 obj << /OpenAction 2 0 R /JavaScript true >>'), 'application/pdf'),/não corresponde/);
 });
 
 test('checks Office ZIP central-directory entries before accepting the extension',()=>{
@@ -21,4 +22,6 @@ test('checks Office ZIP central-directory entries before accepting the extension
   assert.equal(validateUploadedFile(docx,'application/vnd.openxmlformats-officedocument.wordprocessingml.document'),'.docx');
   assert.throws(()=>validateUploadedFile(minimalOfficeZip(['[Content_Types].xml','word/styles.xml']),'application/vnd.openxmlformats-officedocument.wordprocessingml.document'),/não corresponde/);
   assert.throws(()=>validateUploadedFile(Buffer.from('not a zip'),'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'));
+  assert.throws(()=>validateUploadedFile(minimalOfficeZip(['[Content_Types].xml','word/document.xml','word/vbaProject.bin']),'application/vnd.openxmlformats-officedocument.wordprocessingml.document'),/conteúdo ativo/);
+  assert.throws(()=>validateUploadedFile(minimalOfficeZip(['[Content_Types].xml','xl/workbook.xml','xl/activeX/activeX1.xml']),'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'),/conteúdo ativo/);
 });
