@@ -29,14 +29,14 @@ test('the association bootstrap administrator email is normalized and requires v
   assert.equal(isBootstrapAdmin('carlos.gomes@baticamigo.com',false),false);
 });
 
-test('an active persisted platform admin can reach /admin before verifying email',()=>{
+test('an active persisted platform admin must verify email before reaching /admin',()=>{
   const identity={uid:'owner-1',email:'carlos.gomes@baticamigo.pt',email_verified:false};
   const storedAccount={active:true,roles:['admin']};
   const areaAccount=resolvePlatformAccount(identity,storedAccount);
   assert.equal(areaAccount.active,true);
   assert.equal(areaAccount.roles.includes('admin'),true);
   const result=adminAuthorization(identity,storedAccount);
-  assert.deepEqual(result,{authorized:true,verificationRequired:false});
+  assert.deepEqual(result,{authorized:false,verificationRequired:true});
 });
 
 test('a Firebase-issued admin claim keeps legacy administrators active when no account document exists',()=>{
@@ -66,6 +66,6 @@ test('bootstrap and stored platform accounts are resolved consistently for both 
 
 test('bootstrap-only access still requires email verification and suspended admins remain blocked',()=>{
   assert.deepEqual(adminAuthorization({email:'carlos.gomes@baticamigo.pt',email_verified:false},null),{authorized:false,verificationRequired:true});
-  assert.deepEqual(adminAuthorization({email:'carlos.gomes@baticamigo.pt',email_verified:false},{active:true,suspended:true,roles:['admin']}),{authorized:false,verificationRequired:true});
+  assert.deepEqual(adminAuthorization({email:'carlos.gomes@baticamigo.pt',email_verified:false},{active:true,suspended:true,roles:['admin']}),{authorized:false,verificationRequired:false});
   assert.deepEqual(adminAuthorization({email:'other@example.com',email_verified:false},{active:true,suspended:true,roles:['admin']}),{authorized:false,verificationRequired:false});
 });
