@@ -44,3 +44,15 @@ jobs:
           npx --yes firebase-tools@14.22.0 emulators:exec --project baticamigo-c0384 --config firebase.json --only auth,firestore,storage 'node scripts/public-rules-test.mjs'
       - run: npm run build
       - run: node scripts/production-smoke.mjs
+      - name: Automated WCAG smoke with axe
+        run: |
+          node node_modules/next/dist/bin/next start --hostname 127.0.0.1 --port 3104 >/tmp/baticamigo-a11y.log 2>&1 &
+          NEXT_PID=$!
+          trap 'kill $NEXT_PID 2>/dev/null || true' EXIT
+          for i in $(seq 1 40); do
+            if curl --fail --silent http://127.0.0.1:3104/ >/dev/null; then break; fi
+            sleep 0.5
+          done
+          curl --fail --silent http://127.0.0.1:3104/ >/dev/null
+          npx --yes @axe-core/cli@4.14.0 http://127.0.0.1:3104/ --tags wcag2a,wcag2aa,wcag22aa --chrome-options="no-sandbox,disable-dev-shm-usage" --load-delay=1000 --timeout=60 --exit
+          npx --yes @axe-core/cli@4.14.0 http://127.0.0.1:3104/platform/login --tags wcag2a,wcag2aa,wcag22aa --chrome-options="no-sandbox,disable-dev-shm-usage" --load-delay=1000 --timeout=60 --exit
