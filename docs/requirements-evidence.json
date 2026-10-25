@@ -118,7 +118,7 @@
     "FR-014": {
       "status": "implemented-observed",
       "files": [
-        "app/admin/page.js",
+        "app/admin/dashboard/page.js",
         "app/admin/components/AdminFirebaseScripts.js",
         "tests/platform/admin-markup.test.mjs"
       ]
