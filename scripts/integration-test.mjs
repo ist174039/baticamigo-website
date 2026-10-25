@@ -32,7 +32,7 @@ try {
   console.log('PASS: RFC 9457 unauthorized problem response.');
   await expect(null,null,401);
   const contactEmail='synthetic-contact@example.invalid';
-  const contactResponse=await fetch(host+'/api/contact',{method:'POST',headers:{'Content-Type':'application/json',Origin:host},body:JSON.stringify({name:'Contacto sintético',email:contactEmail,subject:'Teste de integração',message:'Mensagem sintética sem dados reais.',website:''})});
+  const contactResponse=await fetch(host+'/api/contact',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:'Contacto sintético',email:contactEmail,subject:'Teste de integração',message:'Mensagem sintética sem dados reais.',website:''})});
   assert.equal(contactResponse.status,201);
   assert.equal((await contactResponse.json()).accepted,true);
   const storedContact=await db.collection('contato').where('email','==',contactEmail).get();
