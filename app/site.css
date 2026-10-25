@@ -484,3 +484,5 @@ body{background:var(--paper)}
 .collection-heading-copy .section-heading>p,.section-heading>p,.empty-state>p{color:#5d5363!important}
 .partner-section #partners-title em,.partner-section .community-intro h2 em{color:#55306e!important}
 .form-note{color:#625568!important}
+
+.image-caption strong{background:#fff;color:#211028;padding:3px 6px;border-radius:4px}
