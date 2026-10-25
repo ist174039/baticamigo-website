@@ -100,7 +100,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const form = event.currentTarget
     const button = document.getElementById("save-contact-settings")
     const values = Object.fromEntries(["intro", "email", "address", "instagram"].map((field) => [field, form.elements[field].value.trim()]))
-    if (!/^https?:\/\//i.test(values.instagram)) {
+    if (!isHttpsUrl(values.instagram)) {
       setContactSettingsStatus("Introduza um link do Instagram válido (https://…).", true)
       form.elements.instagram.focus()
       return
@@ -1129,6 +1129,14 @@ document.addEventListener("DOMContentLoaded", () => {
     return randomMediaId() + extension;
   }
 
+
+  function isHttpsUrl(value) {
+    if (!value) return true
+    try {
+      const url = new URL(value)
+      return url.protocol === "https:" && !url.username && !url.password
+    } catch { return false }
+  }
   // Função para fazer upload de arquivo para o Firebase Storage
   async function uploadFile(file, path, progressBarId) {
     return new Promise((resolve, reject) => {
@@ -1291,7 +1299,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const inscricao = document.getElementById("agenda-inscricao").value;
 
     // Validar o campo de inscrição
-    if (inscricao && !/^https?:\/\/.+/.test(inscricao)) {
+    if (!isHttpsUrl(inscricao)) {
       alert("Por favor, insira um URL válido para o campo de inscrição.");
       return;
     }
@@ -1369,6 +1377,10 @@ document.addEventListener("DOMContentLoaded", () => {
       const data = document.getElementById("noticia-data").value
       const descricao = document.getElementById("noticia-descricao").value
       const link = document.getElementById("noticia-link").value
+      if (!isHttpsUrl(link)) {
+        alert("O link da notícia deve usar HTTPS.")
+        return
+      }
       const destaque = document.getElementById("noticia-destaque").checked
 
       // Processar imagem
@@ -1480,6 +1492,10 @@ document.addEventListener("DOMContentLoaded", () => {
       const nome = document.getElementById("parceiro-nome").value
       const descricao = document.getElementById("parceiro-descricao").value
       const website = document.getElementById("parceiro-website").value
+      if (!isHttpsUrl(website)) {
+        alert("O website do parceiro deve usar HTTPS.")
+        return
+      }
 
       // Processar logo
       const logoInput = document.getElementById("parceiro-logo")
