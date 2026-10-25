@@ -26,6 +26,13 @@ jobs:
         run: node scripts/check-change-title.mjs "$CHANGE_TITLE"
       - run: npm run check:release
       - run: npm run check:sbom
+      - name: Preserve runtime SBOM evidence
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: baticamigo-runtime-sbom-${{ github.sha }}
+          path: /tmp/baticamigo-sbom.json
+          if-no-files-found: error
+          retention-days: 14
       - run: npm test
       - run: npm run lint
       - name: Verify authenticated flows in isolated Firebase emulators
