@@ -105,16 +105,15 @@
     "BA-STD-034": {
       "mode": "technical-evidence",
       "evidence": [
-        "lib/platform/server.js",
-        "app/api/platform/route.js",
-        "tests/platform/architecture-gates.test.mjs",
-        "docs/security/firebase-boundary.md"
+        "docs/security/iso-27002-control-map.md",
+        "docs/security/controls-assessment.md",
+        "tests/platform/architecture-gates.test.mjs"
       ]
     },
     "BA-STD-038": {
       "mode": "technical-evidence",
       "evidence": [
-        "docs/security/data-governance-draft.md",
+        "docs/security/pii-controls.md",
         "lib/platform/server.js",
         "firestore.rules",
         "storage.rules",
@@ -186,8 +185,8 @@
     "BA-STD-035": {
       "mode": "operational-validation-required",
       "evidence": [
+        "docs/security/risk-management.md",
         "docs/operations/recovery-and-incidents.md",
-        ".github/workflows/quality-gate.yml",
         "lib/platform/readiness.mjs"
       ],
       "blocker": "Requer processo operacional, owners, métricas ou ensaio real antes de qualquer declaração de conformidade."
@@ -195,18 +194,18 @@
     "BA-STD-036": {
       "mode": "external-validation-required",
       "evidence": [
+        "docs/security/pii-controls.md",
         "docs/security/data-governance-draft.md",
-        "lib/platform/readiness.mjs",
-        "tests/platform/readiness.test.mjs"
+        "lib/platform/readiness.mjs"
       ],
       "blocker": "Requer decisão/aprovação organizacional, jurídica, de risco ou de privacidade; código não substitui essa validação."
     },
     "BA-STD-037": {
       "mode": "external-validation-required",
       "evidence": [
+        "docs/security/privacy-impact-assessment.md",
         "docs/security/data-governance-draft.md",
-        "lib/platform/readiness.mjs",
-        "tests/platform/readiness.test.mjs"
+        "lib/platform/readiness.mjs"
       ],
       "blocker": "Requer decisão/aprovação organizacional, jurídica, de risco ou de privacidade; código não substitui essa validação."
     },
@@ -257,9 +256,7 @@
     "BA-STD-031": {
       "mode": "manual-validation-required",
       "evidence": [
-        "app/area/platform.js",
-        "app/area/platform.css",
-        "app/area/modules.js",
+        "docs/accessibility/conformance-plan.md",
         "docs/operations/ui-ux-review.md",
         "lib/platform/readiness.mjs"
       ],
@@ -277,10 +274,7 @@
     "BA-STD-039": {
       "mode": "manual-validation-required",
       "evidence": [
-        "app/area/platform.js",
-        "app/area/platform.css",
-        "app/area/modules.js",
-        "docs/operations/ui-ux-review.md",
+        "docs/accessibility/conformance-plan.md",
         "lib/platform/readiness.mjs"
       ],
       "blocker": "Requer execução manual/assistiva ou validação de aplicabilidade com utilizadores/partes competentes."
@@ -288,17 +282,17 @@
     "BA-STD-040": {
       "mode": "manual-validation-required",
       "evidence": [
-        "app/area/platform.js",
-        "app/area/modules.js",
-        "docs/operations/ui-ux-review.md"
+        "docs/accessibility/conformance-plan.md",
+        "docs/security/pii-controls.md",
+        "app/area/platform.js"
       ],
       "blocker": "Requer revisão explícita dos fluxos usados por menores e encarregados; não basta o controlo técnico de acesso."
     },
     "BA-STD-008": {
       "mode": "operational-validation-required",
       "evidence": [
+        "docs/operations/business-continuity.md",
         "docs/operations/recovery-and-incidents.md",
-        ".github/workflows/quality-gate.yml",
         "lib/platform/readiness.mjs"
       ],
       "blocker": "Requer processo operacional, owners, métricas ou ensaio real antes de qualquer declaração de conformidade."
