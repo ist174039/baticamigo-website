@@ -20,6 +20,8 @@ jobs:
       - run: npm ci
       - run: npm run check:secrets
       - run: npm audit --omit=dev --audit-level=high
+      - run: npm run check:release
+      - run: npm run check:sbom
       - run: npm test
       - run: npm run lint
       - name: Verify authenticated flows in isolated Firebase emulators
@@ -28,5 +30,5 @@ jobs:
         run: |
           export JAVA_HOME="$JAVA_HOME_21_X64"
           export PATH="$JAVA_HOME/bin:$PATH"
-          npx --yes firebase-tools@14.22.0 emulators:exec --project baticamigo-c0384 --config tests/emulators/firebase.json --only auth,firestore 'node scripts/integration-test.mjs'
+          npx --yes firebase-tools@14.22.0 emulators:exec --project baticamigo-c0384 --config tests/emulators/firebase.json --only auth,firestore 'node scripts/integration-test.mjs && node scripts/recovery-test.mjs'
       - run: npm run build
