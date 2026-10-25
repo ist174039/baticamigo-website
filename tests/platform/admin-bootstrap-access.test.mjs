@@ -23,14 +23,16 @@ test('the admin dashboard shares the unified login Firebase Auth persistence nam
   assert.match(adminClient,/platformApp\.storage\(\)/);
 });
 
-test('the association bootstrap administrator email is normalized and requires verification',()=>{
-  assert.equal(bootstrapAdminEmails().has('carlos.gomes@baticamigo.com'),true);
-  assert.equal(isBootstrapAdmin('Carlos.Gomes@BaticAmigo.com',true),true);
-  assert.equal(isBootstrapAdmin('carlos.gomes@baticamigo.com',false),false);
+test('bootstrap administrator emails are environment-only, normalized and verified',()=>{
+  const env='bootstrap-admin@example.invalid, second-admin@example.invalid';
+  assert.equal(bootstrapAdminEmails().size,0);
+  assert.equal(bootstrapAdminEmails(env).has('bootstrap-admin@example.invalid'),true);
+  assert.equal(isBootstrapAdmin('Bootstrap-Admin@Example.Invalid',true,env),true);
+  assert.equal(isBootstrapAdmin('bootstrap-admin@example.invalid',false,env),false);
 });
 
 test('an active persisted platform admin must verify email before reaching /admin',()=>{
-  const identity={uid:'owner-1',email:'carlos.gomes@baticamigo.pt',email_verified:false};
+  const identity={uid:'owner-1',email:'bootstrap-admin@example.invalid',email_verified:false};
   const storedAccount={active:true,roles:['admin']};
   const areaAccount=resolvePlatformAccount(identity,storedAccount);
   assert.equal(areaAccount.active,true);
@@ -54,10 +56,10 @@ test('an existing inactive or non-admin platform account overrides a stale admin
 });
 
 test('bootstrap and stored platform accounts are resolved consistently for both panels',()=>{
-  const identity={uid:'owner-2',email:'carlos.gomes@baticamigo.pt',email_verified:true,admin:true};
-  const bootstrapAccount=resolvePlatformAccount(identity,null);
+  const identity={uid:'owner-2',email:'bootstrap-admin@example.invalid',email_verified:true,admin:true};
+  const bootstrapAccount=resolvePlatformAccount(identity,null,'bootstrap-admin@example.invalid');
   assert.equal(bootstrapAccount.superAdmin,true);
-  assert.equal(adminAuthorization(identity,null).authorized,true);
+  assert.equal(adminAuthorization(identity,null,'bootstrap-admin@example.invalid').authorized,true);
   const storedAccount={uid:'owner-2',active:true,roles:['member']};
   assert.equal(resolvePlatformAccount({...identity,email:'member@example.com'},storedAccount).roles[0],'member');
   assert.equal(adminAuthorization({...identity,email:'member@example.com'},storedAccount).authorized,false);
@@ -65,7 +67,7 @@ test('bootstrap and stored platform accounts are resolved consistently for both 
 });
 
 test('bootstrap-only access still requires email verification and suspended admins remain blocked',()=>{
-  assert.deepEqual(adminAuthorization({email:'carlos.gomes@baticamigo.pt',email_verified:false},null),{authorized:false,verificationRequired:true});
-  assert.deepEqual(adminAuthorization({email:'carlos.gomes@baticamigo.pt',email_verified:false},{active:true,suspended:true,roles:['admin']}),{authorized:false,verificationRequired:false});
+  assert.deepEqual(adminAuthorization({email:'bootstrap-admin@example.invalid',email_verified:false},null,'bootstrap-admin@example.invalid'),{authorized:false,verificationRequired:true});
+  assert.deepEqual(adminAuthorization({email:'bootstrap-admin@example.invalid',email_verified:false},{active:true,suspended:true,roles:['admin']}),{authorized:false,verificationRequired:false});
   assert.deepEqual(adminAuthorization({email:'other@example.com',email_verified:false},{active:true,suspended:true,roles:['admin']}),{authorized:false,verificationRequired:false});
 });
