@@ -55,11 +55,8 @@ service cloud.firestore {
       allow read, create, update, delete: if isAdmin();
     }
 
-    // The private platform is always server-mediated. No browser SDK access.
-    match /platform_{document=**} {
-      allow read, write: if false;
-    }
-
+    // The private platform uses the platform_* namespace and is not listed in
+    // any allow rule above, so it reaches the fail-closed catch-all below.
     // Unknown collections fail closed.
     match /{document=**} {
       allow read, write: if false;
