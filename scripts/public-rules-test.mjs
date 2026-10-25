@@ -66,6 +66,8 @@ try {
   const png=Uint8Array.from([0x89,0x50,0x4e,0x47,0x0d,0x0a,0x1a,0x0a]);
   await rejected(uploadBytes(ref(anon.storage,mediaPath),png,{contentType:'image/png'}),'anonymous CMS media write must fail');
   await uploadBytes(ref(accountAdmin.storage,mediaPath),png,{contentType:'image/png'});
+  const svg=new TextEncoder().encode('<svg xmlns="http://www.w3.org/2000/svg"></svg>');
+  await rejected(uploadBytes(ref(accountAdmin.storage,'noticias/rules-test/imagem/test.svg'),svg,{contentType:'image/svg+xml'}),'CMS SVG upload must fail allowlist');
   const bytes=await getBytes(ref(anon.storage,mediaPath));
   assert.equal(bytes.byteLength,png.byteLength,'public CMS media must remain readable');
   await rejected(uploadBytes(ref(accountAdmin.storage,'platform-files/private/test.png'),png,{contentType:'image/png'}),'private platform media must reject direct SDK writes');
