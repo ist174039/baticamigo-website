@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { context, collection, json, failure, assertTrustedOrigin } from '../../../../lib/platform/server';
 import { assert, id, manages, profileIds } from '../../../../lib/platform/domain.mjs';
 import { canWriteRecord } from '../../../../lib/platform/modules.mjs';
@@ -23,6 +23,7 @@ export async function POST(request) {
     assert(file.size > 0 && file.size <= 4_000_000, 'O ficheiro tem de ter menos de 4 MB.', 413);
     const bytes = Buffer.from(await file.arrayBuffer());
     const extension = validateUploadedFile(bytes, file.type);
+    const sha256=createHash('sha256').update(bytes).digest('hex');
 
     const studentSnapshot = await collection(db, 'profiles').doc(studentId).get();
     assert(studentSnapshot.exists && studentSnapshot.data().kind === 'student', 'Aluno inexistente.', 404);
@@ -38,8 +39,8 @@ export async function POST(request) {
     const originalName=String(file.name || `ficheiro${extension}`).replace(/[\\/\r\n\0]/g,' ').slice(0,180);
     await storage.file(filePath).save(bytes, {
       resumable: false,
-      metadata: { contentType: file.type, metadata: { uploadedBy: account.uid, studentId, recordKind: kind, originalName } },
+      metadata: { contentType: file.type, metadata: { uploadedBy: account.uid, studentId, recordKind: kind, originalName, sha256 } },
     });
-    return json({ filePath, fileName: originalName }, 201);
+    return json({ filePath, fileName: originalName, sha256 }, 201);
   } catch (error) { return failure(error); }
 }
