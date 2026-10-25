@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { context, collection, json, failure } from '../../../../lib/platform/server';
+import { context, collection, json, failure, assertTrustedOrigin } from '../../../../lib/platform/server';
 import { assert, id, manages, profileIds } from '../../../../lib/platform/domain.mjs';
 import { canWriteRecord } from '../../../../lib/platform/modules.mjs';
 import { validateUploadedFile } from '../../../../lib/platform/file-validation.mjs';
@@ -9,6 +9,8 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(request) {
   try {
+    assertTrustedOrigin(request);
+    assert(String(request.headers.get('content-type') || '').toLowerCase().startsWith('multipart/form-data'), 'Tipo de conteúdo inválido.', 415);
     const { db, account, storage } = await context(request);
     const length = Number(request.headers.get('content-length') || 0);
     assert(length > 0 && length <= 4_500_000, 'O ficheiro tem de ter menos de 4 MB.', 413);
