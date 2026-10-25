@@ -185,10 +185,10 @@
       "mode": "external-validation-required",
       "evidence": [
         "docs/security/data-governance-draft.md",
+        "docs/security/governance-register-template.json",
+        "lib/platform/governance-register.mjs",
         "docs/security/privacy-impact-assessment.md",
-        "docs/security/data-subject-rights.md",
-        "lib/platform/privacy-assessment.mjs",
-        "lib/platform/cloud-governance.mjs"
+        "docs/security/data-subject-rights.md"
       ],
       "blocker": "Requer decisão/aprovação organizacional, jurídica, de risco ou de privacidade; código não substitui essa validação."
     },
@@ -198,7 +198,8 @@
         "docs/security/risk-management.md",
         "docs/security/risk-register-template.json",
         "lib/platform/risk-register.mjs",
-        "tests/platform/risk-register.test.mjs"
+        "tests/platform/risk-register.test.mjs",
+        "lib/platform/evidence-record.mjs"
       ],
       "blocker": "Requer processo operacional, owners, métricas ou ensaio real antes de qualquer declaração de conformidade."
     },
@@ -216,18 +217,18 @@
       "evidence": [
         "docs/security/privacy-impact-assessment.md",
         "lib/platform/privacy-assessment.mjs",
-        "tests/platform/privacy-assessment.test.mjs"
+        "tests/platform/privacy-assessment.test.mjs",
+        "lib/platform/evidence-record.mjs"
       ],
       "blocker": "Requer decisão/aprovação organizacional, jurídica, de risco ou de privacidade; código não substitui essa validação."
     },
     "BA-STD-005": {
       "mode": "manual-validation-required",
       "evidence": [
-        "app/area/platform.js",
-        "app/area/platform.css",
-        "app/area/modules.js",
-        "docs/operations/ui-ux-review.md",
-        "lib/platform/readiness.mjs"
+        "docs/accessibility/conformance-plan.md",
+        "lib/platform/evidence-record.mjs",
+        "docs/operations/evidence-record-template.json",
+        "app/area/platform.css"
       ],
       "blocker": "Requer execução manual/assistiva ou validação de aplicabilidade com utilizadores/partes competentes."
     },
@@ -252,11 +253,10 @@
     "BA-STD-021": {
       "mode": "manual-validation-required",
       "evidence": [
-        "app/area/platform.js",
-        "app/area/platform.css",
-        "app/area/modules.js",
-        "docs/operations/ui-ux-review.md",
-        "lib/platform/readiness.mjs"
+        "docs/security/children-digital-safeguards.md",
+        "docs/operations/interaction-checklist.md",
+        "lib/platform/evidence-record.mjs",
+        "docs/operations/evidence-record-template.json"
       ],
       "blocker": "Requer execução manual/assistiva ou validação de aplicabilidade com utilizadores/partes competentes."
     },
@@ -264,7 +264,8 @@
       "mode": "manual-validation-required",
       "evidence": [
         "docs/accessibility/conformance-plan.md",
-        "docs/operations/ui-ux-review.md",
+        "lib/platform/evidence-record.mjs",
+        "docs/operations/evidence-record-template.json",
         "lib/platform/readiness.mjs"
       ],
       "blocker": "Requer execução manual/assistiva ou validação de aplicabilidade com utilizadores/partes competentes."
@@ -339,8 +340,10 @@
       "mode": "operational-validation-required",
       "evidence": [
         "docs/security/iso-27001-soa-draft.md",
-        "docs/security/iso-27002-control-map.md",
-        "docs/security/risk-management.md"
+        "docs/security/governance-register-template.json",
+        "lib/platform/governance-register.mjs",
+        "docs/security/risk-management.md",
+        "docs/security/iso-27002-control-map.md"
       ],
       "blocker": "Requer processo operacional, owners, métricas ou ensaio real antes de qualquer declaração de conformidade."
     },
