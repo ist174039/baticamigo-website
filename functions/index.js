@@ -53,8 +53,8 @@ exports.sendEmail = functions.https.onCall(async (data, context) => {
     await transporter.sendMail(mailOptions)
     return { success: true, message: "Email enviado com sucesso!" }
   } catch (error) {
-    console.error("Erro ao enviar email:", error)
-    throw new functions.https.HttpsError("internal", "Erro ao enviar email.", error)
+    console.error("Erro ao enviar email:", error?.code || "mail-send-failed")
+    throw new functions.https.HttpsError("internal", "Erro ao enviar email.")
   }
 })
 
