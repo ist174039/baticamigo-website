@@ -1,0 +1,4 @@
+Contact: https://baticamigo.pt/#contact
+Expires: 2027-10-25T23:59:59Z
+Preferred-Languages: pt, en
+Canonical: https://baticamigo.pt/.well-known/security.txt
