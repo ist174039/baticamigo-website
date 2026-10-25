@@ -13,6 +13,7 @@ const retired=[
   '../../public/js/fix-visibility.js',
   '../../public/js/visibility-check.js',
   '../../public/js/contact-form.js',
+  '../../public/admin/dashboard.html',
 ];
 
 test('retired public test/debug surfaces are not shipped',()=>{
