@@ -1,60 +1,63 @@
 import assert from 'node:assert/strict';
-import {initializeApp} from 'firebase-admin/app';
-import {getFirestore,FieldValue} from 'firebase-admin/firestore';
+import {initializeApp as initializeAdminApp,deleteApp as deleteAdminApp} from 'firebase-admin/app';
+import {getFirestore as getAdminFirestore} from 'firebase-admin/firestore';
+import {initializeApp as initializeClientApp,deleteApp as deleteClientApp} from 'firebase/app';
+import {addDoc,collection,connectFirestoreEmulator,doc,getDoc,getFirestore,serverTimestamp,setDoc} from 'firebase/firestore';
 
-assert.match(process.env.FIRESTORE_EMULATOR_HOST||'',/^(127\.0\.0\.1|localhost):\d+$/,'Public Rules test requires the local Firestore emulator.');
-const projectId='baticamigo-c0384';
-const app=initializeApp({projectId},'public-rules-fixtures');
-const db=getFirestore(app);
-const base='http://'+process.env.FIRESTORE_EMULATOR_HOST+'/v1/projects/'+projectId+'/databases/(default)/documents';
-async function rest(path,options={}) {
-  const response=await fetch(base+path,options);
-  let body={}; try{body=await response.json();}catch{}
-  return {status:response.status,body};
+const host=String(process.env.FIRESTORE_EMULATOR_HOST||'');
+assert.match(host,/^(127\.0\.0\.1|localhost):\d+$/,'Public Rules test requires the local Firestore emulator.');
+const [hostname,portText]=host.split(':');
+const port=Number(portText),projectId='baticamigo-c0384';
+
+const adminApp=initializeAdminApp({projectId},'public-rules-admin');
+const adminDb=getAdminFirestore(adminApp);
+const clientApp=initializeClientApp({projectId,apiKey:'emulator-only',appId:'1:synthetic:web:synthetic'},'public-rules-client');
+const clientDb=getFirestore(clientApp);
+connectFirestoreEmulator(clientDb,hostname,port);
+
+async function rejected(promise,label) {
+  try { await promise; assert.fail(label); }
+  catch(error) { assert.notEqual(error?.name,'AssertionError',label); }
 }
+
 try {
-  await db.collection('noticias').doc('public-test').set({nome:'Notícia pública sintética'});
-  await db.collection('platform_profiles').doc('private-test').set({kind:'student',name:'Privado',active:true});
-  await db.collection('contato').doc('existing-test').set({nome:'X',email:'x@example.invalid',assunto:'X',mensagem:'X',data:FieldValue.serverTimestamp(),lido:false});
+  await adminDb.collection('noticias').doc('public-test').set({nome:'Notícia pública sintética'});
+  await adminDb.collection('platform_profiles').doc('private-test').set({kind:'student',name:'Privado',active:true});
+  await adminDb.collection('contato').doc('existing-test').set({nome:'X',email:'x@example.invalid',assunto:'X',mensagem:'X',data:new Date(),lido:false});
 
-  const publicRead=await rest('/noticias/public-test');
-  assert.equal(publicRead.status,200,'Public editorial content must remain readable.');
+  const publicRead=await getDoc(doc(clientDb,'noticias','public-test'));
+  assert.equal(publicRead.exists(),true,'Public editorial content must remain readable.');
 
-  const privateRead=await rest('/platform_profiles/private-test');
-  assert.equal(privateRead.status,403,'Private platform collections must reject direct browser reads.');
+  await rejected(getDoc(doc(clientDb,'platform_profiles','private-test')),'Private platform collections must reject direct browser reads.');
+  await rejected(getDoc(doc(clientDb,'contato','existing-test')),'Contact messages must never be publicly readable.');
 
-  const contactRead=await rest('/contato/existing-test');
-  assert.equal(contactRead.status,403,'Contact messages must never be publicly readable.');
-
-  const validContact=await rest('/contato?documentId=created-test',{
-    method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({fields:{
-      nome:{stringValue:'Pessoa sintética'},
-      email:{stringValue:'synthetic@example.invalid'},
-      assunto:{stringValue:'Teste'},
-      mensagem:{stringValue:'Mensagem sintética sem dados reais.'},
-      data:{timestampValue:new Date().toISOString()},
-      lido:{booleanValue:false},
-    }})
+  const valid=await addDoc(collection(clientDb,'contato'),{
+    nome:'Pessoa sintética',
+    email:'synthetic@example.invalid',
+    assunto:'Teste',
+    mensagem:'Mensagem sintética sem dados reais.',
+    data:serverTimestamp(),
+    lido:false,
   });
-  // REST timestamp from the client is not a server transform and must fail the
-  // request.time equality rule; the website uses FieldValue.serverTimestamp().
-  assert.equal(validContact.status,403,'Client-supplied timestamps must not satisfy the contact rule.');
+  assert.ok(valid.id,'A schema-valid contact message with server timestamp must be accepted.');
 
-  const invalidExtra=await rest('/contato?documentId=invalid-test',{
-    method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({fields:{
-      nome:{stringValue:'Pessoa sintética'},email:{stringValue:'synthetic@example.invalid'},
-      assunto:{stringValue:'Teste'},mensagem:{stringValue:'Mensagem'},lido:{booleanValue:false},
-      data:{timestampValue:new Date().toISOString()},admin:{booleanValue:true}
-    }})
-  });
-  assert.equal(invalidExtra.status,403,'Unexpected fields must be rejected.');
+  await rejected(addDoc(collection(clientDb,'contato'),{
+    nome:'Pessoa sintética',email:'synthetic@example.invalid',assunto:'Teste',
+    mensagem:'Mensagem',data:serverTimestamp(),lido:false,admin:true,
+  }),'Unexpected contact fields must be rejected.');
 
-  console.log('PASS: production Firestore Rules keep public content available and private platform/contact data protected.');
+  await rejected(setDoc(doc(clientDb,'contato',valid.id),{
+    nome:'Alterado',email:'synthetic@example.invalid',assunto:'Teste',
+    mensagem:'Alteração',data:serverTimestamp(),lido:false,
+  }),'Contact messages must not be client-editable after creation.');
+
+  console.log('PASS: production Firestore Rules preserve public reads/contact create and deny private platform access.');
 } finally {
-  for(const [collection,id] of [['noticias','public-test'],['platform_profiles','private-test'],['contato','existing-test']]){
-    try{await db.collection(collection).doc(id).delete();}catch{}
+  for(const [collectionName,id] of [['noticias','public-test'],['platform_profiles','private-test'],['contato','existing-test']]){
+    try{await adminDb.collection(collectionName).doc(id).delete();}catch{}
   }
-  await app.delete();
+  const created=await adminDb.collection('contato').where('email','==','synthetic@example.invalid').get();
+  await Promise.all(created.docs.map(item=>item.ref.delete()));
+  await deleteClientApp(clientApp);
+  await deleteAdminApp(adminApp);
 }
