@@ -2,63 +2,65 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Public website content is intentionally readable without authentication.
-    // Keep this list explicit: private platform data uses the platform_* prefix
-    // and is never readable or writable directly from the browser.
+    function isAdmin() {
+      let accountPath = /databases/$(database)/documents/platform_accounts/$(request.auth.uid);
+      return request.auth != null && (
+        request.auth.token.get('admin', false) == true ||
+        (
+          exists(accountPath) &&
+          get(accountPath).data.get('active', false) == true &&
+          get(accountPath).data.get('suspended', false) != true &&
+          (
+            get(accountPath).data.get('role', '') == 'admin' ||
+            get(accountPath).data.get('roles', []).hasAny(['admin'])
+          )
+        )
+      );
+    }
+
+    // Editorial collections are intentionally public-readable. Only verified
+    // BaticAmigo administrators may mutate them from the CMS.
     match /membros/{document} {
       allow read: if true;
-      allow write: if false;
+      allow create, update, delete: if isAdmin();
     }
     match /parceiros/{document} {
       allow read: if true;
-      allow write: if false;
+      allow create, update, delete: if isAdmin();
     }
     match /eventos/{document} {
       allow read: if true;
-      allow write: if false;
+      allow create, update, delete: if isAdmin();
     }
     match /programas/{document} {
       allow read: if true;
-      allow write: if false;
+      allow create, update, delete: if isAdmin();
     }
     match /agenda/{document} {
       allow read: if true;
-      allow write: if false;
+      allow create, update, delete: if isAdmin();
     }
     match /noticias/{document} {
       allow read: if true;
-      allow write: if false;
+      allow create, update, delete: if isAdmin();
     }
     match /site_config/{document} {
       allow read: if true;
-      allow write: if false;
+      allow create, update, delete: if isAdmin();
     }
 
-    // Public contact form: create-only, constrained to the exact schema used by
-    // the website. Existing messages are never client-readable or editable.
+    // Contact submissions are mediated by /api/contact using the Admin SDK.
+    // The CMS may read/update/delete messages after its administrator checks.
     match /contato/{document} {
-      allow create: if
-        request.resource.data.keys().hasAll(['nome','email','assunto','mensagem','data','lido']) &&
-        request.resource.data.keys().hasOnly(['nome','email','assunto','mensagem','data','lido']) &&
-        request.resource.data.nome is string &&
-        request.resource.data.nome.size() > 0 &&
-        request.resource.data.nome.size() <= 100 &&
-        request.resource.data.email is string &&
-        request.resource.data.email.size() > 3 &&
-        request.resource.data.email.size() <= 254 &&
-        request.resource.data.email.matches('^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$') &&
-        request.resource.data.assunto is string &&
-        request.resource.data.assunto.size() > 0 &&
-        request.resource.data.assunto.size() <= 160 &&
-        request.resource.data.mensagem is string &&
-        request.resource.data.mensagem.size() > 0 &&
-        request.resource.data.mensagem.size() <= 6000 &&
-        request.resource.data.data == request.time &&
-        request.resource.data.lido == false;
-      allow read, update, delete: if false;
+      allow read, create, update, delete: if isAdmin();
     }
 
-    // Everything not explicitly published above is private by default.
+    // The private platform is always server-mediated. No browser SDK access.
+    match /platform_{document=**} {
+      allow read, write: if false;
+    }
+
+    // Unknown collections fail closed.
     match /{document=**} {
       allow read, write: if false;
     }
