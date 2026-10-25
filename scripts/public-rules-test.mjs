@@ -40,7 +40,7 @@ try {
   await adminDb.collection('platform_profiles').doc('private-test').set({kind:'student',name:'Privado',active:true});
   await adminDb.collection('contato').doc('contact-test').set({nome:'Pessoa',email:'synthetic@example.invalid',assunto:'Teste',mensagem:'Mensagem',data:new Date(),lido:false});
 
-  assert.equal((await getDoc(doc(anon.db,'noticias','public-test'))).exists(),true);
+  await rejected(getDoc(doc(anon.db,'noticias','public-test')),'anonymous editorial Firestore read must fail; public content is server-mediated');
   await rejected(getDoc(doc(anon.db,'platform_profiles','private-test')),'anonymous private read must fail');
   await rejected(getDoc(doc(anon.db,'contato','contact-test')),'anonymous contact read must fail');
   await rejected(setDoc(doc(anon.db,'contato','public-write'),{nome:'Spam'}),'anonymous contact write must fail');
@@ -76,7 +76,7 @@ try {
   assert.equal(bytes.byteLength,png.byteLength,'public CMS media must remain readable');
   await rejected(uploadBytes(ref(accountAdmin.storage,'platform-files/private/test.png'),png,{contentType:'image/png'}),'private platform media must reject direct SDK writes');
 
-  console.log('PASS: production Firebase rules preserve public reads, constrain CMS fields, preserve legacy metadata, and isolate private platform data.');
+  console.log('PASS: production Firebase rules deny anonymous Firestore data reads, constrain CMS fields, preserve legacy metadata, and isolate private platform data.');
 } finally {
   try{await deleteObject(ref(accountAdmin.storage,mediaPath));}catch{}
   for(const [collectionName,id] of [
