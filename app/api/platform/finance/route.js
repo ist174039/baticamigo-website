@@ -1,4 +1,4 @@
-import {context,collection,json,failure,audit} from '../../../../lib/platform/server';
+import {context,collection,json,failure,audit,assertJsonRequest} from '../../../../lib/platform/server';
 import {assert,hasRole,profileIds} from '../../../../lib/platform/domain.mjs';
 import {dueInput,paymentInput,donationInput,financingInput,expenseInput,lisbonToday,movementId} from '../../../../lib/platform/finance.mjs';
 import {canAccessArea} from '../../../../lib/platform/access.mjs';
@@ -7,7 +7,7 @@ export const runtime='nodejs';
 export const dynamic='force-dynamic';
 const rows=snapshot=>snapshot.docs.map(doc=>({...doc.data(),id:doc.id}));
 async function bounded(query,label='registos financeiros') { const result=await query.limit(501).get();assert(result.size<=500,`Demasiados ${label}. Contacte o suporte.`,409);return rows(result); }
-async function body(request) { const length=Number(request.headers.get('content-length')||0);assert(length>0&&length<=16384,'Pedido inválido.',413);let value;try{value=await request.json();}catch{assert(false,'JSON inválido.');}assert(value&&typeof value==='object'&&!Array.isArray(value));return value; }
+async function body(request) { assertJsonRequest(request); const length=Number(request.headers.get('content-length')||0);assert(length>0&&length<=16384,'Pedido inválido.',413);let value;try{value=await request.json();}catch{assert(false,'JSON inválido.');}assert(value&&typeof value==='object'&&!Array.isArray(value));return value; }
 function manager(account) { assert(hasRole(account,'admin'),'Apenas a administração pode consultar ou alterar a gestão financeira.',403); }
 
 export async function GET(request) {
