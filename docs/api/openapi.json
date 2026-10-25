@@ -131,6 +131,9 @@
           "413": {
             "$ref": "#/components/responses/Problem"
           },
+          "415": {
+            "$ref": "#/components/responses/Problem"
+          },
           "500": {
             "$ref": "#/components/responses/Problem"
           }
@@ -176,7 +179,141 @@
           "409": {
             "$ref": "#/components/responses/Problem"
           },
+          "415": {
+            "$ref": "#/components/responses/Problem"
+          },
           "500": {
+            "$ref": "#/components/responses/Problem"
+          }
+        }
+      }
+    },
+    "/api/platform/users": {
+      "get": {
+        "summary": "Listar utilizadores/perfis administráveis",
+        "responses": {
+          "200": {
+            "description": "Utilizadores autorizados"
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          }
+        }
+      },
+      "post": {
+        "summary": "Criar conta/perfis ou iniciar recuperação de acesso",
+        "responses": {
+          "200": {
+            "description": "Operação concluída"
+          },
+          "201": {
+            "description": "Conta/perfis criados"
+          },
+          "400": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "415": {
+            "$ref": "#/components/responses/Problem"
+          }
+        }
+      },
+      "patch": {
+        "summary": "Alterar acesso, suspender/restaurar ou eliminar perfil sem dependências",
+        "responses": {
+          "200": {
+            "description": "Operação concluída"
+          },
+          "400": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "415": {
+            "$ref": "#/components/responses/Problem"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Remover conta preservando registos de pessoa quando aplicável",
+        "responses": {
+          "200": {
+            "description": "Conta removida"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "415": {
+            "$ref": "#/components/responses/Problem"
+          }
+        }
+      }
+    },
+    "/api/platform/files": {
+      "post": {
+        "summary": "Carregar ficheiro privado autorizado",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "file",
+                  "kind",
+                  "studentId"
+                ],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "contentMediaType": "application/octet-stream"
+                  },
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "assignment",
+                      "material",
+                      "document",
+                      "justification"
+                    ]
+                  },
+                  "studentId": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Ficheiro guardado"
+          },
+          "400": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "413": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "415": {
             "$ref": "#/components/responses/Problem"
           }
         }
