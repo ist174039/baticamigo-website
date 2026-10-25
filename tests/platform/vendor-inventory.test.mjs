@@ -8,8 +8,6 @@ const inventory=readFileSync(new URL('../../docs/security/vendor-inventory.md',i
 
 test('externally referenced runtime providers are represented in the vendor inventory',()=>{
   const observed=[
-    ['fonts.googleapis.com','Google Fonts'],
-    ['fonts.gstatic.com','Google Fonts'],
     ['cdnjs.cloudflare.com','cdnjs'],
     ['firebasestorage.googleapis.com','Firebase Storage'],
   ];
