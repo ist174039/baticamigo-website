@@ -114,7 +114,9 @@
         "lib/platform/server.js",
         "firestore.rules",
         "storage.rules",
-        "tests/platform/security-boundary.test.mjs"
+        "tests/platform/security-boundary.test.mjs",
+        "docs/security/tracking-minimization.md",
+        "tests/platform/browser-storage-minimization.test.mjs"
       ]
     },
     "BA-STD-001": {
@@ -125,7 +127,10 @@
         "docs/security/privacy-impact-assessment.md",
         "lib/platform/privacy-assessment.mjs",
         "lib/platform/privacy-export.mjs",
-        "lib/platform/readiness.mjs"
+        "lib/platform/readiness.mjs",
+        "docs/security/tracking-minimization.md",
+        "tests/platform/tracking-minimization.test.mjs",
+        "tests/platform/browser-storage-minimization.test.mjs"
       ],
       "blocker": "Requer decisão/aprovação organizacional, jurídica, de risco ou de privacidade; código não substitui essa validação."
     },
@@ -146,7 +151,9 @@
         "lib/platform/access.mjs",
         "lib/platform/privacy-export.mjs",
         "tests/platform/children-safeguards.test.mjs",
-        "scripts/integration-test.mjs"
+        "scripts/integration-test.mjs",
+        "docs/security/tracking-minimization.md",
+        "tests/platform/browser-storage-minimization.test.mjs"
       ],
       "blocker": "Requer decisão/aprovação organizacional, jurídica, de risco ou de privacidade; código não substitui essa validação."
     },
@@ -208,7 +215,10 @@
       "evidence": [
         "docs/security/pii-controls.md",
         "docs/security/data-governance-draft.md",
-        "lib/platform/readiness.mjs"
+        "lib/platform/readiness.mjs",
+        "docs/security/tracking-minimization.md",
+        "docs/security/data-subject-rights.md",
+        "lib/platform/privacy-export.mjs"
       ],
       "blocker": "Requer decisão/aprovação organizacional, jurídica, de risco ou de privacidade; código não substitui essa validação."
     },
