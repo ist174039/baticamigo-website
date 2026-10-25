@@ -20,4 +20,6 @@ test('dependency license review remains fail-closed until exceptions are approve
   const status=dependencyLicenseStatus(exceptions);
   assert.equal(status.ready,false);
   assert.deepEqual(status.pending,['limiter@1.1.5']);
+  assert.equal(exceptions.exceptions[0].status,'verified');
+  assert.equal(exceptions.exceptions[0].observedLicense,'MIT');
 });
