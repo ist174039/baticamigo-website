@@ -22,6 +22,14 @@ try {
   for(const [name,role,profileIds] of fixtures){const email=name.toLowerCase()+'@example.invalid';await auth.createUser({uid:name,email,password:'Synthetic-fixture-password-42',emailVerified:true});await db.collection('platform_accounts').doc(name).set({roles:[role],role,profileIds,active:true});const response=await fetch('http://'+process.env.FIREBASE_AUTH_EMULATOR_HOST+'/identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=emulator-only',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password:'Synthetic-fixture-password-42',returnSecureToken:true})});const result=await response.json();assert.ok(result.idToken,'Emulated sign-in failed.');tokens[name]=result.idToken;}
   for(const [id,kind,name,guardians] of [['s1','student','Aluno de teste A',['g1']],['s2','student','Aluno de teste B',['g2']],['s3','student','Aluno de teste C',['g3']],['g1','guardian','Encarregado de teste A',[]],['g2','guardian','Encarregado de teste B',[]],['g3','guardian','Encarregado de teste C',[]],['t1','tutor','Explicador de teste A',[]],['t2','tutor','Explicador de teste B',[]],['m1','member','Sócio de teste',[]]])await db.collection('platform_profiles').doc(id).set({kind,name,guardianIds:guardians,active:true});
   await db.collection('platform_access_settings').doc('profiles').set({profiles:{...defaultAccessProfiles,member:['overview','finance','document']}});
+  const unauthorized=await fetch(host+'/api/platform');
+  assert.equal(unauthorized.status,401);
+  assert.match(unauthorized.headers.get('content-type')||'',/application\/problem\+json/);
+  const unauthorizedProblem=await unauthorized.json();
+  assert.equal(unauthorizedProblem.status,401);
+  assert.equal(unauthorizedProblem.type,'about:blank');
+  assert.equal(unauthorizedProblem.error,unauthorizedProblem.detail);
+  console.log('PASS: RFC 9457 unauthorized problem response.');
   await expect(null,null,401);
   const start=new Date(Date.now()-86400000).toISOString(),end=new Date(Date.now()-82800000).toISOString();
   const session={title:'Sessão de teste',studentIds:['s1','s2'],tutorId:'t1',room:'Teste A',startsAt:start,endsAt:end};
