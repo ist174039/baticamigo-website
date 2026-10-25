@@ -60,51 +60,27 @@ exports.sendEmail = functions.https.onCall(async (data, context) => {
 })
 
 // Função para enviar email quando uma nova mensagem de contato for adicionada
-exports.sendContactEmail = functions.firestore.document("contato/{contactId}").onCreate(async (snap, context) => {
-  const contactData = snap.data()
-  const name = String(contactData.nome || "").slice(0, 200)
-  const email = String(contactData.email || "").slice(0, 254)
-  const subject = String(contactData.assunto || "").slice(0, 200)
-  const message = String(contactData.mensagem || "").slice(0, 10000)
-
+exports.sendContactEmail = functions.firestore.document("contato/{contactId}").onCreate(async () => {
   const contactRecipient = String(functions.config().email?.contact_to || "").trim()
   if (!validEmail(contactRecipient)) {
     console.error("Destinatário de contacto não configurado.")
     return { success: false, error: "contact-recipient-not-configured" }
   }
 
-  // Configurar email
   const mailOptions = {
     from: functions.config().email.user,
     to: contactRecipient,
-    subject: `Nova mensagem de contacto: ${subject.replace(/[\r\n]/g, " ")}`,
-    text: `
-                Nome: ${name}
-                Email: ${email}
-                Assunto: ${subject}
-                Data: ${new Date().toLocaleString("pt-BR")}
-                
-                Mensagem:
-                ${message}
-            `,
-    html: `
-                <h2>Nova mensagem de contato</h2>
-                <p><strong>Nome:</strong> ${htmlEscape(name)}</p>
-                <p><strong>Email:</strong> ${htmlEscape(email)}</p>
-                <p><strong>Assunto:</strong> ${htmlEscape(subject)}</p>
-                <p><strong>Data:</strong> ${new Date().toLocaleString("pt-BR")}</p>
-                <h3>Mensagem:</h3>
-                <p>${htmlEscape(message).replace(/\n/g, "<br>")}</p>
-            `,
+    subject: "Nova mensagem de contacto na BaticAmigo",
+    text: "Existe uma nova mensagem de contacto. Consulte-a no painel administrativo da BaticAmigo.",
+    html: "<p>Existe uma nova mensagem de contacto. Consulte-a no painel administrativo da BaticAmigo.</p>",
   }
 
   try {
-    // Enviar email
     await transporter.sendMail(mailOptions)
     return { success: true }
   } catch (error) {
-    console.error("Erro ao enviar email de contato:", error)
-    return { success: false, error }
+    console.error("Erro ao enviar email de contacto.")
+    return { success: false, error: "contact-notification-failed" }
   }
 })
 
