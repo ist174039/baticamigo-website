@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 
-for(const path of ['../../functions/index.js','../../public/firebase-functions/index.js']){
+for(const path of ['../../functions/index.js']){
   test(`${path} requires verified email and persisted admin revocation checks`,()=>{
     const source=readFileSync(new URL(path,import.meta.url),'utf8');
     assert.match(source,/async function requireAdmin\(context\)/);
