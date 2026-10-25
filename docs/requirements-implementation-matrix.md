@@ -1,7 +1,7 @@
 # BaticAmigo — matriz de implementação dos requisitos
 
 Fonte canónica: Notion Requirements (27 requisitos: FR-001..FR-020 e NFR-001..NFR-007).
-Branch de conclusão: `codex/requirements-completion`, criada sobre `ba02dbbe97caaff0ea04f904c3a3eb214d97f5cf`.
+Release candidate atual: `release/market-readiness-2026-10-25`, PR #4 diretamente contra `main`. O SHA exato deve ser o HEAD verde do PR; não usar esta linha como prova de um SHA específico.
 
 Esta matriz não substitui o aceite no Notion. "Observado" significa que existe implementação no repositório; "validar" significa que os critérios de aceitação ainda precisam de evidência específica antes de declarar Verificado.
 
@@ -34,6 +34,10 @@ Esta matriz não substitui o aceite no Notion. "Observado" significa que existe 
 | NFR-005 | Implementado observado; validar | `platform_audit` regista ator, ação, alvo e timestamp; fechar catálogo, retenção e acesso. |
 | NFR-006 | Implementado observado; validar | Domínio/API/UI separados em módulos; adicionar gate de arquitetura/acoplamento. |
 | NFR-007 | Bloqueado por decisão/operação | Runbook existe; falta política aprovada, RPO/RTO, backup configurado e teste de restauro. |
+
+## Estado da documentação estruturada — 25/10/2026
+
+Os 27 requisitos no Notion têm critérios de aceitação preenchidos, arquitetura/tarefa/teste/evidência relacionados. Este documento descreve implementação observada e não promove automaticamente o estado canónico dos requisitos.
 
 ## Gates de conclusão
 
