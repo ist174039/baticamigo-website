@@ -3,7 +3,7 @@ import {initializeApp as initializeAdminApp,deleteApp as deleteAdminApp} from 'f
 import {getAuth as getAdminAuth} from 'firebase-admin/auth';
 import {getFirestore as getAdminFirestore} from 'firebase-admin/firestore';
 import {initializeApp as initializeClientApp,deleteApp as deleteClientApp} from 'firebase/app';
-import {connectAuthEmulator,getAuth,signInWithCustomToken,signOut} from 'firebase/auth';
+import {connectAuthEmulator,getAuth,signInWithEmailAndPassword,signOut} from 'firebase/auth';
 import {connectFirestoreEmulator,doc,getDoc,getFirestore,setDoc,updateDoc} from 'firebase/firestore';
 import {connectStorageEmulator,deleteObject,getBytes,getStorage,ref,uploadBytes} from 'firebase/storage';
 
@@ -45,14 +45,16 @@ try {
   await rejected(setDoc(doc(anon.db,'contato','public-write'),{nome:'Spam'}),'anonymous contact write must fail');
   await rejected(setDoc(doc(anon.db,'noticias','anon-write'),{titulo:'No'}),'anonymous CMS write must fail');
 
-  const claimToken=await adminAuth.createCustomToken('claim-admin',{admin:true});
-  await signInWithCustomToken(claimAdmin.auth,claimToken);
+  const password='Synthetic-rules-password-42';
+  await adminAuth.createUser({uid:'claim-admin',email:'claim-admin@example.invalid',password,emailVerified:true});
+  await adminAuth.setCustomUserClaims('claim-admin',{admin:true});
+  await signInWithEmailAndPassword(claimAdmin.auth,'claim-admin@example.invalid',password);
   await setDoc(doc(claimAdmin.db,'noticias','claim-write'),{titulo:'Admin claim'});
   assert.equal((await getDoc(doc(claimAdmin.db,'contato','contact-test'))).exists(),true);
 
+  await adminAuth.createUser({uid:'account-admin',email:'account-admin@example.invalid',password,emailVerified:true});
   await adminDb.collection('platform_accounts').doc('account-admin').set({uid:'account-admin',roles:['admin'],role:'admin',active:true,suspended:false,profileIds:[]});
-  const accountToken=await adminAuth.createCustomToken('account-admin');
-  await signInWithCustomToken(accountAdmin.auth,accountToken);
+  await signInWithEmailAndPassword(accountAdmin.auth,'account-admin@example.invalid',password);
   await setDoc(doc(accountAdmin.db,'noticias','account-write'),{titulo:'Admin account'});
   await updateDoc(doc(accountAdmin.db,'contato','contact-test'),{lido:true});
 
@@ -72,6 +74,7 @@ try {
     ['contato','contact-test'],['contato','public-write']
   ]) { try{await adminDb.collection(collectionName).doc(id).delete();}catch{} }
   for(const value of [claimAdmin,accountAdmin]) try{await signOut(value.auth);}catch{}
+  for(const uid of ['claim-admin','account-admin']) try{await adminAuth.deleteUser(uid);}catch{}
   for(const value of [anon,claimAdmin,accountAdmin]) await deleteClientApp(value.app);
   await deleteAdminApp(adminApp);
 }
