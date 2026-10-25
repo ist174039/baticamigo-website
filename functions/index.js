@@ -13,6 +13,17 @@ const htmlEscape = (value) => String(value ?? "")
 
 const validEmail = (value) => typeof value === "string" && value.length <= 254 && /^\S+@\S+\.\S+$/.test(value)
 
+async function canSendAdministrativeEmail(context) {
+  if (!context.auth || context.auth.token.email_verified !== true) return false
+  const account = await admin.firestore().collection("platform_accounts").doc(context.auth.uid).get()
+  if (account.exists) {
+    const value = account.data() || {}
+    const roles = Array.isArray(value.roles) ? value.roles : [value.role]
+    return value.active === true && value.suspended !== true && roles.includes("admin")
+  }
+  return context.auth.token.admin === true
+}
+
 // Configuração do transporte de email
 const transporter = nodemailer.createTransport({
   service: "gmail",
@@ -28,7 +39,7 @@ exports.sendEmail = functions.https.onCall(async (data, context) => {
   if (!context.auth) {
     throw new functions.https.HttpsError("unauthenticated", "Inicie sessão para continuar.")
   }
-  if (context.auth.token.admin !== true) throw new functions.https.HttpsError("permission-denied", "Sem permissão para enviar emails.")
+  if (!(await canSendAdministrativeEmail(context))) throw new functions.https.HttpsError("permission-denied", "Sem permissão para enviar emails.")
 
   const { to, subject, text, html } = data
 
