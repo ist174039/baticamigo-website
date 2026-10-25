@@ -466,3 +466,12 @@ body{background:var(--paper)}
 }
 
 .contact-honeypot{position:absolute!important;left:-10000px!important;top:auto!important;width:1px!important;height:1px!important;overflow:hidden!important;opacity:0!important;pointer-events:none!important}
+
+
+/* WCAG 2 AA contrast corrections validated by axe. */
+.image-caption strong{color:#1d1029}
+.content-section .eyebrow,.about-copy>.eyebrow,.dynamic-section .eyebrow,.community-section .eyebrow{color:#56346d}
+.section-heading p,.collection-heading-copy .section-heading p{color:#5c5361}
+.empty-state p{color:#554c59}
+.partner-section .community-intro h2 em,#partners-title em{color:#55336c}
+.contact-form .form-note{color:#675b6d}
