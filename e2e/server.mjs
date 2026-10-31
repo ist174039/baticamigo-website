@@ -37,7 +37,7 @@ await db.collection('platform_access_settings').doc('profiles').set({profiles:de
 const {privateKey}=generateKeyPairSync('rsa',{modulusLength:2048,privateKeyEncoding:{format:'pem',type:'pkcs8'},publicKeyEncoding:{format:'pem',type:'spki'}});
 const credential={project_id:projectId,client_email:'e2e-only@baticamigo-c0384.iam.gserviceaccount.com',private_key:privateKey};
 const next=spawn(process.execPath,['node_modules/next/dist/bin/next','dev','--hostname','127.0.0.1','--port','3106'],{
-  env:{...process.env,NEXT_PUBLIC_E2E_FIREBASE_AUTH_EMULATOR:'1',FIREBASE_SERVICE_ACCOUNT_JSON:JSON.stringify(credential)},
+  env:{...process.env,NEXT_PUBLIC_E2E_FIREBASE_AUTH_EMULATOR:'1',BATIC_LOCAL_BROWSER_E2E:'1',FIREBASE_SERVICE_ACCOUNT_JSON:JSON.stringify(credential)},
   stdio:'inherit'
 });
 for(const signal of ['SIGINT','SIGTERM'])process.on(signal,()=>{next.kill(signal);process.exit(0);});
