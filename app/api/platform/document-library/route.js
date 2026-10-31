@@ -84,8 +84,20 @@ export async function GET(request) {
     const documentId=url.searchParams.get('documentId');
     if(!documentId) {
       const [allFolders,allDocuments]=await Promise.all([readBounded(folders(db)),readBounded(documents(db))]);
-      const visibleFolders=allFolders.filter(folder=>active(folder)&&canViewLibraryItem(account,folder));
-      const visibleDocs=allDocuments.filter(doc=>active(doc)&&canSeeDocument(account,doc,allFolders.filter(folder=>folder.id===doc.folderId||doc.folderId&&folder.id===doc.folderId)));
+      const trashed=url.searchParams.get('trash')==='1';
+      if(trashed) {
+        assert(isLibraryAdmin(account),'Sem permissão para consultar arquivo removido.',403);
+        return json({folders:[],documents:allDocuments.filter(doc=>!!doc.deletedAt).map(doc=>safeDocumentFor(account,doc))});
+      }
+      const folderById=new Map(allFolders.map(folder=>[folder.id,folder]));
+      const chainFor=doc=>{
+        const chain=[],seen=new Set(); let next=doc.parentId||doc.folderId;
+        while(next&&!seen.has(next)&&chain.length<12){seen.add(next);const folder=folderById.get(next);if(!folder)return [{deletedAt:'missing'}];chain.push(folder);next=folder.parentId;}
+        if(next)return [{deletedAt:'cycle'}];
+        return chain;
+      };
+      const visibleFolders=allFolders.filter(folder=>active(folder)&&canViewLibraryItem(account,folder)&&chainFor(folder).every(active));
+      const visibleDocs=allDocuments.filter(doc=>active(doc)&&canSeeDocument(account,doc,chainFor(doc)));
       return json({folders:visibleFolders.map(f=>safeDocumentFor(account,f)),documents:visibleDocs.map(doc=>safeDocumentFor(account,doc))});
     }
     const {item,ancestors}=await documentContext(db,account,documentId);
