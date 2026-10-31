@@ -19,8 +19,8 @@ jobs:
       - run: npm ci
       - name: Install pinned browser test runner
         run: npm install --no-save --ignore-scripts --no-audit --no-fund @playwright/test@1.56.1
-      - name: Install Chromium
-        run: npx playwright install --with-deps chromium
+      - name: Install Chromium, Firefox and WebKit
+        run: npx playwright install --with-deps chromium firefox webkit
       - name: Browser E2E with local Firebase emulators and synthetic users only
         env:
           CI: 'true'
