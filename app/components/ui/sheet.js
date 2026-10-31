@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 
 /** Accessible, controlled side panel built with the native modal dialog API. */
-export function Sheet({ open, onOpenChange, children, className = "", ariaLabel = "Painel de detalhes" }) {
+export function Sheet({ open, onOpenChange, children, className = "", ariaLabel = "Painel de detalhes", baseClass = "shadcn-sheet" }) {
   const ref = useRef(null);
 
   useEffect(() => {
@@ -15,7 +15,7 @@ export function Sheet({ open, onOpenChange, children, className = "", ariaLabel 
 
   return <dialog
     ref={ref}
-    className={`shadcn-sheet ${className}`.trim()}
+    className={`${baseClass} ${className}`.trim()}
     aria-label={ariaLabel}
     aria-modal="true"
     onCancel={(event) => { event.preventDefault(); onOpenChange(false); }}

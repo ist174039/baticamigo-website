@@ -153,7 +153,7 @@ export default function PlatformLogin() {
                 <span className="workspace-choice-action">Abrir gestão do site <ArrowUpRight size={16} aria-hidden="true" /></span>
               </Card>
             </a>}
-            {availablePlatformDestinations(account).includes("area") && <a className="workspace-choice-link" href="/platform/area">
+            {availablePlatformDestinations(account).includes("area") && <a className="workspace-choice-link" href="/area">
               <Card className="workspace-choice-card">
                 <span className="workspace-choice-icon"><UsersRound size={21} aria-hidden="true" /></span>
                 <span className="workspace-choice-copy"><strong>Plataforma BaticAmigo</strong><small>Utilizadores, sessões, perfis e área financeira.</small></span>
@@ -180,6 +180,7 @@ export default function PlatformLogin() {
             <Button type="submit" className="login-submit" disabled={busy}><span>{busy ? "Aguarde…" : "Entrar"}</span><span aria-hidden="true">→</span></Button>
           </form>}
         </>}
+        <a className="login-home-link" href="/platform/manual">Manual de utilização da plataforma</a>
         <a className="login-home-link" href="/">← Voltar ao site</a>
       </Card>
     </section>

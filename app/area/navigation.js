@@ -29,6 +29,6 @@ export default function AreaNavigation({items, active, onNavigate, admin, user, 
     const Icon = navigationIcons[key] || CircleCheck;
   return { key, label, group:key==='account'?'A sua conta':key==='access'||key==='records'?'Associação':areaGroups.find(section=>section.modules.includes(key))?.label||'A sua área', icon: <Icon size={17} strokeWidth={1.8} /> };
   });
-  const footer = admin && <a href="/admin/dashboard"><KeyRound size={16} aria-hidden="true"/><span>Administração</span><span aria-hidden="true">↗</span></a>;
+  const footer = <div><a href="/platform/manual"><BookOpenCheck size={16} aria-hidden="true"/><span>Manual de utilização</span><span aria-hidden="true">↗</span></a>{admin && <a href="/admin/dashboard"><KeyRound size={16} aria-hidden="true"/><span>Administração</span><span aria-hidden="true">↗</span></a>}</div>;
   return <PrivateShell className="platform-shell" areaLabel="Área reservada" items={links} active={active} onNavigate={onNavigate} footer={footer} user={user ? { name: user.displayName || "Utilizador", email: user.email } : null} accountMenu={accountMenu}>{children}</PrivateShell>;
 }

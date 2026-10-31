@@ -53,7 +53,7 @@ async function listAuthUsers(auth) {
   return users;
 }
 
-export const validateLinks = (tx, db, uid, roles, ids, newProfiles = []) => validateUserLinks(tx, db, uid, roles, ids, newProfiles, collection);
+export const validateLinks = (tx, db, uid, roles, ids, newProfiles = [], _collection = collection, options = {}) => validateUserLinks(tx, db, uid, roles, ids, newProfiles, collection, options);
 
 function bootstrapAdmin(user) {
   return isBootstrapAdmin(user?.email,user?.emailVerified);
