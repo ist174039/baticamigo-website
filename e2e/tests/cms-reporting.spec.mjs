@@ -56,8 +56,8 @@ test('FR-015 FR-018: aggregate reports filter, suppress small groups and export 
  expect(content).toContain('Grupo pequeno');
  expect(content).not.toContain('Aluno sintético');
  expect(content).not.toContain('e2e-profile-student');
- await page.getByLabel('De').fill('2026-01-01');
- await page.getByLabel('Até').fill('2026-12-31');
+ await page.getByLabel('De',{exact:true}).fill('2026-01-01');
+ await page.getByLabel('Até',{exact:true}).fill('2026-12-31');
  await expect(page.getByRole('heading',{name:'Relatórios operacionais'})).toBeVisible();
 });
 test('FR-015 NFR-001: member cannot reach privileged reports and finance reports',async ({page})=>{
