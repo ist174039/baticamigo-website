@@ -61,6 +61,11 @@ service firebase.storage {
     match /platform-files/{path=**} {
       allow read, write: if false;
     }
+    // Versioned documents are available only through server-validated ACLs.
+    // No client SDK access, including administrators, is allowed here.
+    match /platform-documents/{path=**} {
+      allow read, write: if false;
+    }
     match /{object=**} {
       allow read, write: if false;
     }
