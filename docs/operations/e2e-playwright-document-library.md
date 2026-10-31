@@ -8,30 +8,19 @@ Estado: **implementação em revisão no PR #5; não equivale a aceite de produ�
 - PR #5 é um incremento dependente do PR #4. Não fazer merge para main ou deploy a partir deste documento.
 - O manual é servido em \`/platform/manual\`, ligado pelo login, pela área reservada e pelo painel administrativo. A origem editável dos passos é \`lib/platform/manual-data.mjs\`.
 
-## Testes atuais
-- Unitários: \`tests/platform/document-library.test.mjs\` e \`manual-data.test.mjs\`.
-- Browser/E2E: \`e2e/tests/platform.spec.mjs\`. Verificações de acesso anónimo, autenticação e navegação, manual por perfil, pesquisa de módulos, CRUD documental via API, versionamento, herança de leitura, proibição de alterações de leitor, remoção/restauro e contenção do painel lateral em 320 px.
-- Workflow: \`.github/workflows/playwright-e2e.yml\`, disparado para pull requests e manualmente. A execução é em \`firebase emulators:exec\` para Auth, Firestore e Storage.
-- Os testes usam **somente utilizadores e ficheiros sintéticos**; recusam arrancar se os três emuladores não estiverem configurados nos endereços locais esperados.
-- \`NEXT_PUBLIC_E2E_FIREBASE_AUTH_EMULATOR=1\` só é aplicado pelo servidor local de testes e só é aceite na aplicação no browser em modo de desenvolvimento no localhost.
+## Testes e cobertura no PR #5
 
-## Critérios de cobertura ainda não satisfeitos
-A suite E2E inicial não representa 100% dos 27 requisitos. Antes de usar Playwright como gate final devem ser escritos e executados cenários positivos, negativos e de concorrência para:
-1. FR-001–004: recuperação de conta, acesso por perfis, associações familiares, revogação.
-2. FR-005–009: criação/reagendamento/recorrência, conflitos e isolamento de presenças.
-3. FR-010–011: trabalhos, anexos, mensagens, avisos e estados de notificação.
-4. FR-012–015: sócios/finanças, CMS, métricas e exportações.
-5. FR-016–020: avaliações, escalas, progressos, síntese, lacunas e revisão humana.
-6. NFR-001–007: matriz RBAC/ABAC, privacidade, responsividade, UX, auditoria, arquitetura e restauro.
-7. Novos módulos: biblioteca de pastas, subpastas, ACL por conta e perfil, CRUD, histórico, recuperação, acessibilidade, tipos/tamanhos, autorização concorrente.
+A matriz ativa está em `docs/operations/e2e-coverage-matrix.md`, com rastreabilidade explícita dos **20 requisitos funcionais** e **7 não funcionais**. Os cenários executáveis encontram-se em `e2e/tests/*.spec.mjs`; os testes unitários/de regras continuam no Quality Gate. O workflow `.github/workflows/playwright-e2e.yml` executa todo o conjunto em Chromium e os percursos críticos do browser em Firefox e WebKit.
 
-**Gate de aceitação**: cada cenário deve estar ligado a requisito, caso de teste, execução, SHA final, evidência, responsável e decisão. E2E verde apenas comprova os cenários efetivamente exercitados; não comprova análise jurídica, DPIA, acessibilidade assistiva ou recuperação real.
+Os testes usam somente emuladores locais Firebase e dados sintéticos. A execução completa exige `npm ci`, o Playwright instalado e Java 21. A porta local é 3106 (HTTP) e emuladores Auth 9099, Firestore 8080 e Storage 9199.
+
+**Não declarar 100% de aceite** só porque todos os testes E2E passaram. FR-011 mantém decisão de notificações externas/consentimento; FR-014 necessita de testes completos de operações editoriais de publicação; NFR-002 (RGPD/DPIA), NFR-003/004 (validação humana) e NFR-007 (backup/restauro real) requerem evidência e aprovação externa.
 
 ## Execução local
 \`\`\`bash
 npm ci
 npm install --no-save --ignore-scripts @playwright/test@1.56.1
-npx playwright install chromium
+npx playwright install chromium firefox webkit
 npx --yes firebase-tools@14.22.0 emulators:exec --project baticamigo-c0384 --config firebase.json --only auth,firestore,storage 'npx playwright test'
 \`\`\`
 São indispensáveis Java 21 e Node 24. Nunca usar contas, chaves, ficheiros ou tokens de produção nos testes. Os ficheiros de rastreio podem conter conteúdo sintético e estão retidos apenas sete dias.
