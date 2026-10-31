@@ -101,3 +101,17 @@
   .admin-private-shell .admin-modal-content > form > .admin-form-group:last-child:has(button[type="submit"]) {margin-inline:-12px; padding-inline:12px}
   .admin-private-shell .admin-modal-content > form > .admin-form-group:last-child:has(button[type="submit"]) button {width:100%; min-height:44px}
 }
+
+/* Manual index: reset generic site navigation rules that lay out child groups
+   horizontally. Keep every accessible process within its column. */
+.ba-manual-layout {align-items:start; min-width:0}
+nav.ba-manual-index {display:block; position:relative; z-index:2; align-self:start; width:100%; min-width:0; overflow:hidden}
+nav.ba-manual-index > div {display:block; width:100%; min-width:0; margin:0}
+nav.ba-manual-index h2 {display:block; width:100%; line-height:1.45; overflow-wrap:anywhere}
+nav.ba-manual-index button {display:block; width:100%; max-width:100%; min-width:0; text-align:left; white-space:normal; overflow-wrap:anywhere; line-height:1.5}
+nav.ba-manual-index input {display:block; max-width:100%; min-width:0}
+.ba-manual-layout > main {position:relative; z-index:1; min-width:0; max-width:100%; overflow-wrap:anywhere}
+.ba-manual-layout .ba-manual-step {min-width:0; max-width:100%}
+@media(max-width:760px) {
+  nav.ba-manual-index {max-height:min(45dvh,360px); overflow-y:auto; overscroll-behavior:contain}
+}
