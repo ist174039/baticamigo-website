@@ -5,7 +5,7 @@ import {areaModules,accessProfileIds} from '../../lib/platform/access.mjs';
 test('manual has unique guides and covers every visible platform module',()=>{
  const ids=manualGuides.map(g=>g.id);
  assert.equal(new Set(ids).size,ids.length);
- for(const module of areaModules)assert.ok(manualGuides.some(g=>g.module===module)||['material','justification','document','notifications','progress'].includes(module),'Missing manual module '+module);
+ for(const module of areaModules)assert.ok(manualGuides.some(g=>g.module===module),'Missing manual module '+module);
 });
 test('manual has complete actionable steps and role mapping',()=>{
  for(const guide of manualGuides){
