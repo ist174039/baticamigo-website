@@ -98,7 +98,7 @@ export async function GET(request) {
         if(next)return [{deletedAt:'cycle'}];
         return chain;
       };
-      const visibleFolders=allFolders.filter(folder=>active(folder)&&canViewLibraryItem(account,folder)&&chainFor(folder).every(active));
+      const visibleFolders=allFolders.filter(folder=>active(folder)&&chainFor(folder).every(active)&&(canViewLibraryItem(account,folder)||chainFor(folder).some(parent=>canViewLibraryItem(account,parent))));
       const visibleDocs=allDocuments.filter(doc=>active(doc)&&canSeeDocument(account,doc,chainFor(doc)));
       return json({folders:visibleFolders.map(f=>safeDocumentFor(account,f)),documents:visibleDocs.map(doc=>safeDocumentFor(account,doc))});
     }
