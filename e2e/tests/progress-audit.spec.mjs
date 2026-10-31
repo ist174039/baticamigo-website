@@ -25,7 +25,7 @@ test('FR-016 FR-017 FR-019 FR-020: assessments retain scale, show comparable pro
  await login(page,'student');await page.goto('/area?tab=progress');
  await expect(page.getByRole('heading',{name:'Resumo por disciplina'})).toBeVisible();
  await expect(page.locator('.platform-progress-desktop-results:visible').getByText(subject,{exact:true})).toBeVisible();
- await expect(page.locator('.platform-progress-desktop-results:visible').getByText('+3 pontos')).toBeVisible();
+ await expect(page.locator('.platform-progress-desktop-results:visible tr').filter({hasText:subject}).getByText('+3 pontos')).toBeVisible();
  await page.locator('.platform-progress-desktop-results:visible').getByRole('button',{name:'Ver histórico de '+subject+' (2 registos)'}).click();
  const dialog=page.getByRole('dialog',{name:'Histórico de '+subject});
  await expect(dialog).toBeVisible();
