@@ -67,20 +67,20 @@ export default function DocumentLibrary({roles=[],legacyDocuments=null}) {
   },[folderId,folders]);
   const searched=!!query.trim()||!!category;
   const matchingDocs=documents.filter(doc=>{
-    if(!searched&&doc.folderId!==folderId)return false;
+    if(!searched&&folderId!=='__shared__'&&doc.folderId!==folderId)return false;
     if(category&&doc.category!==category)return false;
     const value=(doc.title+" "+doc.description+" "+doc.category).toLocaleLowerCase("pt-PT");
     return value.includes(query.trim().toLocaleLowerCase("pt-PT"));
   }).sort((a,b)=>String(b.updatedAt||"").localeCompare(String(a.updatedAt||"")));
-  const childFolders=folders.filter(f=>!searched&&f.parentId===folderId).sort((a,b)=>a.name.localeCompare(b.name,"pt"));
+  const childFolders=folders.filter(f=>!searched&&folderId!=='__shared__'&&f.parentId===folderId).sort((a,b)=>a.name.localeCompare(b.name,"pt"));
   const openPanel=name=>{setError("");setNotice("");setPanel(name);};
   const startCreate=()=>{
-    setChosen(null);setFile(null);setForm({...emptyDocument(),folderId});
+    setChosen(null);setFile(null);setForm({...emptyDocument(),folderId:folderId==='__shared__'?'':folderId});
     openPanel("createDocument");
   };
   const startFolder=(folder=null)=>{
     setChosen(folder);
-    setFolderForm(folder?{id:folder.id,name:folder.name,parentId:folder.parentId||"",permissions:permissionsFrom(folder)}:{...emptyFolder(),parentId:folderId});
+    setFolderForm(folder?{id:folder.id,name:folder.name,parentId:folder.parentId||"",permissions:permissionsFrom(folder)}:{...emptyFolder(),parentId:folderId==='__shared__'?'':folderId});
     openPanel(folder?"editFolder":"createFolder");
   };
   function permissionsFrom(obj){return {
@@ -188,7 +188,7 @@ export default function DocumentLibrary({roles=[],legacyDocuments=null}) {
   return <section className="platform-card" aria-label="Biblioteca de documentos">
     <div className="platform-list-heading"><div><p className="platform-eyebrow">Biblioteca documental</p><h2>Documentos e pastas</h2><p>Arquivo privado com histórico de versões, pesquisa e partilha por permissões.</p></div></div>
     <div className="ba-document-breadcrumbs" aria-label="Caminho atual">
-      <button type="button" onClick={()=>setFolderId("")}>Arquivo principal</button>
+      <button type="button" onClick={()=>setFolderId("")}>Arquivo principal</button><button type="button" onClick={()=>setFolderId('__shared__')} aria-current={folderId==='__shared__'?'page':undefined}>Partilhados comigo</button>
       {path.map(f=><span key={f.id}>/ <button type="button" onClick={()=>setFolderId(f.id)}>{f.name}</button></span>)}
     </div>
     <div className="ba-document-toolbar">
