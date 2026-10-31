@@ -57,7 +57,7 @@ test('FR-013: financing, expenses and donation CRUD enforce versions and least-p
  const admin=await bearer(request,'admin'),member=await bearer(request,'member');
  const post=body=>request.post('/api/platform/finance',{headers:headers(admin),data:body});
  const financing={amount:1250,receivedAt:'2026-10-05',funder:'Financiador sintético',purpose:'Projeto E2E',method:'transfer',reference:'E2E-F'};
- const expense={amount:90,paidAt:'2026-10-07',payee:'Fornecedor sintético',category:'material',purpose:'Materiais E2E',method:'transfer',reference:'E2E-E'};
+ const expense={amount:90,paidAt:'2026-10-07',payee:'Fornecedor sintético',category:'materials',purpose:'Materiais E2E',method:'transfer',reference:'E2E-E'};
  const donation={amount:12,donatedAt:'2026-10-06',donorName:'Doador fictício',anonymous:false,method:'cash',purpose:'Teste E2E'};
  for(const [type,body,createAction,updateAction,deleteAction] of [
    ['financing',financing,'record-financing','update-financing','delete-financing'],
