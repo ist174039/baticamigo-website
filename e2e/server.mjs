@@ -34,6 +34,16 @@ for(const [id,kind,attrs] of [
   ['e2e-profile-tutor','tutor',{name:'Explicador sintético',active:true}]
 ])await db.collection('platform_profiles').doc(id).set({kind,...attrs});
 await db.collection('platform_access_settings').doc('profiles').set({profiles:defaultAccessProfiles});
+
+await db.collection('noticias').doc('e2e-news-public').set({
+  titulo:'Notícia pública sintética',
+  descricao:'Conteúdo editorial exclusivamente fictício para validar a fronteira pública.',
+  data:'2026-10-01T12:00:00Z',
+  destaque:true,
+  internalOnly:'NÃO EXPOR ATRAVÉS DA API PÚBLICA',
+  privateContact:'qa-private@example.invalid'
+});
+
 const {privateKey}=generateKeyPairSync('rsa',{modulusLength:2048,privateKeyEncoding:{format:'pem',type:'pkcs8'},publicKeyEncoding:{format:'pem',type:'spki'}});
 const credential={project_id:projectId,client_email:'e2e-only@baticamigo-c0384.iam.gserviceaccount.com',private_key:privateKey};
 const next=spawn(process.execPath,['node_modules/next/dist/bin/next','dev','--hostname','127.0.0.1','--port','3106'],{
