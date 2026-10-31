@@ -14,19 +14,20 @@ async function login(page,role='student'){
  await page.getByRole('link',{name:/Abrir plataforma/}).click();
  await expect(page.locator('.private-shell')).toBeVisible();
 }
-test('FR-016 FR-017 FR-019 FR-020: assessments retain scale, show comparable progress and trace evidence to source records',async ({request,page})=>{
+test('FR-016 FR-017 FR-019 FR-020: assessments retain scale, show comparable progress and trace evidence to source records',async ({request,page},testInfo)=>{
+ const subject='Ciências E2E '+testInfo.retry;
  const admin=await token(request);
  const post=body=>request.post('/api/platform',{headers:{Authorization:'Bearer '+admin,'Content-Type':'application/json'},data:body});
  for(const [score,date,title] of [[10,'2026-09-07','Avaliação diagnóstica de Ciências'],[13,'2026-10-08','Avaliação de seguimento de Ciências']]){
-  const res=await post({action:'save-record',record:{kind:'assessment',studentId:'e2e-profile-student',title,content:'Evidência educativa sintética',subject:'Ciências E2E',period:'2026-T1',origin:'Teste E2E progressão',score,scaleMin:0,scaleMax:20,assessedOn:date,gaps:'Rever exercícios de Ciências'}});
+  const res=await post({action:'save-record',record:{kind:'assessment',studentId:'e2e-profile-student',title,content:'Evidência educativa sintética',subject,period:'2026-T1',origin:'Teste E2E progressão',score,scaleMin:0,scaleMax:20,assessedOn:date,gaps:'Rever exercícios de Ciências'}});
   expect(res.status(),await res.text()).toBe(200);
  }
  await login(page,'student');await page.goto('/area?tab=progress');
  await expect(page.getByRole('heading',{name:'Resumo por disciplina'})).toBeVisible();
- await expect(page.getByText('Ciências E2E',{exact:true}).first()).toBeVisible();
- await expect(page.getByText('+3 pontos').first()).toBeVisible();
- await page.getByRole('button',{name:/Ver histórico de Ciências E2E/}).click();
- const dialog=page.getByRole('dialog',{name:'Histórico de Ciências E2E'});
+ await expect(page.locator('.platform-progress-desktop-results:visible').getByText(subject,{exact:true})).toBeVisible();
+ await expect(page.locator('.platform-progress-desktop-results:visible').getByText('+3 pontos')).toBeVisible();
+ await page.locator('.platform-progress-desktop-results:visible').getByRole('button',{name:'Ver histórico de '+subject+' (2 registos)'}).click();
+ const dialog=page.getByRole('dialog',{name:'Histórico de '+subject});
  await expect(dialog).toBeVisible();
  await expect(dialog.getByText('Avaliação diagnóstica de Ciências')).toBeVisible();
  await expect(dialog.getByText('Avaliação de seguimento de Ciências')).toBeVisible();
