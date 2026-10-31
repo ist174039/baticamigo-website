@@ -104,6 +104,10 @@ export async function POST(request) {
       const base=sessionInput(body.session);
       assert(body.recurrence && typeof body.recurrence==='object' && !Array.isArray(body.recurrence) && Object.keys(body.recurrence).every(key=>['period','weekdays'].includes(key)),'Repetição inválida.');
       const {period,weekdays}=body.recurrence;
+      assert(['week','month','year'].includes(period),'Período de repetição inválido.',400);
+      assert(Array.isArray(weekdays)&&weekdays.length>=1&&weekdays.length<=7&&
+        weekdays.every(day=>Number.isInteger(day)&&day>=1&&day<=7)&&new Set(weekdays).size===weekdays.length,
+        'Escolha um ou mais dias da semana.',400);
       const schedule=expandLisbonSessionRecurrence(base.startsAt,base.endsAt,period,weekdays);
       const occurrences=schedule.map(times=>({...base,...times}));
       for(let index=0;index<occurrences.length;index++) for(let other=index+1;other<occurrences.length;other++) assert(!overlaps(occurrences[index],occurrences[other]),'As sessões repetidas entram em conflito entre si.');
