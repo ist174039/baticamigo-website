@@ -24,7 +24,7 @@ import AccountProfile from "./account-profile";
 import {Records, Progress, Reports, Finance} from "./modules";
 import DocumentLibrary from "./document-library";
 import { lisbonDateTimeInput, lisbonDateTimeToIso } from "../../lib/platform/time.mjs";
-import {canAccessArea,defaultAreasForRoles} from "../../lib/platform/access.mjs";
+import {areaModules,canAccessArea,defaultAreasForRoles} from "../../lib/platform/access.mjs";
 
 const roleNames = { admin: "Administração", coordinator: "Coordenação", student: "Aluno", guardian: "Encarregado", tutor: "Explicador", volunteer: "Voluntário", member: "Sócio" };
 const kindNames = { student: "Aluno", guardian: "Encarregado", tutor: "Explicador", member: "Sócio" };
@@ -135,7 +135,7 @@ export default function Platform() {
       setUser(currentUser);
       setAccountName(currentUser?.displayName || "");
       const requestedTab = new URLSearchParams(window.location.search).get("tab");
-      setTab(currentUser && ["users", "profiles"].includes(requestedTab) ? "profiles" : currentUser && requestedTab === "account" ? "account" : "overview");
+      setTab(currentUser && ["users", "profiles"].includes(requestedTab) ? "profiles" : currentUser && (areaModules.includes(requestedTab) || ["account","access","records"].includes(requestedTab)) ? requestedTab : "overview");
       setProfileEditorOpen(false);
       setSessionEditorOpen(false);
       setData(empty);
