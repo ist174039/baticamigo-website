@@ -117,7 +117,7 @@ export async function POST(request) {
         assert(people.slice(1).every(person=>person.exists && person.data().kind==='student' && person.data().active),'Aluno inválido.');
         const existing=await tx.get(collection(db,'sessions').where('endsAt','>',base.startsAt).limit(501));
         assert(existing.size<=500,'Intervalo demasiado abrangente.',409);
-        assert(!rows(existing).some(session=>occurrences.some(occurrence=>overlaps(session,occurrence))),'Conflito de horário de aluno, explicador ou sala. A série não foi criada.');
+        assert(!rows(existing).some(session=>occurrences.some(occurrence=>overlaps(session,occurrence))),'Conflito de horário de aluno, explicador ou sala. A série não foi criada.',409);
         tx.set(lock,{updatedAt:Date.now()});
         refs.forEach((ref,index)=>{
           const value={...occurrences[index],seriesId,recurrence:{frequency:'weekly',period,weekdays:[...weekdays],occurrence:index+1,total:occurrences.length}};
