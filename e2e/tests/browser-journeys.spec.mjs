@@ -1,5 +1,11 @@
 import {test,expect} from '@playwright/test';
 const password='Synthetic-Only-E2E-Password-2026';
+// Precompile the protected workspace SSR route before opening WebKit: the
+// cold Next dev compilation can otherwise interrupt its first full navigation.
+test.beforeAll(async ({request})=>{
+ const page=await request.get('/area');
+ expect(page.status()).toBe(200);
+});
 async function signIn(page,role='admin'){
  await page.goto('/platform/login');
  await page.getByLabel('Email').fill('qa-'+role+'@example.invalid');
