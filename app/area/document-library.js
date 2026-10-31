@@ -211,10 +211,10 @@ export default function DocumentLibrary({roles=[],legacyDocuments=null}) {
       {manager&&currentFolder&&!searched&&<div className="ba-panel-actions"><Button variant="outline" onClick={()=>startFolder(currentFolder)}>Configurar esta pasta</Button></div>}
       <p aria-live="polite" style={{marginTop:18,color:"#625b70"}}>{matchingDocs.length} documento(s){searched?" encontrado(s)":" nesta pasta"}</p>
       <div className="ba-document-grid" aria-label="Documentos">
-        {matchingDocs.map(doc=><button type="button" className="ba-document-card" key={doc.id} onClick={()=>loadDocument(doc)}>
+        {matchingDocs.map(doc=><button type="button" className="ba-document-card" key={doc.id} onClick={()=>trash?mutate('restore-document',{documentId:doc.id},'Documento restaurado.'):loadDocument(doc)}>
           <FileText size={24} color="#6846b9"/><strong>{doc.title}</strong>
           <small>{categories[doc.category]||"Documento"} · Versão {doc.currentVersion||1}</small>
-          <small>Atualizado {time(doc.updatedAt)}</small>
+          <small>{trash?'Selecionar para restaurar':'Atualizado '+time(doc.updatedAt)}</small>
         </button>)}
       </div>
       {!childFolders.length&&!matchingDocs.length&&<p className="ba-panel-notice">Não existem documentos visíveis nesta localização. Os documentos privados só surgem para contas autorizadas.</p>}
