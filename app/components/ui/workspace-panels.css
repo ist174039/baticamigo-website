@@ -83,3 +83,21 @@
 }
 @media(max-width:380px) {.ba-panel-footer > :is(button,a) {flex-basis:100%}}
 @media(prefers-reduced-motion:reduce){.ba-workspace-panel *{transition:none!important;animation:none!important}}
+
+/* Legacy website administration overlays: same side-panel containment contract. */
+.admin-private-shell .admin-modal-content {display:flex; flex-direction:column; min-width:0; max-width:100vw; overflow:hidden}
+.admin-private-shell .admin-modal-header {flex:0 0 auto; display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:12px; min-width:0; max-width:100%; overflow-wrap:anywhere}
+.admin-private-shell .admin-modal-content > form {flex:1 1 auto; min-height:0; min-width:0; max-width:100%; overflow-x:hidden; overflow-y:auto; overscroll-behavior:contain; padding-bottom:0}
+.admin-private-shell .admin-modal-content > form > .admin-form-group:last-child:has(button[type="submit"]) {
+  position:sticky; bottom:0; z-index:2; display:flex; flex-wrap:wrap; justify-content:flex-end;
+  gap:10px; margin:20px -16px 0; padding:14px 16px max(14px,env(safe-area-inset-bottom));
+  background:white; border-top:1px solid #e7dfee; box-shadow:0 -8px 18px #241b3810;
+}
+.admin-private-shell .admin-modal :is(input,textarea,select,.admin-form-row,.admin-form-col,.admin-tab-content) {max-width:100%; min-width:0}
+.admin-private-shell .admin-modal :is(button,.admin-btn) {max-width:100%; white-space:normal; overflow-wrap:anywhere}
+.admin-private-shell .admin-modal :is(img,video,table,pre) {max-width:100%}
+@media(max-width:760px) {
+  .admin-private-shell .admin-modal-content {width:100vw; height:100dvh; max-height:100dvh; border-radius:0}
+  .admin-private-shell .admin-modal-content > form > .admin-form-group:last-child:has(button[type="submit"]) {margin-inline:-12px; padding-inline:12px}
+  .admin-private-shell .admin-modal-content > form > .admin-form-group:last-child:has(button[type="submit"]) button {width:100%; min-height:44px}
+}
