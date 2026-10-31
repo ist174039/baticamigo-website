@@ -184,7 +184,7 @@ export async function POST(request) {
       const name=cleanText(body.name,100);
       assert(name.length>=2,'Nome de pasta demasiado curto.',400);
       const ref=folders(db).doc();
-      await ref.create({name,parentId:body.parentId?docId(body.parentId):'',...permissionInput(body.permissions||{}),ownerUid:account.uid,createdAt:stamp,updatedAt:stamp,deletedAt:null});
+      await db.runTransaction(async tx=>{tx.create(ref,{name,parentId:body.parentId?docId(body.parentId):'',...permissionInput(body.permissions||{}),ownerUid:account.uid,createdAt:stamp,updatedAt:stamp,deletedAt:null});audit(tx,db,account,'document-folder-create',ref.id);});
       return json({id:ref.id},201);
     }
     if(action==='update-folder'||action==='delete-folder') {
@@ -199,7 +199,7 @@ export async function POST(request) {
           readBounded(documents(db).where('folderId','==',ref.id))
         ]);
         assert(!children.some(active)&&!contained.some(active),'A pasta contém documentos ou subpastas. Esvazie-a primeiro.',409);
-        await ref.update({deletedAt:stamp,updatedAt:stamp});
+        await db.runTransaction(async tx=>{const fresh=await tx.get(ref);assert(fresh.exists&&active(fresh.data()),'Pasta já removida.',409);tx.update(ref,{deletedAt:stamp,updatedAt:stamp});audit(tx,db,account,'document-folder-delete',ref.id);});
         return json({deleted:true});
       }
       const name=cleanText(body.name||folder.name,100);
@@ -210,7 +210,7 @@ export async function POST(request) {
       assert(!chain.some(f=>f.id===ref.id),'Uma pasta não pode conter-se a si própria.',400);
       const permissions=body.permissions===undefined?{}:permissionInput(body.permissions);
       assert(body.permissions===undefined||owner(account,folder),'Apenas o titular gere a partilha.',403);
-      await ref.update({name,parentId,...permissions,updatedAt:stamp});
+      await db.runTransaction(async tx=>{const fresh=await tx.get(ref);assert(fresh.exists&&active(fresh.data()),'Pasta indisponível.',409);tx.update(ref,{name,parentId,...permissions,updatedAt:stamp});audit(tx,db,account,'document-folder-update',ref.id);});
       return json({saved:true});
     }
     if(['update-document','delete-document','restore-document'].includes(action)) {
@@ -220,12 +220,12 @@ export async function POST(request) {
       const ancestors=await folderAncestors(db,item.folderId||'');
       if(action==='restore-document') {
         assert(item.deletedAt&&owner(account,item),'Sem permissão para restaurar.',403);
-        await ref.update({deletedAt:null,updatedAt:stamp,revision:(item.revision||1)+1});
+        await db.runTransaction(async tx=>{const fresh=await tx.get(ref);assert(fresh.exists&&fresh.data().revision===item.revision&&fresh.data().deletedAt,'Documento foi alterado.',409);tx.update(ref,{deletedAt:null,updatedAt:stamp,revision:item.revision+1});audit(tx,db,account,'document-restore',ref.id);});
         return json({restored:true});
       }
       assert(canChangeDocument(account,item,ancestors),'Sem permissão para alterar este documento.',403);
       if(action==='delete-document') {
-        await ref.update({deletedAt:stamp,deletedBy:account.uid,updatedAt:stamp,revision:(item.revision||1)+1});
+        await db.runTransaction(async tx=>{const fresh=await tx.get(ref);assert(fresh.exists&&fresh.data().revision===item.revision&&active(fresh.data()),'Documento foi alterado.',409);tx.update(ref,{deletedAt:stamp,deletedBy:account.uid,updatedAt:stamp,revision:item.revision+1});audit(tx,db,account,'document-delete',ref.id);});
         return json({deleted:true,retained:true});
       }
       assert(Number(body.revision)===item.revision,'O documento foi alterado. Reabra os detalhes.',409);
@@ -234,7 +234,7 @@ export async function POST(request) {
       if(nextFolderId!==item.folderId) await folderForWrite(db,account,nextFolderId);
       const permissions=body.permissions===undefined?{}:permissionInput(body.permissions);
       assert(body.permissions===undefined||owner(account,item),'Apenas o titular gere a partilha.',403);
-      await ref.update({...info,folderId:nextFolderId,...permissions,updatedAt:stamp,updatedBy:account.uid,revision:(item.revision||1)+1});
+      await db.runTransaction(async tx=>{const fresh=await tx.get(ref);assert(fresh.exists&&fresh.data().revision===item.revision&&active(fresh.data()),'O documento foi alterado. Reabra os detalhes.',409);tx.update(ref,{...info,folderId:nextFolderId,...permissions,updatedAt:stamp,updatedBy:account.uid,revision:item.revision+1});audit(tx,db,account,'document-update',ref.id);});
       return json({saved:true});
     }
     assert(false,'Operação não suportada.',400);
