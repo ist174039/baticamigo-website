@@ -75,6 +75,13 @@ try {
   const bytes=await getBytes(ref(anon.storage,mediaPath));
   assert.equal(bytes.byteLength,png.byteLength,'public CMS media must remain readable');
   await rejected(uploadBytes(ref(accountAdmin.storage,'platform-files/private/test.png'),png,{contentType:'image/png'}),'private platform media must reject direct SDK writes');
+  // No authenticated client may bypass document ACLs via direct Storage SDK access.
+  const libraryPath='platform-documents/synthetic-private/version1';
+  await rejected(uploadBytes(ref(anon.storage,libraryPath),png,{contentType:'image/png'}),'anonymous client document write must fail');
+  await rejected(uploadBytes(ref(accountAdmin.storage,libraryPath),png,{contentType:'image/png'}),'admin client document write must fail (server-only storage)');
+  await rejected(getBytes(ref(anon.storage,libraryPath)),'anonymous client document read must fail');
+  await rejected(getBytes(ref(accountAdmin.storage,libraryPath)),'admin client document read must fail');
+
 
   console.log('PASS: production Firebase rules deny anonymous Firestore data reads, constrain CMS fields, preserve legacy metadata, and isolate private platform data.');
 } finally {
