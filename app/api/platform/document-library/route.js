@@ -1,6 +1,7 @@
 import {createHash,randomUUID} from 'node:crypto';
 import {context,collection,audit,json,failure,assertTrustedOrigin} from '../../../../lib/platform/server';
 import {assert,id,hasRole} from '../../../../lib/platform/domain.mjs';
+import {canAccessArea} from '../../../../lib/platform/access.mjs';
 import {validateUploadedFile} from '../../../../lib/platform/file-validation.mjs';
 import {
   DOCUMENT_CATEGORIES,DOCUMENT_MAX_BYTES,cleanText,cleanName,grants,
@@ -80,6 +81,7 @@ function versionResponse(item,record) {
 export async function GET(request) {
   try {
     const {db,account,storage}=await context(request);
+    assert(canAccessArea(account,'document'),'Esta biblioteca não está disponível para este perfil.',403);
     const url=new URL(request.url);
     const documentId=url.searchParams.get('documentId');
     if(!documentId) {
@@ -128,6 +130,7 @@ export async function GET(request) {
 export async function POST(request) {
   try {
     const {db,account,storage}=await context(request);
+    assert(canAccessArea(account,'document'),'Esta biblioteca não está disponível para este perfil.',403);
     const type=(request.headers.get('content-type')||'').toLowerCase();
     if(type.startsWith('multipart/form-data')) {
       assertTrustedOrigin(request);
