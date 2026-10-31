@@ -1,4 +1,7 @@
 /** @type {import('next').NextConfig} */
+const isolatedBrowserE2E = process.env.NODE_ENV === "development" && process.env.BATIC_LOCAL_BROWSER_E2E === "1";
+const cspScriptExtra = isolatedBrowserE2E ? " 'unsafe-eval'" : "";
+const cspConnectExtra = isolatedBrowserE2E ? " http://127.0.0.1:9099 http://127.0.0.1:8080 http://127.0.0.1:9199 ws://127.0.0.1:3106" : "";
 const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
@@ -9,7 +12,7 @@ const nextConfig = {
         { key: "X-Frame-Options", value: "DENY" },
         { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
         { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), payment=(), usb=()" },
-        { key: "Content-Security-Policy", value: "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; frame-src 'self' https://baticamigo-c0384.firebaseapp.com; script-src 'self' 'unsafe-inline' https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; font-src 'self' data: https://cdnjs.cloudflare.com; img-src 'self' data: https://firebasestorage.googleapis.com https://storage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com https://firebasestorage.googleapis.com; media-src 'self' https://firebasestorage.googleapis.com https://storage.googleapis.com; form-action 'self'; upgrade-insecure-requests" },
+        { key: "Content-Security-Policy", value: `default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; frame-src 'self' https://baticamigo-c0384.firebaseapp.com; script-src 'self' 'unsafe-inline' https://www.gstatic.com${cspScriptExtra}; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; font-src 'self' data: https://cdnjs.cloudflare.com; img-src 'self' data: https://firebasestorage.googleapis.com https://storage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com https://firebasestorage.googleapis.com${cspConnectExtra}; media-src 'self' https://firebasestorage.googleapis.com https://storage.googleapis.com; form-action 'self'; upgrade-insecure-requests` },
         { key: "Strict-Transport-Security", value: "max-age=31536000; includeSubDomains" },
         { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
         { key: "Cross-Origin-Resource-Policy", value: "same-origin" },
