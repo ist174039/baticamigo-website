@@ -52,3 +52,36 @@ test('anonymous donor input avoids storing a named financial record',async ({req
  expect(value.anonymous).toBe(true);
  expect(value.donorName).toBe('');
 });
+
+test('FR-013: financing, expenses and donation CRUD enforce versions and least-privilege',async ({request})=>{
+ const admin=await bearer(request,'admin'),member=await bearer(request,'member');
+ const post=body=>request.post('/api/platform/finance',{headers:headers(admin),data:body});
+ const financing={amount:1250,receivedAt:'2026-10-05',funder:'Financiador sintético',purpose:'Projeto E2E',method:'transfer',reference:'E2E-F'};
+ const expense={amount:90,paidAt:'2026-10-07',payee:'Fornecedor sintético',category:'material',purpose:'Materiais E2E',method:'transfer',reference:'E2E-E'};
+ const donation={amount:12,donatedAt:'2026-10-06',donorName:'Doador fictício',anonymous:false,method:'cash',purpose:'Teste E2E'};
+ for(const [type,body,createAction,updateAction,deleteAction] of [
+   ['financing',financing,'record-financing','update-financing','delete-financing'],
+   ['expense',expense,'record-expense','update-expense','delete-expense'],
+   ['donation',donation,'record-donation','update-donation','delete-donation']
+ ]){
+   const created=await post({action:createAction,[type]:body});
+   expect(created.status(),type+': '+await created.text()).toBe(201);
+   const id=(await created.json()).id;
+   const altered=await post({action:updateAction,id,version:1,[type]:{...body,notes:'Atualização E2E'}});
+   expect(altered.status(),await altered.text()).toBe(200);
+   const stale=await post({action:updateAction,id,version:1,[type]:body});
+   expect(stale.status()).toBe(409);
+   const visible=await request.get('/api/platform/finance',{headers:{Authorization:'Bearer '+admin}});
+   expect(visible.status()).toBe(200);
+   const key=type==='financing'?'financings':type==='expense'?'expenses':'donations';
+   expect((await visible.json())[key].some(item=>item.id===id&&item.version===2)).toBe(true);
+   const denied=await request.post('/api/platform/finance',{headers:headers(member),data:{action:deleteAction,id,version:2}});
+   expect(denied.status()).toBe(403);
+   const deletion=await post({action:deleteAction,id,version:2});
+   expect(deletion.status(),await deletion.text()).toBe(200);
+   const gone=await request.get('/api/platform/finance',{headers:{Authorization:'Bearer '+admin}});
+   expect((await gone.json())[key].some(item=>item.id===id)).toBe(false);
+ }
+ const negative=await post({action:'record-expense',expense:{...expense,amount:-1}});
+ expect(negative.status()).toBe(400);
+});
