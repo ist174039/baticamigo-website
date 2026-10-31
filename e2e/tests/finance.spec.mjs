@@ -1,0 +1,54 @@
+import {test,expect} from '@playwright/test';
+const password='Synthetic-Only-E2E-Password-2026';
+async function bearer(request,role){
+ const res=await request.post('http://127.0.0.1:9099/identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=e2e-only',{data:{email:'qa-'+role+'@example.invalid',password,returnSecureToken:true}});
+ expect(res.status()).toBe(200);
+ return (await res.json()).idToken;
+}
+const headers=token=>({Authorization:'Bearer '+token,'Content-Type':'application/json'});
+test('financial quota lifecycle, partial payments and member isolation',async ({request})=>{
+ const admin=await bearer(request,'admin'),member=await bearer(request,'member'),student=await bearer(request,'student');
+ const post=body=>request.post('/api/platform/finance',{headers:headers(admin),data:body});
+ const due={memberId:'e2e-profile-member',periodType:'monthly',period:'2026-10',amount:50,dueAt:'2026-11-10',notes:'Quota de teste sintética'};
+ const create=await post({action:'create-due',due});
+ expect(create.status(),await create.text()).toBe(201);
+ const dueId=(await create.json()).id;
+ const duplicate=await post({action:'create-due',due});
+ expect(duplicate.status()).toBe(409);
+ const studentRead=await request.get('/api/platform/finance',{headers:{Authorization:'Bearer '+student}});
+ expect(studentRead.status()).toBe(403);
+ const memberRead=await request.get('/api/platform/finance',{headers:{Authorization:'Bearer '+member}});
+ expect(memberRead.status()).toBe(200);
+ const memberData=await memberRead.json();
+ expect(memberData.permissions.manage).toBe(false);
+ expect(memberData.dues.map(x=>x.id)).toContain(dueId);
+ expect(memberData.donations).toEqual([]);
+ expect(memberData.financings).toEqual([]);
+ expect(memberData.expenses).toEqual([]);
+ const memberWrite=await request.post('/api/platform/finance',{headers:headers(member),data:{action:'delete-due',id:dueId,version:1}});
+ expect(memberWrite.status()).toBe(403);
+ const payment={dueId,amount:20,paidAt:'2026-10-01',method:'cash',notes:'Recebimento parcial sintético'};
+ const paid=await post({action:'record-payment',payment});
+ expect(paid.status(),await paid.text()).toBe(201);
+ const paymentId=(await paid.json()).id;
+ const overpay=await post({action:'record-payment',payment:{...payment,amount:40}});
+ expect(overpay.status()).toBe(409);
+ const deleteDue=await post({action:'delete-due',id:dueId,version:1});
+ expect(deleteDue.status()).toBe(409);
+ const deletePayment=await post({action:'delete-payment',id:paymentId,version:1});
+ expect(deletePayment.status()).toBe(200);
+ const deleteAfter=await post({action:'delete-due',id:dueId,version:1});
+ expect(deleteAfter.status()).toBe(200);
+});
+test('anonymous donor input avoids storing a named financial record',async ({request})=>{
+ const admin=await bearer(request,'admin');
+ const post=body=>request.post('/api/platform/finance',{headers:headers(admin),data:body});
+ const response=await post({action:'record-donation',donation:{amount:5,donatedAt:'2026-10-01',donorName:'Pessoa sintética',anonymous:true,method:'cash',purpose:'Teste de privacidade'}});
+ expect(response.status(),await response.text()).toBe(201);
+ const id=(await response.json()).id;
+ const get=await request.get('/api/platform/finance',{headers:{Authorization:'Bearer '+admin}});
+ expect(get.status()).toBe(200);
+ const value=(await get.json()).donations.find(x=>x.id===id);
+ expect(value.anonymous).toBe(true);
+ expect(value.donorName).toBe('');
+});
