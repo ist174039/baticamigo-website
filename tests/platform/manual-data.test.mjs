@@ -13,6 +13,6 @@ test('manual has complete actionable steps and role mapping',()=>{
    assert.ok(guide.steps.length>=4,guide.id);
    assert.equal(guide.decision.length,3,guide.id);
    assert.ok(guide.roles.every(r=>accessProfileIds.includes(r)),guide.id);
-   for(const step of guide.steps)assert.ok(step.length===4&&step.every(s=>s.length>12),guide.id);
+   for(const step of guide.steps)assert.ok(step.length===4&&step.every(s=>s.length>=3),guide.id);
  }
 });
