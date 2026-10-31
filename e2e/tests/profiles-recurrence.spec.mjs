@@ -64,9 +64,11 @@ test('FR-012: member state transition keeps associational history and enforces a
  expect(denial.status()).toBe(403);
 });
 
-test('FR-005 FR-006: recurring schedule is atomic, rejects duplicates and handles DST',async ({request})=>{
+test('FR-005 FR-006: recurring schedule is atomic, rejects duplicates and handles DST',async ({request},testInfo)=>{
  const admin=await token(request);
- const session={title:'Recorrência E2E DST',studentIds:['e2e-profile-student'],tutorId:'e2e-profile-tutor',startsAt:'2027-03-22T10:00:00Z',endsAt:'2027-03-22T11:00:00Z',room:'Sala DST E2E'};
+ const startHour=10+testInfo.retry*3;
+ const hour=String(startHour).padStart(2,'0'),endHour=String(startHour+1).padStart(2,'0');
+ const session={title:'Recorrência E2E DST',studentIds:['e2e-profile-student'],tutorId:'e2e-profile-tutor',startsAt:`2027-03-22T${hour}:00:00Z`,endsAt:`2027-03-22T${endHour}:00:00Z`,room:'Sala DST E2E'};
  const recurrence={period:'month',weekdays:[1]}; // Monday, crosses Europe/Lisbon spring transition.
  const first=await write(request,admin,{action:'create-session-series',session,recurrence});
  expect(first.status(),await first.text()).toBe(200);
@@ -77,8 +79,8 @@ test('FR-005 FR-006: recurring schedule is atomic, rejects duplicates and handle
  expect(result).toHaveLength(saved.ids.length);
  expect(new Set(result.map(s=>s.startsAt))).toHaveProperty('size',saved.ids.length);
  const offsets=result.map(s=>new Date(s.startsAt).getUTCHours());
- expect(offsets).toContain(10);
- expect(offsets).toContain(9);
+ expect(offsets).toContain(startHour);
+ expect(offsets).toContain(startHour-1);
  const collision=await write(request,admin,{action:'create-session-series',session,recurrence});
  expect(collision.status()).toBe(409);
  const readAfter=await request.get('/api/platform',{headers:{Authorization:'Bearer '+admin}});
