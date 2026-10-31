@@ -180,6 +180,7 @@ export default function PlatformLogin() {
             <Button type="submit" className="login-submit" disabled={busy}><span>{busy ? "Aguarde…" : "Entrar"}</span><span aria-hidden="true">→</span></Button>
           </form>}
         </>}
+        <a className="login-home-link" href="/platform/manual">Manual de utilização da plataforma</a>
         <a className="login-home-link" href="/">← Voltar ao site</a>
       </Card>
     </section>
