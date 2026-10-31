@@ -1,23 +1,10 @@
 "use client";
+import {Sheet} from "./sheet";
 
-import { useEffect, useRef } from "react";
-
-/** Controlled, accessible modal built on the browser's native dialog semantics. */
-export function Dialog({ open, onOpenChange, children, className = "", ariaLabel = "Caixa de diálogo" }) {
-  const ref = useRef(null);
-
-  useEffect(() => {
-    const dialog = ref.current;
-    if (!dialog) return;
-    if (open && !dialog.open) dialog.showModal();
-    if (!open && dialog.open) dialog.close();
-  }, [open]);
-
-  return <dialog
-    ref={ref}
-    className={`shadcn-dialog ${className}`}
-    aria-label={ariaLabel}
-    onCancel={(event) => { event.preventDefault(); onOpenChange(false); }}
-    onClick={(event) => { if (event.target === event.currentTarget) onOpenChange(false); }}
-  >{children}</dialog>;
+/** Backward-compatible alias. All private area side panels share Sheet's
+ * accessible native-dialog lifecycle, Escape, focus restoration and backdrop.
+ * The existing styling classes remain unchanged while layout migration proceeds. */
+export function Dialog({open,onOpenChange,children,className="",ariaLabel="Painel lateral"}) {
+  return <Sheet open={open} onOpenChange={onOpenChange} ariaLabel={ariaLabel}
+    baseClass="shadcn-dialog" className={className}>{children}</Sheet>;
 }
