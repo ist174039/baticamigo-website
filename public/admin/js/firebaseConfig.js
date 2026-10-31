@@ -8,7 +8,6 @@ const firebaseConfig = {
   storageBucket: "baticamigo-c0384.firebasestorage.app",
   messagingSenderId: "710064415749",
   appId: "1:710064415749:web:064e7ff27b4359a4a3686c",
-  measurementId: "G-75HE0LN9JF",
 }
 
 // Use the same Firebase Auth persistence namespace as /platform/login.

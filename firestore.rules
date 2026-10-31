@@ -1,0 +1,102 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isAdmin() {
+      let accountPath = /databases/$(database)/documents/platform_accounts/$(request.auth.uid);
+      return request.auth != null && request.auth.token.get('email_verified', false) == true && (
+        (
+          exists(accountPath) &&
+          get(accountPath).data.get('active', false) == true &&
+          get(accountPath).data.get('suspended', false) != true &&
+          (
+            get(accountPath).data.get('role', '') == 'admin' ||
+            get(accountPath).data.get('roles', []).hasAny(['admin'])
+          )
+        ) ||
+        (!exists(accountPath) && request.auth.token.get('admin', false) == true)
+      );
+    }
+
+    function allowedCreate(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    function allowedUpdate(fields) {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(fields);
+    }
+
+    function textField(name, max) {
+      let value = request.resource.data.get(name, '');
+      return value is string && value.size() <= max;
+    }
+
+    function listField(name, max) {
+      let value = request.resource.data.get(name, []);
+      return value is list && value.size() <= max;
+    }
+
+    function boolField(name) {
+      return request.resource.data.get(name, false) is bool;
+    }
+
+    // Editorial collections are intentionally public-readable. Only verified
+    // BaticAmigo administrators may mutate them from the CMS, and only through
+    // the fields used by the current editorial model.
+    match /membros/{document} {
+      allow read: if isAdmin();
+      allow create: if isAdmin() && allowedCreate(['nome','cargo','descricao','imagem']) && textField('nome',120) && textField('cargo',120) && textField('descricao',4000) && textField('imagem',2000);
+      allow update: if isAdmin() && allowedUpdate(['nome','cargo','descricao','imagem']) && textField('nome',120) && textField('cargo',120) && textField('descricao',4000) && textField('imagem',2000);
+      allow delete: if isAdmin();
+    }
+    match /parceiros/{document} {
+      allow read: if isAdmin();
+      allow create: if isAdmin() && allowedCreate(['nome','descricao','website','logo']) && textField('nome',160) && textField('descricao',4000) && textField('website',2000) && textField('logo',2000);
+      allow update: if isAdmin() && allowedUpdate(['nome','descricao','website','logo']) && textField('nome',160) && textField('descricao',4000) && textField('website',2000) && textField('logo',2000);
+      allow delete: if isAdmin();
+    }
+    match /eventos/{document} {
+      allow read: if isAdmin();
+      allow create: if isAdmin() && allowedCreate(['nome','tipo','data','descricao','parceiros','flags','destaque','imagem','galeria']) && textField('nome',180) && textField('tipo',100) && textField('descricao',8000) && textField('imagem',2000) && listField('parceiros',50) && listField('flags',30) && listField('galeria',50) && boolField('destaque');
+      allow update: if isAdmin() && allowedUpdate(['nome','tipo','data','descricao','parceiros','flags','destaque','imagem','galeria']) && textField('nome',180) && textField('tipo',100) && textField('descricao',8000) && textField('imagem',2000) && listField('parceiros',50) && listField('flags',30) && listField('galeria',50) && boolField('destaque');
+      allow delete: if isAdmin();
+    }
+    match /programas/{document} {
+      allow read: if isAdmin();
+      allow create: if isAdmin() && allowedCreate(['nome','descricao','data_inicio','data_fim','patrocinadores']) && textField('nome',180) && textField('descricao',8000) && listField('patrocinadores',50);
+      allow update: if isAdmin() && allowedUpdate(['nome','descricao','data_inicio','data_fim','patrocinadores']) && textField('nome',180) && textField('descricao',8000) && listField('patrocinadores',50);
+      allow delete: if isAdmin();
+    }
+    match /agenda/{document} {
+      allow read: if isAdmin();
+      allow create: if isAdmin() && allowedCreate(['nome','tipo','flag','descricao','data_inicio','data_fim','parceiros','inscricao','destaque','galeria']) && textField('nome',180) && textField('tipo',100) && textField('flag',100) && textField('descricao',8000) && textField('inscricao',2000) && listField('parceiros',50) && listField('galeria',50) && boolField('destaque');
+      allow update: if isAdmin() && allowedUpdate(['nome','tipo','flag','descricao','data_inicio','data_fim','parceiros','inscricao','destaque','galeria']) && textField('nome',180) && textField('tipo',100) && textField('flag',100) && textField('descricao',8000) && textField('inscricao',2000) && listField('parceiros',50) && listField('galeria',50) && boolField('destaque');
+      allow delete: if isAdmin();
+    }
+    match /noticias/{document} {
+      allow read: if isAdmin();
+      allow create: if isAdmin() && allowedCreate(['titulo','data','descricao','link','destaque','imagem']) && textField('titulo',220) && textField('descricao',8000) && textField('link',2000) && textField('imagem',2000) && boolField('destaque');
+      allow update: if isAdmin() && allowedUpdate(['titulo','data','descricao','link','destaque','imagem']) && textField('titulo',220) && textField('descricao',8000) && textField('link',2000) && textField('imagem',2000) && boolField('destaque');
+      allow delete: if isAdmin();
+    }
+    match /site_config/{document} {
+      allow read: if isAdmin();
+      allow create: if isAdmin() && document == 'contact' && allowedCreate(['intro','email','address','instagram']) && textField('intro',2000) && textField('email',254) && textField('address',500) && textField('instagram',2000);
+      allow update: if isAdmin() && document == 'contact' && allowedUpdate(['intro','email','address','instagram']) && textField('intro',2000) && textField('email',254) && textField('address',500) && textField('instagram',2000);
+      allow delete: if isAdmin() && document == 'contact';
+    }
+
+    // Contact submissions are mediated by /api/contact using the Admin SDK.
+    // The CMS may read/update/delete messages after its administrator checks.
+    match /contato/{document} {
+      allow read, update, delete: if isAdmin();
+    }
+
+    // The private platform uses the platform_* namespace and is not listed in
+    // any allow rule above, so it reaches the fail-closed catch-all below.
+    // Unknown collections fail closed.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

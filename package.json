@@ -2,13 +2,21 @@
   "name": "baticamigo-website",
   "version": "1.0.0",
   "private": true,
+  "engines": {
+    "node": ">=24.12.0 <25"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "test": "node --test tests/platform/*.test.mjs",
-    "check:secrets": "node scripts/check-secrets.mjs"
+    "check:secrets": "node scripts/check-secrets.mjs",
+    "check:production-readiness": "node scripts/check-production-readiness.mjs",
+    "check:release": "node scripts/check-release-policy.mjs",
+    "check:sbom": "node scripts/generate-sbom.mjs /tmp/baticamigo-sbom.json && node scripts/check-sbom.mjs /tmp/baticamigo-sbom.json",
+    "check:change-title": "node scripts/check-change-title.mjs",
+    "verify:production": "node scripts/verify-production.mjs"
   },
   "dependencies": {
     "class-variance-authority": "^0.7.1",

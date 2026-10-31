@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "signals": [
+    {
+      "id": "http-5xx",
+      "source": "vercel-runtime",
+      "severity": "high",
+      "windowMinutes": 5,
+      "threshold": "to-approve",
+      "piiAllowed": false,
+      "runbook": "docs/operations/recovery-and-incidents.md"
+    },
+    {
+      "id": "auth-failures",
+      "source": "application",
+      "severity": "medium",
+      "windowMinutes": 15,
+      "threshold": "to-approve",
+      "piiAllowed": false,
+      "runbook": "docs/operations/recovery-and-incidents.md",
+      "eventName": "auth-failure"
+    },
+    {
+      "id": "platform-api-errors",
+      "source": "application",
+      "severity": "high",
+      "windowMinutes": 5,
+      "threshold": "to-approve",
+      "piiAllowed": false,
+      "runbook": "docs/operations/recovery-and-incidents.md",
+      "eventName": "platform-api-error"
+    },
+    {
+      "id": "security-audit-high",
+      "source": "platform_audit",
+      "severity": "high",
+      "windowMinutes": 5,
+      "threshold": "to-approve",
+      "piiAllowed": false,
+      "runbook": "docs/operations/audit-monitoring.md"
+    },
+    {
+      "id": "availability",
+      "source": "external-probe",
+      "severity": "high",
+      "windowMinutes": 5,
+      "threshold": "to-approve",
+      "piiAllowed": false,
+      "runbook": "docs/operations/recovery-and-incidents.md"
+    }
+  ],
+  "requiredOperationalEvidence": [
+    "owner",
+    "channel",
+    "testAlertAt",
+    "reviewer",
+    "productionEnvironment",
+    "evidenceUrl"
+  ]
+}

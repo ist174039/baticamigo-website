@@ -22,8 +22,9 @@ import AreaUserManager from "./user-manager";
 import SessionEditor from "./session-editor";
 import AccountProfile from "./account-profile";
 import {Records, Progress, Reports, Finance} from "./modules";
+import DocumentLibrary from "./document-library";
 import { lisbonDateTimeInput, lisbonDateTimeToIso } from "../../lib/platform/time.mjs";
-import {canAccessArea,defaultAreasForRoles} from "../../lib/platform/access.mjs";
+import {areaModules,canAccessArea,defaultAreasForRoles} from "../../lib/platform/access.mjs";
 
 const roleNames = { admin: "Administração", coordinator: "Coordenação", student: "Aluno", guardian: "Encarregado", tutor: "Explicador", volunteer: "Voluntário", member: "Sócio" };
 const kindNames = { student: "Aluno", guardian: "Encarregado", tutor: "Explicador", member: "Sócio" };
@@ -134,7 +135,7 @@ export default function Platform() {
       setUser(currentUser);
       setAccountName(currentUser?.displayName || "");
       const requestedTab = new URLSearchParams(window.location.search).get("tab");
-      setTab(currentUser && ["users", "profiles"].includes(requestedTab) ? "profiles" : currentUser && requestedTab === "account" ? "account" : "overview");
+      setTab(currentUser && ["users", "profiles"].includes(requestedTab) ? "profiles" : currentUser && (areaModules.includes(requestedTab) || ["account","access","records"].includes(requestedTab)) ? requestedTab : "overview");
       setProfileEditorOpen(false);
       setSessionEditorOpen(false);
       setData(empty);
@@ -339,7 +340,8 @@ export default function Platform() {
         {tab === "account" && admin && <AccountProfile user={user} roles={roles} profiles={data.profiles.filter(profile => (data.account?.profileIds || []).includes(profile.id))} displayName={accountName} onDisplayNameChange={setAccountName} onChangePassword={() => { setPasswordError(""); setPasswordMessage(""); setPasswordDialogOpen(true); }} />}
         {tab === "access" && admin && <AreaUserManager view="permissions" onNavigate={navigate} />}
         {tab === "records" && admin && <AreaUserManager view="records" onNavigate={navigate} />}
-        {recordKinds.includes(tab) && <Records key={tab} kind={tab} data={data} user={user} manager={manager} busy={busy} onSave={saveModule} onMarkAbsent={markAbsent}/>}
+        {tab === "document" && <DocumentLibrary roles={roles} legacyDocuments={<Records kind="document" data={data} user={user} manager={manager} busy={busy} onSave={saveModule} onMarkAbsent={markAbsent}/>}/>} 
+        {recordKinds.includes(tab) && tab !== "document" && <Records key={tab} kind={tab} data={data} user={user} manager={manager} busy={busy} onSave={saveModule} onMarkAbsent={markAbsent}/>}
         {tab === "finance" && (admin || roles.includes("member")) && <Finance key={user.uid} user={user}/>}
         {tab === "progress" && <Progress data={data} manager={manager}/>}
         {tab === "reports" && manager && <Reports data={data}/>}

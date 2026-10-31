@@ -1,0 +1,20 @@
+{
+  "id": "",
+  "releaseSha": "",
+  "environment": "isolated",
+  "backupId": "",
+  "backupPointAt": "",
+  "startedAt": "",
+  "completedAt": "",
+  "approvedRpoMinutes": null,
+  "approvedRtoMinutes": null,
+  "observedRpoMinutes": null,
+  "observedRtoMinutes": null,
+  "integrityValidated": false,
+  "authorizationValidated": false,
+  "rollbackValidated": false,
+  "owner": "",
+  "reviewer": "",
+  "result": "blocked",
+  "artifact": ""
+}

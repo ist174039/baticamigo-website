@@ -1,5 +1,12 @@
 # BaticAmigo — área de apoio escolar (MVP)
 
+> **Estado atual do release candidate — 25/10/2026**
+>
+> O conteúdo histórico abaixo documenta a evolução da implementação e não deve ser lido como fotografia integral do candidato atual. No SHA de release candidate, os **27 requisitos FR-001..FR-020 e NFR-001..NFR-007** têm implementação/evidência técnica rastreada, mas **nenhum requisito é declarado Verificado por esta página**. O repositório contém `firebase.json`, `firestore.rules` e `storage.rules`; o Quality Gate testa Rules em emuladores. A aprovação de produção continua bloqueada por Rules/IAM reais, privacidade/retenção/DPIA, backup/restauro real e RPO/RTO, acessibilidade/usabilidade manual, hosting/domínio e governação/GO.
+>
+> Fonte de entrega atual: PR #4, branch `release/market-readiness-2026-10-25`. A `main` permanece a fonte de verdade publicada até eventual merge aprovado.
+
+
 Implementação inicial da evolução digital descrita no Notion. Website público mantido. Referências: [Project Initialization](https://app.notion.com/p/19cbe9392b6082dc8697014c91500d20), [Requirements](https://app.notion.com/p/87bbe9392b608284864101b73aa81931), [07 — Normas e Boas Práticas](https://app.notion.com/p/a9fbe9392b6083b19aab814ba048739a).
 
 ## O que esta entrega implementa

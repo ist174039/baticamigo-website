@@ -13,3 +13,8 @@ Estado: preparado, não exercitado. Responsável, contactos, RPO/RTO, retenção
 ## Métricas de entrega propostas
 
 DORA: frequência apenas de produção; lead time de alteração até produção; percentagem de entregas com incidente; tempo de recuperação de incidentes. Faltam ledger fiável de produção, classificação de falhas e responsável. Não contabilizar preview/build como produção nem inventar valores.
+
+
+## Tabletop evidence
+
+Use `docs/operations/incident-exercise-template.json` and validate it with `validateIncidentExercise`. A passed tabletop must reference known scenarios, a release SHA, owner/moderator/reviewer, an evidence artifact and explicit follow-up actions (including explicit no-action records when appropriate).

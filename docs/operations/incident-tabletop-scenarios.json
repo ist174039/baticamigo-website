@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "scenarios": [
+    {
+      "id": "IR-01",
+      "title": "Broken object authorization",
+      "trigger": {
+        "authBypass": true
+      },
+      "expectedSeverity": "SEV1",
+      "objectives": [
+        "contain access",
+        "preserve minimal evidence",
+        "revoke affected sessions",
+        "assess notification obligations",
+        "verify relationship authorization before recovery"
+      ]
+    },
+    {
+      "id": "IR-02",
+      "title": "Production outage",
+      "trigger": {
+        "serviceUnavailable": true
+      },
+      "expectedSeverity": "SEV1",
+      "objectives": [
+        "identify affected deployment",
+        "decide rollback",
+        "validate public/private smoke",
+        "record recovery time"
+      ]
+    },
+    {
+      "id": "IR-03",
+      "title": "Data corruption/loss",
+      "trigger": {
+        "dataLoss": true
+      },
+      "expectedSeverity": "SEV1",
+      "objectives": [
+        "freeze destructive changes",
+        "identify approved backup",
+        "restore isolated first",
+        "validate integrity",
+        "measure RPO/RTO"
+      ]
+    },
+    {
+      "id": "IR-04",
+      "title": "Degraded external dependency",
+      "trigger": {
+        "limitedDegradation": true
+      },
+      "expectedSeverity": "SEV2",
+      "objectives": [
+        "identify dependency",
+        "apply safe workaround",
+        "avoid privilege bypass",
+        "communicate status",
+        "record follow-up"
+      ]
+    }
+  ],
+  "requiredExerciseEvidence": [
+    "owner",
+    "moderator",
+    "reviewer",
+    "executedAt",
+    "scenarioIds",
+    "result",
+    "artifact",
+    "actions"
+  ]
+}

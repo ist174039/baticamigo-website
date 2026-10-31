@@ -1,12 +1,13 @@
 import {readModules,writeModule} from '../../../lib/platform/modules-server';
-import {context,collection,audit,json,failure} from '../../../lib/platform/server';
+import {context,collection,audit,json,failure,assertJsonRequest} from '../../../lib/platform/server';
 import {assert,id,profileInput,sessionInput,manages,hasRole,profileIds,canReadStudent,canAttend,canAddUnplannedAttendee,overlaps,attendanceVersion} from '../../../lib/platform/domain.mjs';
-import {canAccessArea} from '../../../lib/platform/access.mjs';
+import {canAccessArea,sharedCalendarMetadata,sessionsWithAuthorizedAttendees} from '../../../lib/platform/access.mjs';
 import {expandLisbonSessionRecurrence} from '../../../lib/platform/time.mjs';
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
 const rows=(snapshot)=>snapshot.docs.map(d=>({...d.data(),id:d.id}));
 async function readJson(request) {
+  assertJsonRequest(request);
   const length=Number(request.headers.get('content-length') || 0); assert(length<=16384,'Pedido demasiado grande.',413);
   const reader=request.body?.getReader(); assert(reader,'Pedido vazio.'); const chunks=[]; let size=0;
   try { while(true) { const {done,value}=await reader.read(); if(done) break; size+=value.byteLength; if(size>16384) { await reader.cancel(); assert(false,'Pedido demasiado grande.',413); } chunks.push(value); } }
@@ -45,24 +46,28 @@ export async function GET(request) {
       // Tutors see only the names of pupils in their assigned sessions.
       const assigned=[...new Set(sessions.filter(s=>canAttend(account,s)).flatMap(s=>s.studentIds))];
       for(const student of assigned) if(!profiles.some(p=>p.id===student)) { const p=await collection(db,'profiles').doc(id(student)).get(); if(p.exists) profiles.push({id:p.id,kind:'student',name:p.data().name,active:p.data().active}); }
-      profiles=profiles.map(p=>{
-        if(profileIds(account).includes(p.id)) return p;
-        if(canReadStudent(account,p)) return hasRole(account,'guardian') && !manages(account) ? {id:p.id,kind:p.kind,name:p.name,active:p.active} : p;
-        return {id:p.id,kind:p.kind,name:p.name,active:p.active};
-      });
       sessions=sessions.map(s=>canAttend(account,s) ? s : {...s,studentIds:s.studentIds.filter(student=>studentIds.includes(student))});
     }
     const personalSessions=sessions;
     if(!manages(account)&&canAccessArea(account,'sessions')) {
       const allSessions=await bounded(collection(db,'sessions'));
-      const visibleById=new Map(allSessions.map(({id,title,tutorId,room,startsAt,endsAt,status,recurrence})=>[id,{id,title,tutorId,room,startsAt,endsAt,status,recurrence,studentIds:[]}]));
+      const visibleById=new Map(allSessions.map(session=>[session.id,sharedCalendarMetadata(session)]));
       for(const session of personalSessions) visibleById.set(session.id,session);
       sessions=[...visibleById.values()];
     }
     // Only expose names of the tutors already present on this account's sessions.
-    for(const tutorId of new Set(sessions.map(s=>s.tutorId))) if(!profiles.some(p=>p.id===tutorId)) { const tutor=await collection(db,'profiles').doc(id(tutorId)).get(); if(tutor.exists) profiles.push({id:tutor.id,kind:'tutor',name:tutor.data().name,active:tutor.data().active}); }
+    for(const tutorId of new Set(sessions.map(s=>s.tutorId).filter(Boolean))) if(!profiles.some(p=>p.id===tutorId)) { const tutor=await collection(db,'profiles').doc(id(tutorId)).get(); if(tutor.exists) profiles.push({id:tutor.id,kind:'tutor',name:tutor.data().name,active:tutor.data().active}); }
+    // Resolve records while relationship data is still complete. Profile
+    // redaction below is only for the external response, never authorization.
     const modules=await readModules(db,account,profiles,personalSessions,storage);
-    const attendance=await readAttendance(db,personalSessions);
+    // Calendar metadata can be visible to every account, but attendance stays
+    // scoped to the attendees already filtered for this account above.
+    const attendance=await readAttendance(db,sessionsWithAuthorizedAttendees(sessions));
+    if(!manages(account)) profiles=profiles.map(p=>{
+      if(profileIds(account).includes(p.id)) return p;
+      if(canReadStudent(account,p)) return hasRole(account,'guardian') ? {id:p.id,kind:p.kind,name:p.name,active:p.active} : p;
+      return {id:p.id,kind:p.kind,name:p.name,active:p.active};
+    });
     const uniqueProfiles=[...new Map(profiles.map(p=>[p.id,p])).values()];
     const visibleProfiles=canAccessArea(account,'profiles')?uniqueProfiles:uniqueProfiles.map(({id,kind,name,active,schoolYear,ageBand,subjects,membershipStatus,memberNumber})=>({id,kind,name,active,schoolYear,ageBand,subjects,membershipStatus,memberNumber}));
     const visibleSessions=canAccessArea(account,'sessions')?sessions:canAccessArea(account,'reports')?sessions.map(({id,studentIds,tutorId,startsAt,endsAt,status})=>({id,studentIds,tutorId,startsAt,endsAt,status})):[];
@@ -99,6 +104,10 @@ export async function POST(request) {
       const base=sessionInput(body.session);
       assert(body.recurrence && typeof body.recurrence==='object' && !Array.isArray(body.recurrence) && Object.keys(body.recurrence).every(key=>['period','weekdays'].includes(key)),'Repetição inválida.');
       const {period,weekdays}=body.recurrence;
+      assert(['week','month','year'].includes(period),'Período de repetição inválido.',400);
+      assert(Array.isArray(weekdays)&&weekdays.length>=1&&weekdays.length<=7&&
+        weekdays.every(day=>Number.isInteger(day)&&day>=1&&day<=7)&&new Set(weekdays).size===weekdays.length,
+        'Escolha um ou mais dias da semana.',400);
       const schedule=expandLisbonSessionRecurrence(base.startsAt,base.endsAt,period,weekdays);
       const occurrences=schedule.map(times=>({...base,...times}));
       for(let index=0;index<occurrences.length;index++) for(let other=index+1;other<occurrences.length;other++) assert(!overlaps(occurrences[index],occurrences[other]),'As sessões repetidas entram em conflito entre si.');
@@ -112,7 +121,7 @@ export async function POST(request) {
         assert(people.slice(1).every(person=>person.exists && person.data().kind==='student' && person.data().active),'Aluno inválido.');
         const existing=await tx.get(collection(db,'sessions').where('endsAt','>',base.startsAt).limit(501));
         assert(existing.size<=500,'Intervalo demasiado abrangente.',409);
-        assert(!rows(existing).some(session=>occurrences.some(occurrence=>overlaps(session,occurrence))),'Conflito de horário de aluno, explicador ou sala. A série não foi criada.');
+        assert(!rows(existing).some(session=>occurrences.some(occurrence=>overlaps(session,occurrence))),'Conflito de horário de aluno, explicador ou sala. A série não foi criada.',409);
         tx.set(lock,{updatedAt:Date.now()});
         refs.forEach((ref,index)=>{
           const value={...occurrences[index],seriesId,recurrence:{frequency:'weekly',period,weekdays:[...weekdays],occurrence:index+1,total:occurrences.length}};

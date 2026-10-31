@@ -1,5 +1,5 @@
 import { randomBytes } from "node:crypto";
-import { context, collection, audit, json, failure } from "../../../../lib/platform/server";
+import { context, collection, audit, json, failure, assertJsonRequest } from "../../../../lib/platform/server";
 import { PlatformError, assert, accountInput, hasRole, id, profileInput, profileIds, profileDependencyReasons, profileKindMatchesRoles } from "../../../../lib/platform/domain.mjs";
 import {areaModules,defaultAccessProfiles,effectiveAccountAreas,isBootstrapAdmin,validateAccessProfiles} from "../../../../lib/platform/access.mjs";
 import {canAccessArea} from "../../../../lib/platform/access.mjs";
@@ -11,6 +11,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 async function readJson(request) {
+  assertJsonRequest(request);
   const size = Number(request.headers.get("content-length") || 0);
   assert(size <= 16384, "Pedido demasiado grande.", 413);
   const reader = request.body?.getReader();
@@ -52,7 +53,7 @@ async function listAuthUsers(auth) {
   return users;
 }
 
-export const validateLinks = (tx, db, uid, roles, ids, newProfiles = []) => validateUserLinks(tx, db, uid, roles, ids, newProfiles, collection);
+export const validateLinks = (tx, db, uid, roles, ids, newProfiles = [], _collection = collection, options = {}) => validateUserLinks(tx, db, uid, roles, ids, newProfiles, collection, options);
 
 function bootstrapAdmin(user) {
   return isBootstrapAdmin(user?.email,user?.emailVerified);

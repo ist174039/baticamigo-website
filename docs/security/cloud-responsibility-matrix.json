@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "reviewedAt": null,
+  "services": [
+    {
+      "service": "Firebase Authentication",
+      "role": "processor-to-confirm",
+      "dpaConfirmed": false,
+      "regionConfirmed": false,
+      "subprocessorsReviewed": false,
+      "retentionReviewed": false,
+      "incidentProcessReviewed": false,
+      "owner": ""
+    },
+    {
+      "service": "Cloud Firestore",
+      "role": "processor-to-confirm",
+      "dpaConfirmed": false,
+      "regionConfirmed": false,
+      "subprocessorsReviewed": false,
+      "retentionReviewed": false,
+      "incidentProcessReviewed": false,
+      "owner": ""
+    },
+    {
+      "service": "Firebase Storage",
+      "role": "processor-to-confirm",
+      "dpaConfirmed": false,
+      "regionConfirmed": false,
+      "subprocessorsReviewed": false,
+      "retentionReviewed": false,
+      "incidentProcessReviewed": false,
+      "owner": ""
+    },
+    {
+      "service": "Vercel",
+      "role": "processor-to-confirm",
+      "dpaConfirmed": false,
+      "regionConfirmed": false,
+      "subprocessorsReviewed": false,
+      "retentionReviewed": false,
+      "incidentProcessReviewed": false,
+      "owner": ""
+    },
+    {
+      "service": "GitHub Actions",
+      "role": "development-service",
+      "dpaConfirmed": false,
+      "regionConfirmed": false,
+      "subprocessorsReviewed": false,
+      "retentionReviewed": false,
+      "incidentProcessReviewed": false,
+      "owner": ""
+    }
+  ]
+}

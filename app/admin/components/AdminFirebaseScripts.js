@@ -47,7 +47,7 @@ export default function AdminFirebaseScripts() {
       if (!cancelled) document.dispatchEvent(new Event("DOMContentLoaded"));
     }
     start().catch((error) => {
-      console.error("Erro ao iniciar administração:", error);
+      console.error("Erro ao iniciar administração.");
       const errorBox = document.getElementById("login-error") || document.getElementById("admin-init-error");
       if (errorBox) {
         errorBox.textContent = "Não foi possível iniciar o acesso administrativo. Atualize a página e tente novamente.";
