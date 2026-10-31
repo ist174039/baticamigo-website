@@ -6,7 +6,17 @@ async function signIn(page,role='admin'){
  await page.getByLabel('Palavra-passe').fill(password);
  await page.getByRole('button',{name:'Entrar',exact:true}).click();
  await page.getByRole('link',{name:/Abrir plataforma/}).click();
- await expect(page.locator('.private-shell')).toBeVisible();
+ // During the first cold WebKit navigation, Next dev Fast Refresh can cancel
+ // the /platform/area request and leave the authorized space chooser visible.
+ // Retry only that interrupted navigation, never an authorization error.
+ try {
+  await expect(page.locator('.private-shell')).toBeVisible({timeout:5000});
+ } catch(error) {
+  if(new URL(page.url()).pathname!=='/platform/login') throw error;
+  await expect(page.getByRole('link',{name:/Abrir plataforma/})).toBeVisible();
+  await page.getByRole('link',{name:/Abrir plataforma/}).click();
+  await expect(page.locator('.private-shell')).toBeVisible();
+ }
 }
 test('FR-010 NFR-003 NFR-004: document folder creation, search and panel dismissal via browser',async ({page})=>{
  await signIn(page);
