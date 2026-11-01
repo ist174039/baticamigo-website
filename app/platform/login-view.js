@@ -58,6 +58,12 @@ export default function PlatformLogin() {
         setChecking(false);
       } catch (failure) {
         if (!live || current !== revision.current) return;
+        if (failure.status === 403 && failure.message === "Confirme o endereço de email antes de aceder à plataforma.") {
+          setVerificationUser(user);
+          setError("Confirme o endereço desta conta para continuar.");
+          setChecking(false);
+          return;
+        }
         if (failure.status === 403) {
           try {
             const token = await user.getIdToken();
@@ -197,3 +203,4 @@ export default function PlatformLogin() {
     </aside>
   </main>;
 }
+
