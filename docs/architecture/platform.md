@@ -10,7 +10,7 @@ O servidor valida tokens, revogação, conta ativa, papéis e perfis ativos. Aut
 
 ## ADR: manter a infraestrutura Firebase existente
 
-Evitar migração de fornecedor e dados neste incremento. Novas coleções usam `platform_`. SDK Admin ignora Security Rules, pelo que a API verifica cada autorização; isso não garante segurança de acessos diretos. A revisão remota de IAM/Rules continua pendente.
+Evitar migração de fornecedor e dados neste incremento. Novas coleções usam `platform_`. SDK Admin ignora Security Rules, pelo que a API valida cada autorização no servidor. O acesso direto às coleções privadas `platform_*` falha fechado nas Rules versionadas e é testado em emuladores; a aplicação efetiva dessas Rules e o IAM/service accounts do ambiente de produção continuam por comprovar.
 
 ## ADR: conservar notas e escalas
 
@@ -22,4 +22,4 @@ A área adota a composição do admin: navegação lateral escura, cartões clar
 
 ## Qualidade e limites
 
-Usar ISO/IEC 25010:2023 como vocabulário de revisão, sem alegar conformidade. Evidência local: testes de domínio, permissões negativas, escalas, XSS e tempo, lint, build e auditoria de dependências. Faltam testes com contas reais por papel, Rules/IAM remotos, teclado/leitor de ecrã/contraste e ensaio com utilizadores. Não foram medidos tempos de tarefa, Core Web Vitals, disponibilidade nem DORA. Não inferir desempenho de um build bem-sucedido.
+Usar ISO/IEC 25010:2023 como vocabulário de revisão, sem alegar conformidade. Evidência automatizada no GitHub Actions: testes de domínio, permissões negativas, escalas, XSS e tempo, lint, build, auditoria de dependências, Rules/Auth/Storage em emuladores, smoke e axe automático. A suite Playwright executa percursos críticos em Chromium, Firefox e WebKit com dados sintéticos. Continuam pendentes Rules/IAM reais, validação manual de browsers/viewports/zoom/teclado/leitores de ecrã, desempenho em ambiente hospedado e ensaio com utilizadores. Não inferir disponibilidade, conformidade, DORA ou usabilidade real a partir de CI verde.

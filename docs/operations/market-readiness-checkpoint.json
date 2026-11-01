@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-25",
+  "checkpointType": "market-readiness-audit",
+  "headSha": "6fd4e9527b4550d80fee7b704f79c2e815e4a9e4",
+  "metricScores": {
+    "functional": {
+      "score": 100,
+      "basis": "20/20 FR marked implemented-observed in docs/requirements-evidence.json"
+    },
+    "documentation": {
+      "score": 70,
+      "basis": "PDD sections 00-14 now carry a current checkpoint, but row-level Notion reconciliation and historical stale states remain incomplete"
+    },
+    "architecture": {
+      "score": 80,
+      "basis": "as-built architecture and canonical OpenAPI reconciled; Notion component/sequence/data rows and production IAM/Rules remain to verify"
+    },
+    "requirementsCoverage": {
+      "score": 100,
+      "basis": "27/27 canonical requirements represented in docs/requirements-evidence.json"
+    },
+    "tests": {
+      "score": 80,
+      "basis": "150 automated tests and CI integration gates pass at prior green checkpoint; required manual/external validation still pending"
+    },
+    "evidence": {
+      "score": 39,
+      "basis": "16 technical-evidence controls out of 41 applicable controls; other modes require external/manual/operational evidence before completion"
+    },
+    "risks": {
+      "score": 10,
+      "basis": "material market risks remain open: main divergence, production/domain, privacy/cloud/continuity/manual QA; no formal acceptance/closure"
+    },
+    "traceability": {
+      "score": 85,
+      "basis": "repository traceability is complete for 27 requirements, but exhaustive Notion row relation verification is unavailable/pending"
+    },
+    "deliveryReadiness": {
+      "score": 0,
+      "basis": "0/15 BATIC_* production-readiness evidence signals observed in the Vercel production environment"
+    }
+  },
+  "overallScore": 63.35,
+  "health": "Amber",
+  "recommendation": "Blocked",
+  "blockingGates": [
+    "main does not contain the readiness branch",
+    "baticamigo.pt is not attached to the observed Vercel project and currently returns 502",
+    "production Rules/IAM not evidenced",
+    "privacy/legal/DPIA/retention/cloud approvals not evidenced",
+    "RPO/RTO and real backup/restore not evidenced",
+    "manual accessibility/browser/zoom/usability evidence not completed"
+  ],
+  "caveats": [
+    "Documentation, architecture, risks and traceability scores are audit ratings with stated evidence, not raw repository counts.",
+    "Overall score never overrides blocking gates.",
+    "This is a frozen 2026-10-25 snapshot. The later merged main and current production readiness must be assessed separately."
+  ],
+  "historicalCheckpoint": true,
+  "currentStatus": "Historical audit only — do not use the score, branch divergence or gate status as current state",
+  "supersededBy": "docs/operations/main-integration-2026-10-31.md"
+}
