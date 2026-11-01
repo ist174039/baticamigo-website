@@ -337,3 +337,34 @@ nav.ba-manual-index button[aria-current="true"] {
 @media(prefers-reduced-motion:reduce) {
   .ba-manual-page * {scroll-behavior:auto!important;transition:none!important}
 }
+
+
+/* Manual action buttons use the same purple/orange palette as the platform. */
+.ba-manual-page .ba-panel-actions button[data-variant="default"] {
+  border:1px solid #6846b9!important;
+  background:#6846b9!important;
+  color:#fff!important;
+}
+.ba-manual-page .ba-panel-actions button[data-variant="default"]:hover:not(:disabled) {
+  border-color:#211a30!important;
+  background:#211a30!important;
+  color:#fff!important;
+}
+.ba-manual-page .ba-panel-actions button[data-variant="outline"] {
+  border:1px solid #cbbfd8!important;
+  background:#fffdfb!important;
+  color:#5b3ba5!important;
+}
+.ba-manual-page .ba-panel-actions button[data-variant="outline"]:hover:not(:disabled) {
+  border-color:#6846b9!important;
+  background:#f0eafb!important;
+  color:#211a30!important;
+}
+.ba-manual-page .ba-panel-actions button:focus-visible {
+  outline:3px solid #f28a4b!important;
+  outline-offset:3px!important;
+}
+.ba-manual-page .ba-panel-actions button:disabled {
+  opacity:.55;
+  cursor:not-allowed;
+}
