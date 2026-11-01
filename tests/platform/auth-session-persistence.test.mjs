@@ -11,6 +11,13 @@ test('canonical login uses browser-session Firebase persistence',()=>{
   assert.equal(login.includes('browserLocalPersistence'),false);
 });
 
+test('the platform email-verification denial exposes a resend action without relying on the CMS admin endpoint',()=>{
+  assert.match(login,/failure\.status === 403 && failure\.message === "Confirme o endereço de email antes de aceder à plataforma\."/);
+  assert.match(login,/setVerificationUser\(user\)/);
+  assert.match(login,/sendEmailVerification\(verificationUser\)/);
+  assert.match(login,/Reenviar email de verificação/);
+});
+
 test('legacy CMS shares the canonical Firebase app namespace',()=>{
   assert.match(legacy,/baticamigo-platform-client/);
   assert.equal(legacy.includes('Persistence.LOCAL'),false);
