@@ -54,6 +54,13 @@ try{
   assert.match(securityText,/^Contact:/m);
   assert.match(securityText,/^Expires:/m);
   assert.match(securityText,/^Canonical:/m);
+  const health=await fetch(host+'/api/health');
+  assert.equal(health.status,200);
+  assert.match(health.headers.get('cache-control')||'',/no-store/);
+  const healthBody=await health.json();
+  assert.equal(healthBody.status,'ok');
+  assert.equal(healthBody.service,'baticamigo-website');
+  assert.ok(healthBody.commitSha===null||/^[0-9a-f]{40}$/i.test(healthBody.commitSha));
   const api=await fetch(host+'/api/platform');
   assert.equal(api.status,401);
   assert.match(api.headers.get('content-type')||'',/application\/problem\+json/);

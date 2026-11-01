@@ -45,7 +45,7 @@ Registar pelo menos:
 - reduced motion quando solicitado.
 
 ## Evidência
-Cada execução deve usar docs/operations/evidence-record-template.json e conter:
+Cada execução deve usar `docs/accessibility/manual-evidence-template.json` e passar `validateAccessibilityExecution`; o registo geral pode depois ser ligado a `docs/operations/evidence-record-template.json`. Deve conter:
 - SHA/versão;
 - ambiente;
 - browser/AT/viewport;

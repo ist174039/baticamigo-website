@@ -40,3 +40,28 @@ test('problem responses follow RFC 9457 while preserving compatibility fields',(
   assert.match(server,/type:'about:blank'/);
   assert.match(server,/detail/);
 });
+
+
+test('OpenAPI methods exactly match exported route handlers',()=>{
+  const verbs=['GET','POST','PUT','PATCH','DELETE','HEAD','OPTIONS'];
+  for(const file of routeFiles(join(root,'app/api'))){
+    const source=readFileSync(file,'utf8');
+    const route=apiPath(file);
+    const implemented=new Set(
+      verbs.filter(verb=>new RegExp(`export\\s+async\\s+function\\s+${verb}\\s*\\(`).test(source))
+    );
+    const documented=new Set(Object.keys(spec.paths[route]||{}).map(method=>method.toUpperCase()).filter(method=>verbs.includes(method)));
+    assert.deepEqual(documented,implemented,`${route} OpenAPI methods must match exported handlers`);
+  }
+});
+
+test('public API operations explicitly opt out of bearer auth while private operations inherit it',()=>{
+  for(const [path,item] of Object.entries(spec.paths)){
+    for(const [method,operation] of Object.entries(item)){
+      if(!['get','post','put','patch','delete','head','options'].includes(method)) continue;
+      const isPublic=(path==='/api/contact'&&method==='post')||(path==='/api/public-content'&&method==='get')||(path==='/api/health'&&method==='get');
+      if(isPublic) assert.deepEqual(operation.security,[],`${method.toUpperCase()} ${path} must be public explicitly`);
+      else assert.notDeepEqual(operation.security,[],`${method.toUpperCase()} ${path} must not opt out of bearer auth`);
+    }
+  }
+});

@@ -1,0 +1,19 @@
+{
+  "id": "",
+  "releaseSha": "",
+  "executedAt": "",
+  "owner": "",
+  "moderator": "",
+  "reviewer": "",
+  "scenarioIds": [],
+  "result": "blocked",
+  "artifact": "",
+  "actions": [
+    {
+      "id": "",
+      "owner": "",
+      "status": "open",
+      "acceptanceCriterion": ""
+    }
+  ]
+}

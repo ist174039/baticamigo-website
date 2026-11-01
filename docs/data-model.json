@@ -1,0 +1,152 @@
+{
+  "schemaVersion": 1,
+  "source": "release/market-readiness-2026-10-25",
+  "collections": [
+    {
+      "name": "platform_accounts",
+      "domain": "identity",
+      "classification": "restricted",
+      "retentionCategory": "profiles",
+      "access": "server-mediated",
+      "purpose": "Account access, roles, profile links and status"
+    },
+    {
+      "name": "platform_access_settings",
+      "domain": "identity",
+      "classification": "restricted",
+      "retentionCategory": "profiles",
+      "access": "server-mediated",
+      "purpose": "Central access profile configuration"
+    },
+    {
+      "name": "platform_profiles",
+      "domain": "people",
+      "classification": "highly-restricted",
+      "retentionCategory": "profiles",
+      "access": "server-mediated",
+      "purpose": "Student, guardian, tutor, volunteer and member profiles/relations"
+    },
+    {
+      "name": "platform_sessions",
+      "domain": "learning",
+      "classification": "restricted",
+      "retentionCategory": "sessions",
+      "access": "server-mediated",
+      "purpose": "Learning/support sessions and scheduling"
+    },
+    {
+      "name": "platform_attendance",
+      "domain": "learning",
+      "classification": "highly-restricted",
+      "retentionCategory": "attendance",
+      "access": "server-mediated",
+      "purpose": "Attendance, absence and related state"
+    },
+    {
+      "name": "platform_records",
+      "domain": "learning",
+      "classification": "highly-restricted",
+      "retentionCategory": "records",
+      "access": "server-mediated",
+      "purpose": "Assignments, materials, documents, messages, assessments and justifications"
+    },
+    {
+      "name": "platform_dues",
+      "domain": "finance",
+      "classification": "restricted",
+      "retentionCategory": "finance",
+      "access": "server-mediated",
+      "purpose": "Membership dues"
+    },
+    {
+      "name": "platform_due_payments",
+      "domain": "finance",
+      "classification": "restricted",
+      "retentionCategory": "finance",
+      "access": "server-mediated",
+      "purpose": "Payments against dues"
+    },
+    {
+      "name": "platform_donations",
+      "domain": "finance",
+      "classification": "restricted",
+      "retentionCategory": "finance",
+      "access": "server-mediated",
+      "purpose": "Donation records"
+    },
+    {
+      "name": "platform_financings",
+      "domain": "finance",
+      "classification": "restricted",
+      "retentionCategory": "finance",
+      "access": "server-mediated",
+      "purpose": "Funding records"
+    },
+    {
+      "name": "platform_expenses",
+      "domain": "finance",
+      "classification": "restricted",
+      "retentionCategory": "finance",
+      "access": "server-mediated",
+      "purpose": "Expense records"
+    },
+    {
+      "name": "platform_locks",
+      "domain": "integrity",
+      "classification": "internal",
+      "retentionCategory": "audit",
+      "access": "server-mediated",
+      "purpose": "Concurrency serialization/locks"
+    },
+    {
+      "name": "platform_audit",
+      "domain": "audit",
+      "classification": "restricted",
+      "retentionCategory": "audit",
+      "access": "server-mediated",
+      "purpose": "Security and change audit trail"
+    }
+  ],
+  "publicCollections": [
+    {
+      "name": "membros",
+      "access": "public-read-admin-write",
+      "purpose": "Published team/member content"
+    },
+    {
+      "name": "parceiros",
+      "access": "public-read-admin-write",
+      "purpose": "Published partner content"
+    },
+    {
+      "name": "eventos",
+      "access": "public-read-admin-write",
+      "purpose": "Published events"
+    },
+    {
+      "name": "programas",
+      "access": "public-read-admin-write",
+      "purpose": "Published programs"
+    },
+    {
+      "name": "agenda",
+      "access": "public-read-admin-write",
+      "purpose": "Published agenda"
+    },
+    {
+      "name": "noticias",
+      "access": "public-read-admin-write",
+      "purpose": "Published news"
+    },
+    {
+      "name": "site_config",
+      "access": "public-read-sanitized-admin-write",
+      "purpose": "Public website configuration"
+    },
+    {
+      "name": "contato",
+      "access": "server-write-admin-read",
+      "purpose": "Website contact submissions"
+    }
+  ]
+}

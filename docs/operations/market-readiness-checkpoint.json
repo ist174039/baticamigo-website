@@ -54,6 +54,10 @@
   ],
   "caveats": [
     "Documentation, architecture, risks and traceability scores are audit ratings with stated evidence, not raw repository counts.",
-    "Overall score never overrides blocking gates."
-  ]
+    "Overall score never overrides blocking gates.",
+    "This is a frozen 2026-10-25 snapshot. The later merged main and current production readiness must be assessed separately."
+  ],
+  "historicalCheckpoint": true,
+  "currentStatus": "Historical audit only — do not use the score, branch divergence or gate status as current state",
+  "supersededBy": "docs/operations/main-integration-2026-10-31.md"
 }

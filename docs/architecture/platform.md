@@ -4,13 +4,13 @@
 
 ## Fronteiras e componentes (C4, nível de componentes)
 
-Pessoa → interface React da área → token Firebase → `/api/platform` → contexto de autenticação/autorização → domínio puro → adaptador Firestore/Admin SDK. `domain.mjs` e `modules.mjs` contêm validação e políticas sem importar Firebase/Next. `modules-server.js` gere persistência e auditoria. O conteúdo editorial público é exposto por fronteira sanitizada e o CMS continua sujeito às Firestore/Storage Rules versionadas. As Rules são exercitadas em Auth/Firestore/Storage Emulator no Quality Gate; a implantação exata e o IAM/service accounts do ambiente de produção ainda não foram comprovados.
+Pessoa → interface React da área → token Firebase → `/api/platform` → contexto de autenticação/autorização → domínio puro → adaptador Firestore/Admin SDK. `domain.mjs` e `modules.mjs` contêm validação e políticas sem importar Firebase/Next. `modules-server.js` gere persistência e auditoria. O website público lê conteúdo editorial sanitizado por `/api/public-content` e envia contactos por `/api/contact`; o CMS administrativo mantém escritas editoriais sujeitas às Rules versionadas. As Rules são testadas em emuladores, mas Rules/IAM realmente implantadas no ambiente de produção continuam por validar.
 
 O servidor valida tokens, revogação, conta ativa, papéis e perfis ativos. Autorizações por aluno são verificadas independentemente da interface. Aluno: apenas próprio perfil; encarregado: educandos associados; explicador/voluntário: alunos das próprias sessões; sócio: próprios documentos/mensagens; coordenação/admin: gestão pedagógica; apenas admin atribui acessos. Não publicar documentos pessoais com links públicos: os links externos dependem também das permissões do fornecedor.
 
 ## ADR: manter a infraestrutura Firebase existente
 
-Evitar migração de fornecedor e dados neste incremento. Novas coleções usam `platform_`. SDK Admin ignora Security Rules, pelo que a API verifica cada autorização. O acesso direto às coleções privadas `platform_*` falha fechado nas Rules versionadas e é testado em Emulator. Continua pendente provar que essas Rules correspondem ao ambiente alvo e concluir a revisão de IAM/service accounts em produção.
+Evitar migração de fornecedor e dados neste incremento. Novas coleções usam `platform_`. SDK Admin ignora Security Rules, pelo que a API valida cada autorização no servidor. O acesso direto às coleções privadas `platform_*` falha fechado nas Rules versionadas e é testado em emuladores; a aplicação efetiva dessas Rules e o IAM/service accounts do ambiente de produção continuam por comprovar.
 
 ## ADR: conservar notas e escalas
 
@@ -22,4 +22,4 @@ A área adota a composição do admin: navegação lateral escura, cartões clar
 
 ## Qualidade e limites
 
-Usar ISO/IEC 25010:2023 como vocabulário de revisão, sem alegar conformidade. Evidência local: testes de domínio, permissões negativas, escalas, XSS e tempo, lint, build e auditoria de dependências. O Quality Gate cobre 150 testes unitários, integração Firebase/Rules em Emulator, build, production smoke e axe automático da homepage/login. Continuam pendentes Rules/IAM implantados no ambiente alvo, contas/fluxos reais controlados, matriz manual de browsers/viewports/zoom/teclado/leitor de ecrã e ensaio com utilizadores. Não inferir disponibilidade, DORA ou usabilidade real a partir do CI. Não inferir desempenho de um build bem-sucedido.
+Usar ISO/IEC 25010:2023 como vocabulário de revisão, sem alegar conformidade. Evidência automatizada no GitHub Actions: testes de domínio, permissões negativas, escalas, XSS e tempo, lint, build, auditoria de dependências, Rules/Auth/Storage em emuladores, smoke e axe automático. A suite Playwright executa percursos críticos em Chromium, Firefox e WebKit com dados sintéticos. Continuam pendentes Rules/IAM reais, validação manual de browsers/viewports/zoom/teclado/leitores de ecrã, desempenho em ambiente hospedado e ensaio com utilizadores. Não inferir disponibilidade, conformidade, DORA ou usabilidade real a partir de CI verde.
