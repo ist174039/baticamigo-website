@@ -22,4 +22,3 @@ test('legacy CMS shares the canonical Firebase app namespace',()=>{
   assert.match(legacy,/baticamigo-platform-client/);
   assert.equal(legacy.includes('Persistence.LOCAL'),false);
 });
-
