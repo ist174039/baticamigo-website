@@ -87,7 +87,7 @@ try {
   const created=await expect('admin',{action:'create-session',session});
   await expect('admin',{action:'open-attendance',sessionId:created.id,version:1});
   await expect('admin',{action:'set-attendance',sessionId:created.id,studentId:'s1',status:'present',version:0});
-  await expect('admin',{action:'set-attendance',sessionId:created.id,studentId:'s2',status:'absent',version:0});
+  await expect('admin',{action:'set-attendance',sessionId:created.id,studentId:'s2',status:'absent',reasonCode:'illness',version:0});
   await expect('admin',{action:'create-session',session},409);
   const otherSession=await expect('admin',{action:'create-session',session:{...session,studentIds:['s3'],tutorId:'t2',room:'Teste B'}});
   await expect('admin',{action:'open-attendance',sessionId:otherSession.id,version:1});
