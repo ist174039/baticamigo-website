@@ -15,7 +15,7 @@ const emptyFolder=()=>({id:"",name:"",parentId:"",permissions:emptyPermissions()
 const time=value=>value?new Date(value).toLocaleString("pt-PT",{dateStyle:"medium",timeStyle:"short"}):"—";
 const bytes=value=>value<1000000?Math.round(value/1000)+" KB":(value/1000000).toFixed(1)+" MB";
 
-export default function DocumentLibrary({roles=[],legacyDocuments=null}) {
+export default function DocumentLibrary({roles=[]}) {
   const [items,setItems]=useState({folders:[],documents:[]});
   const [people,setPeople]=useState([]);
   const [folderId,setFolderId]=useState("");
@@ -31,7 +31,6 @@ export default function DocumentLibrary({roles=[],legacyDocuments=null}) {
   const [notice,setNotice]=useState("");
   const [busy,setBusy]=useState(false);
   const [loading,setLoading]=useState(true);
-  const [showLegacy,setShowLegacy]=useState(false);
   const [trash,setTrash]=useState(false);
   const manager=roles.includes("admin")||roles.includes("coordinator");
 
@@ -219,11 +218,6 @@ export default function DocumentLibrary({roles=[],legacyDocuments=null}) {
       </div>
       {!childFolders.length&&!matchingDocs.length&&<p className="ba-panel-notice">Não existem documentos visíveis nesta localização. Os documentos privados só surgem para contas autorizadas.</p>}
     </>}
-    {legacyDocuments&&<details style={{marginTop:24}} open={showLegacy} onToggle={e=>setShowLegacy(e.currentTarget.open)}>
-      <summary>Documentos de acompanhamento anteriores</summary>
-      <p>Estes documentos continuam disponíveis no módulo anterior. Não foram migrados nem eliminados.</p>
-      {showLegacy&&legacyDocuments}
-    </details>}
     <WorkspacePanel open={!!panel} onOpenChange={value=>{if(!value)setPanel("");}} title={titleByPanel[panel]||"Biblioteca documental"}
       description={panel==="details"?"Consulta, versões e permissões conforme o acesso atribuído.":panel==="uploadVersion"?"A versão anterior permanece no histórico.":undefined}
       eyebrow={panel==="createDocument"||panel==="uploadVersion"?"Carregar ficheiro":panel==="createFolder"||panel==="editFolder"?"Gestão de pastas":"Biblioteca BaticAmigo"}

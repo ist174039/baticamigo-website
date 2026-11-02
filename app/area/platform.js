@@ -309,7 +309,7 @@ export default function Platform() {
   async function saveModule(body, done) {
     await action(async () => { await save(body); done(); }, "Registo guardado.");
   }
-  const recordKinds = ["assignment", "material", "document", "message", "assessment", "justification"];
+  const recordKinds = ["assignment", "material", "message", "assessment", "justification"];
   const moduleTitles = {assignment:"Trabalhos",material:"Materiais",document:"Documentos",message:"Mensagens",assessment:"Avaliações",justification:"Justificações",planner:"Planeador",progress:"Evolução do aluno",reports:"Relatórios",notifications:"Avisos",finance:"Área financeira",access:"Perfis e permissões",records:"Gestão de registos",account:"O meu perfil"};
   const pageDescriptions = {
     overview: "Acompanhe sessões, presenças e o percurso escolar num só lugar.",
@@ -408,7 +408,7 @@ export default function Platform() {
         {tab === "account" && admin && <AccountProfile user={user} roles={roles} profiles={data.profiles.filter(profile => (data.account?.profileIds || []).includes(profile.id))} displayName={accountName} onDisplayNameChange={setAccountName} onChangePassword={() => { setPasswordError(""); setPasswordMessage(""); setPasswordDialogOpen(true); }} />}
         {tab === "access" && admin && <AreaUserManager view="permissions" onNavigate={navigate} />}
         {tab === "records" && admin && <AreaUserManager view="records" onNavigate={navigate} />}
-        {tab === "document" && <DocumentLibrary roles={roles} legacyDocuments={<Records kind="document" data={data} user={user} manager={manager} busy={busy} onSave={saveModule} onMarkAbsent={markAbsent} onEditAttendance={editAttendance}/>}/>}
+        {tab === "document" && <DocumentLibrary roles={roles}/>}
         {recordKinds.includes(tab) && tab !== "document" && <Records key={tab} kind={tab} data={data} user={user} manager={manager} busy={busy} onSave={saveModule} onMarkAbsent={markAbsent} onEditAttendance={editAttendance}/>}
         {tab === "planner" && <Planner profiles={data.profiles} manager={manager}/>}
         {tab === "finance" && (admin || roles.includes("member")) && <Finance key={user.uid} user={user}/>}
