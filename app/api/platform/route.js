@@ -81,7 +81,7 @@ export async function POST(request) {
     const body=await readJson(request);
     assert(body && typeof body==='object' && !Array.isArray(body));
     if(['save-record','archive-record','restore-record','delete-record','review-justification'].includes(body.action)) return await writeModule(db,account,body);
-    const allowed={ 'save-profile':['action','profile'], 'create-session':['action','session'], 'create-session-series':['action','session','recurrence'], 'add-attendee':['action','sessionId','studentId'], 'update-session':['action','id','version','session','status'], 'start-session':['action','sessionId','version'], 'open-attendance':['action','sessionId','version'], 'complete-session':['action','sessionId','version'], 'set-tutor-attendance':['action','sessionId','version','status','note'], 'save-session-comment':['action','sessionId','version','comment'], 'set-attendance':['action','sessionId','studentId','status','reasonCode','reason','comment','version'] };
+    const allowed={ 'save-profile':['action','profile'], 'create-session':['action','session'], 'create-session-series':['action','session','recurrence'], 'add-attendee':['action','sessionId','studentId'], 'update-session':['action','id','version','session','status'], 'delete-session':['action','sessionId','version','scope'], 'start-session':['action','sessionId','version'], 'open-attendance':['action','sessionId','version'], 'complete-session':['action','sessionId','version'], 'set-tutor-attendance':['action','sessionId','version','status','note'], 'save-session-comment':['action','sessionId','version','comment'], 'set-attendance':['action','sessionId','studentId','status','reasonCode','reason','comment','version'] };
     assert(allowed[body.action] && Object.keys(body).every(k=>allowed[body.action].includes(k)),'Operação inválida.');
     if(body.action==='save-profile') {
       assert(manages(account)&&canAccessArea(account,'profiles'),'Sem permissão.',403); const value=profileInput(body.profile); const ref=value.id ? collection(db,'profiles').doc(value.id) : collection(db,'profiles').doc(); delete value.id;
@@ -92,8 +92,8 @@ export async function POST(request) {
     }
     if(body.action==='create-session' || body.action==='update-session') {
       assert(manages(account)&&canAccessArea(account,'sessions'),'Sem permissão.',403); const value=sessionInput(body.session); const ref=body.action==='create-session' ? collection(db,'sessions').doc() : collection(db,'sessions').doc(id(body.id));
-      if(body.action==='update-session') {assert(Number.isInteger(body.version) && body.version>0); assert(['scheduled','cancelled'].includes(body.status)); value.status=body.status; value.version=body.version+1;}
-      await db.runTransaction(async tx=>{ const previous=await tx.get(ref); if(body.action==='update-session') { const stored=previous.data()||{}; const storedVersion=stored.version||1; assert(previous.exists && storedVersion===body.version,'A sessão foi alterada. Atualize os dados.',409); assert(['scheduled','cancelled'].includes(stored.status)||stored.status==='in_progress'&&body.status==='cancelled','Uma sessão iniciada ou concluída só pode ser cancelada.'); value.attendanceOpen=body.status==='cancelled'?false:stored.attendanceOpen===true; value.attendanceOpenedAt=stored.attendanceOpenedAt||''; value.attendanceOpenedBy=stored.attendanceOpenedBy||''; value.comment=stored.comment||''; value.commentUpdatedAt=stored.commentUpdatedAt||''; value.commentUpdatedBy=stored.commentUpdatedBy||''; value.tutorAttendance=stored.tutorAttendance||null; value.startedAt=stored.startedAt||''; value.startedBy=stored.startedBy||''; value.completedAt=stored.completedAt||''; value.completedBy=stored.completedBy||''; value.version=body.version+1; }
+      if(body.action==='update-session') {assert(Number.isInteger(body.version) && body.version>0); assert(['scheduled','cancelled','postponed'].includes(body.status)); value.status=body.status; value.version=body.version+1;}
+      await db.runTransaction(async tx=>{ const previous=await tx.get(ref); if(body.action==='update-session') { const stored=previous.data()||{}; const storedVersion=stored.version||1; assert(previous.exists && storedVersion===body.version,'A sessão foi alterada. Atualize os dados.',409); assert(['scheduled','cancelled','postponed'].includes(stored.status)||stored.status==='in_progress'&&body.status==='cancelled','Uma sessão iniciada ou concluída só pode ser cancelada.'); assert(body.status!=='postponed'||stored.status==='scheduled','Só é possível adiar uma sessão agendada.'); value.attendanceOpen=['cancelled','postponed'].includes(body.status)?false:stored.attendanceOpen===true; value.attendanceOpenedAt=stored.attendanceOpenedAt||''; value.attendanceOpenedBy=stored.attendanceOpenedBy||''; value.comment=stored.comment||''; value.commentUpdatedAt=stored.commentUpdatedAt||''; value.commentUpdatedBy=stored.commentUpdatedBy||''; value.tutorAttendance=stored.tutorAttendance||null; value.startedAt=stored.startedAt||''; value.startedBy=stored.startedBy||''; value.completedAt=stored.completedAt||''; value.completedBy=stored.completedBy||''; if(stored.seriesId) value.seriesId=stored.seriesId; if(stored.recurrence) value.recurrence=stored.recurrence; value.version=body.version+1; }
         const people=await tx.getAll(...[value.tutorId,...value.studentIds].map(p=>collection(db,'profiles').doc(p))); assert(people[0].exists && people[0].data().kind==='tutor' && people[0].data().active,'Explicador inválido.'); assert(people.slice(1).every(p=>p.exists && p.data().kind==='student' && p.data().active),'Aluno inválido.');
         // Shared scheduling lock serializes concurrent creates, including empty-query races.
         const lock=collection(db,'locks').doc('schedule'); await tx.get(lock);
@@ -132,6 +132,47 @@ export async function POST(request) {
       });
       return json({saved:true,seriesId,ids:refs.map(ref=>ref.id)});
     }
+    if(body.action==='delete-session') {
+      assert(manages(account)&&canAccessArea(account,'sessions'),'Sem permissão para eliminar sessões.',403);
+      const sessionId=id(body.sessionId);
+      assert(Number.isInteger(body.version)&&body.version>0,'Versão da sessão inválida.');
+      assert(['single','series'].includes(body.scope),'Âmbito de eliminação inválido.');
+      const sessionRef=collection(db,'sessions').doc(sessionId);
+      await db.runTransaction(async tx=>{
+        const rootSnapshot=await tx.get(sessionRef);
+        assert(rootSnapshot.exists,'Sessão inexistente.',404);
+        const root={...rootSnapshot.data(),id:rootSnapshot.id};
+        assert((root.version||1)===body.version,'A sessão foi alterada. Atualize os dados.',409);
+        const group=body.scope==='series'&&root.seriesId
+          ? await tx.get(collection(db,'sessions').where('seriesId','==',root.seriesId).limit(367))
+          : null;
+        const targets=group?rows(group):[root];
+        assert(targets.length>0&&targets.length<=366,'A série excede o limite seguro para eliminação atómica.',409);
+        assert(targets.some(item=>item.id===sessionId),'A ocorrência já não pertence a esta série.',409);
+        assert(targets.every(item=>['scheduled','cancelled','postponed'].includes(item.status)&&item.attendanceOpen!==true&&!item.startedAt&&!item.completedAt),
+          'Não é possível eliminar sessões iniciadas ou concluídas.');
+        assert(targets.every(item=>!item.tutorAttendance&&!String(item.comment||'').trim()),
+          'Não é possível eliminar sessões com presença do explicador ou notas.');
+
+        const ids=targets.map(item=>item.id);
+        const lock=collection(db,'locks').doc('schedule');
+        await tx.get(lock);
+        const attendanceChecks=[],recordChecks=[];
+        for(let offset=0;offset<ids.length;offset+=10) {
+          const chunk=ids.slice(offset,offset+10);
+          attendanceChecks.push(tx.get(collection(db,'attendance').where('sessionId','in',chunk).limit(1)));
+          recordChecks.push(tx.get(collection(db,'records').where('sessionId','in',chunk).limit(1)));
+        }
+        const [attendanceResults,recordResults]=await Promise.all([Promise.all(attendanceChecks),Promise.all(recordChecks)]);
+        assert(attendanceResults.every(result=>result.empty),'Não é possível eliminar sessões com presenças registadas.');
+        assert(recordResults.every(result=>result.empty),'Não é possível eliminar sessões associadas a registos ou justificações.');
+
+        targets.forEach(item=>tx.delete(collection(db,'sessions').doc(item.id)));
+        tx.set(lock,{updatedAt:Date.now()});
+        audit(tx,db,account,body.action,body.scope==='series'?(root.seriesId||sessionId):sessionId,{occurrences:targets.length});
+      });
+      return json({saved:true,scope:body.scope});
+    }
     if(body.action==='add-attendee') {
       assert(canAccessArea(account,'sessions'),'Este menu não está disponível para esta conta.',403);
       const sessionId=id(body.sessionId),studentId=id(body.studentId);
@@ -155,7 +196,7 @@ export async function POST(request) {
         await tx.get(lock);
         const studentIds=[...value.studentIds,studentId];
         tx.set(sessionRef,{...value,studentIds,version:(value.version||1)+1});
-        tx.set(attendanceRef,{sessionId,studentId,status:'present',reasonCode:'',reason:'',comment:'',recordedAt:new Date().toISOString(),recordedBy:account.uid,version:(previousAttendance.data()?.version||0)+1});
+        tx.set(attendanceRef,{sessionId,studentId,status:'present',source:'walk_in',reasonCode:'',reason:'',comment:'',recordedAt:new Date().toISOString(),recordedBy:account.uid,version:(previousAttendance.data()?.version||0)+1});
         tx.set(lock,{updatedAt:Date.now()});
         audit(tx,db,account,body.action,sessionId,{studentId});
       });
@@ -196,6 +237,6 @@ export async function POST(request) {
     assert(typeof reasonCode==='string'&&['','illness','family','transport','other','unknown'].includes(reasonCode),'Motivo da falta inválido.');
     assert(typeof reason==='string'&&reason.length<=500,'O detalhe do motivo não pode exceder 500 caracteres.');
     assert(typeof comment==='string'&&comment.length<=1200,'O comentário não pode exceder 1200 caracteres.');
-    await db.runTransaction(async tx=>{ const sessionRef=collection(db,'sessions').doc(sessionId); const session=await tx.get(sessionRef); assert(session.exists,'Sessão inexistente.',404); const sessionData=session.data(); assert(canAttend(account,sessionData),'Sem permissão para registar presenças.',403); assert((sessionData.status==='in_progress'||sessionData.status==='scheduled'&&sessionData.attendanceOpen===true||sessionData.status==='completed'&&manages(account)) && sessionData.studentIds.includes(studentId),'Aluno ou sessão inválidos.'); assert(Date.parse(sessionData.startsAt)<=Date.now(),'A sessão ainda não começou.'); assert(sessionData.status==='completed'||sessionData.attendanceOpen===true,'Inicie primeiro esta sessão.'); const ref=collection(db,'attendance').doc(`${sessionId}:${studentId}`); const old=await tx.get(ref); const version=attendanceVersion(old.data(),body.version); assert(!['absent','excused'].includes(body.status)||reasonCode,'Indique o motivo da falta.'); if(reasonCode==='other') assert(reason.trim(),'Descreva o motivo da falta.'); if(body.status==='unrecorded') { assert(old.exists,'Não existe uma presença para limpar.',409); tx.delete(ref); } else tx.set(ref,{sessionId,studentId,status:body.status,reasonCode:body.status==='present'?'':reasonCode,reason:body.status==='present'?'':reason.trim(),comment:comment.trim(),recordedAt:new Date().toISOString(),recordedBy:account.uid,version}); audit(tx,db,account,body.action,ref.id); }); return json({saved:true});
+    await db.runTransaction(async tx=>{ const sessionRef=collection(db,'sessions').doc(sessionId); const session=await tx.get(sessionRef); assert(session.exists,'Sessão inexistente.',404); const sessionData=session.data(); assert(canAttend(account,sessionData),'Sem permissão para registar presenças.',403); assert((sessionData.status==='in_progress'||sessionData.status==='scheduled'&&sessionData.attendanceOpen===true||sessionData.status==='completed'&&manages(account)) && sessionData.studentIds.includes(studentId),'Aluno ou sessão inválidos.'); assert(Date.parse(sessionData.startsAt)<=Date.now(),'A sessão ainda não começou.'); assert(sessionData.status==='completed'||sessionData.attendanceOpen===true,'Inicie primeiro esta sessão.'); const ref=collection(db,'attendance').doc(`${sessionId}:${studentId}`); const old=await tx.get(ref); const version=attendanceVersion(old.data(),body.version); assert(!['absent','excused'].includes(body.status)||reasonCode,'Indique o motivo da falta.'); if(reasonCode==='other') assert(reason.trim(),'Descreva o motivo da falta.'); if(body.status==='unrecorded') { assert(old.exists,'Não existe uma presença para limpar.',409); tx.delete(ref); } else tx.set(ref,{sessionId,studentId,status:body.status,source:old.data()?.source==='walk_in'?'walk_in':'invited',reasonCode:body.status==='present'?'':reasonCode,reason:body.status==='present'?'':reason.trim(),comment:comment.trim(),recordedAt:new Date().toISOString(),recordedBy:account.uid,version}); audit(tx,db,account,body.action,ref.id); }); return json({saved:true});
   } catch(error) { return failure(error); }
 }

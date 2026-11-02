@@ -716,6 +716,55 @@
 .platform .user-manager-pagination > div { display: flex; align-items: center; gap: 10px; }
 .platform .user-manager-pagination > div > span { min-width: 98px; color: var(--private-deep); font-size: 11px; font-weight: 650; text-align: center; }
 
+.platform-searchable-select { position: relative; min-width: 0; width: 100%; color: var(--private-deep); font-size: 13px; }
+.platform-searchable-control { display: flex; min-height: 42px; align-items: center; gap: 4px; padding: 4px 7px 4px 10px; border: 1px solid #e3dbe7; border-radius: 9px; background: #fff; transition: border-color .16s ease, box-shadow .16s ease; }
+.platform-searchable-control:focus-within { border-color: var(--private-blue); box-shadow: 0 0 0 2px #0869d522; }
+.platform-searchable-control input[role="combobox"] { min-width: 0; min-height: 30px; flex: 1; padding: 4px 2px; border: 0; outline: 0; background: transparent; color: var(--private-deep); font: inherit; }
+.platform-searchable-control input[role="combobox"]:focus-visible { outline: none; }
+.platform-searchable-control input[role="combobox"]::placeholder { color: #81778a; }
+.platform-searchable-control button { display: grid; width: 30px; height: 30px; flex: none; place-items: center; padding: 0; border: 0; border-radius: 7px; background: transparent; color: var(--private-muted); cursor: pointer; }
+.platform-searchable-control button:hover:not(:disabled) { background: #f5eff7; color: var(--private-forest); }
+.platform-searchable-control button:disabled { opacity: .48; cursor: not-allowed; }
+.platform-searchable-options { position: absolute; z-index: 90; top: calc(100% + 5px); left: 0; right: 0; max-height: min(300px, 45vh); margin: 0; padding: 5px; overflow-y: auto; border: 1px solid var(--private-line); border-radius: 11px; background: #fff; box-shadow: 0 12px 28px #2d183b24; list-style: none; }
+.platform-searchable-option { display: flex; min-height: 42px; align-items: center; gap: 9px; padding: 7px 9px; border-radius: 7px; color: var(--private-deep); cursor: pointer; }
+.platform-searchable-option.is-active,.platform-searchable-option:hover { background: #f5eff7; }
+.platform-searchable-option.is-disabled { opacity: .48; cursor: not-allowed; }
+.platform-searchable-option-check { display: grid; width: 18px; height: 18px; flex: none; place-items: center; color: var(--private-forest); }
+.platform-searchable-option-copy { display: grid; min-width: 0; gap: 2px; }
+.platform-searchable-option-copy strong { overflow: hidden; font-size: 12px; font-weight: 650; text-overflow: ellipsis; white-space: nowrap; }
+.platform-searchable-option-copy small { overflow: hidden; color: var(--private-muted); font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+.platform-searchable-empty { padding: 13px 10px; color: var(--private-muted); font-size: 11px; text-align: center; }
+.platform-searchable-chips { display: flex; max-width: 75%; flex-wrap: wrap; gap: 4px; }
+.platform-searchable-chip { display: inline-flex; min-height: 25px; align-items: center; gap: 4px; padding: 2px 5px 2px 8px; border-radius: 99px; background: #f5eff7; color: var(--private-forest); font-size: 10px; font-weight: 650; }
+.platform-searchable-chip button { width: 19px; height: 19px; }
+.platform-searchable-select [role="combobox"]:focus-visible { outline: none; }
+.platform-searchable-select [role="listbox"]:focus-visible { outline: 3px solid #0869d5; outline-offset: 2px; }
+.user-manager-delete-linked-profiles { display: grid; gap: 10px; margin: 16px 0; padding: 12px; border: 1px solid var(--private-line); border-radius: 11px; }
+.user-manager-delete-linked-profiles legend { padding-inline: 4px; color: var(--private-deep); font-size: 12px; font-weight: 700; }
+.user-manager-delete-linked-profiles ul { display: grid; max-height: 180px; gap: 6px; margin: 0; padding: 0; overflow: auto; list-style: none; }
+.user-manager-delete-linked-profiles li { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; font-size: 11px; }
+.user-manager-delete-linked-profiles li span { color: var(--private-muted); text-align: right; }
+.user-manager-delete-linked-profiles > .platform-check { padding-top: 9px; border-top: 1px solid var(--private-line); font-weight: 700; }
+.platform-attendance-overview { display: grid; gap: 14px; }
+.platform-attendance-overview .platform-metrics { grid-template-columns: repeat(auto-fit, minmax(135px, 1fr)); }
+.platform-attendance-history { display: grid; gap: 7px; }
+.platform-attendance-history-head,
+.platform-attendance-history-row { display: grid; grid-template-columns: minmax(150px, 1.3fr) minmax(120px, 1fr) minmax(145px, 1fr) minmax(120px, .8fr) minmax(145px, auto); align-items: center; gap: 12px; }
+.platform-attendance-history-head { padding: 8px 12px; color: var(--private-muted); font-size: 10px; font-weight: 700; }
+.platform-attendance-history-row { min-height: 58px; padding: 10px 12px; border: 1px solid var(--private-line); border-radius: 10px; background: #fff; color: var(--private-deep); font-size: 12px; }
+.platform-attendance-history-row > strong { display: grid; gap: 3px; }
+.platform-attendance-phase { color: var(--private-muted); font-size: 10px; font-weight: 500; }
+@media (max-width: 760px) {
+  .platform-attendance-history-head { display: none; }
+  .platform-attendance-history-row { grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: 8px 12px; padding: 13px; }
+  .platform-attendance-history-row > strong { grid-column: 1 / -1; font-size: 13px; }
+  .platform-attendance-history-row > span:nth-child(2),
+  .platform-attendance-history-row > span:nth-child(3) { color: var(--private-muted); font-size: 11px; }
+  .platform-attendance-history-row > span:nth-child(4) { grid-column: 1; }
+  .platform-attendance-history-row > span:nth-child(5) { grid-column: 2; grid-row: 3 / span 2; align-self: end; text-align: right; }
+  .platform-attendance-filters { align-items: stretch; }
+}
+
 /* A single page heading and control system for both private workspaces. */
 .private-page-heading,
 .admin-private-shell .dashboard-welcome,
