@@ -135,49 +135,80 @@
 .planner-status.is-done{background:#edf6ef;color:#3e754d}
 .planner-assignees{font-size:12px!important}
 .platform-calendar[role=grid]{outline:none}
-.platform-session-workspace-detail{display:grid;gap:20px;max-height:min(88vh,1000px);overflow:auto}
-.platform-session-workspace-detail>.platform-list-heading{align-items:flex-start;margin:0}
-.platform-session-workspace-actions{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:14px;border:1px solid #e8e1d8;border-radius:12px;background:#faf8f4}
+.platform-session-workspace-sheet{inset:0 0 0 auto;width:min(740px,96vw);height:100dvh;max-width:100vw;max-height:100dvh;margin:0;padding:0;border:0;border-left:1px solid var(--platform-line);border-radius:0;background:#fff;color:var(--platform-ink);box-shadow:-18px 0 48px #170d2420;overflow:hidden}
+.platform-session-workspace-detail{display:flex;width:100%;height:100%;min-height:0;max-height:none;flex-direction:column;overflow:hidden;padding:0;border:0;border-radius:0;background:#fff;box-shadow:none}
+.platform-session-workspace-header{flex:none;padding:26px 30px 0;border-bottom:1px solid var(--platform-line);background:#fff}
+.platform-session-workspace-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:20px}
+.platform-session-workspace-heading>div{min-width:0}
+.platform-session-workspace-heading .platform-eyebrow{display:flex;align-items:center;gap:7px;margin:0 0 8px;text-transform:uppercase;letter-spacing:.07em}
+.platform-session-workspace-status{padding:4px 8px;border-radius:999px;background:#eef2f8;color:#405d7d;font-size:10px;letter-spacing:0;text-transform:none}
+.platform-session-workspace-status.is-in_progress{background:#eaf4ed;color:#27683c}
+.platform-session-workspace-status.is-completed{background:#edf4ee;color:#27683c}
+.platform-session-workspace-status.is-cancelled{background:#fff0ed;color:#9c3827}
+.platform-session-workspace-status.is-postponed{background:#fff5e7;color:#805218}
+.platform-session-workspace-heading h2{max-width:580px;margin:0;color:var(--platform-deep);font-size:clamp(23px,3vw,30px);font-weight:700;line-height:1.2;letter-spacing:-.035em;overflow-wrap:anywhere}
+.platform-session-workspace-close{width:44px;height:44px;flex:0 0 44px;padding:0;border-radius:10px;color:var(--platform-muted)}
+.platform-session-workspace-top-actions{justify-content:flex-start;gap:8px;padding:18px 0 16px}
+.platform-session-workspace-top-actions button{min-height:40px;flex:0 1 auto;white-space:normal}
+.platform-session-workspace-detail .shadcn-tabs{display:flex;min-height:0;flex:1;flex-direction:column;margin:0}
+.platform-session-workspace-detail .shadcn-tabs-list{z-index:1;display:flex;flex:none;gap:8px;padding:0 30px;border-bottom:1px solid var(--platform-line);background:#fff}
+.platform-session-workspace-detail .shadcn-tabs-trigger{position:relative;min-width:0;min-height:52px;flex:0 1 auto;padding:13px 12px;border:0;border-bottom:3px solid transparent;background:transparent;color:var(--platform-muted);font:inherit;font-size:13px;font-weight:650;white-space:nowrap;cursor:pointer}
+.platform-session-workspace-detail .shadcn-tabs-trigger[aria-selected="true"]{border-bottom-color:var(--platform-forest);color:var(--platform-forest)}
+.platform-session-workspace-detail .shadcn-tabs-trigger:hover{color:var(--platform-deep)}
+.platform-session-workspace-detail .shadcn-tabs-trigger:focus-visible,.platform-session-workspace-detail .shadcn-tabs-content:focus-visible{outline:3px solid #8b70cc;outline-offset:-2px}
+.platform-session-workspace-detail .shadcn-tabs-content{min-width:0;min-height:0;flex:1;overflow-y:auto;overscroll-behavior:contain;padding:24px 30px 36px;outline:none}
+.platform-session-workspace-detail .shadcn-tabs-content[hidden]{display:none}
+.platform-session-workspace-panel{display:grid;gap:24px;min-width:0}
+.platform-session-workspace-actions{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:0;border:0;border-radius:0;background:transparent}
 .platform-session-workspace-actions .platform-status{display:inline-flex;align-items:center;gap:6px}
-.platform-session-workspace-meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 24px}
-.platform-session-workspace-participants,.platform-session-comment,.platform-session-tutor-attendance{padding-top:18px;border-top:1px solid var(--platform-line)}
-.platform-session-workspace-participants h3,.platform-session-comment h3,.platform-session-tutor-attendance h3{margin:0 0 8px;font-size:21px}
-.platform-session-workspace-participants .platform-list-heading{margin-bottom:10px}
-.platform-session-tutor-attendance-fields{display:grid;grid-template-columns:minmax(150px,.45fr) minmax(240px,1fr) auto;align-items:end;gap:16px}
-.platform-session-tutor-attendance-fields .platform-field{margin:8px 0}
-.platform-session-comment .platform-field{margin:10px 0}
+.platform-session-workspace-meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 28px;margin:0;padding:0}
+.platform-session-workspace-meta>div{min-width:0;padding:13px 0;border-bottom:1px solid var(--platform-line)}
+.platform-session-workspace-meta dt{margin-bottom:5px;color:var(--platform-muted);font-size:10px;font-weight:700;letter-spacing:.075em;text-transform:uppercase}
+.platform-session-workspace-meta dd{margin:0;color:var(--platform-deep);font-size:14px;font-weight:600;line-height:1.45;overflow-wrap:anywhere}
+.platform-session-workspace-meta .platform-session-workspace-recurrence{grid-column:1/-1}
+.platform-session-workspace-participants,.platform-session-comment,.platform-session-tutor-attendance{padding-top:20px;border-top:1px solid var(--platform-line)}
+.platform-session-workspace-participants h3,.platform-session-comment h3,.platform-session-tutor-attendance h3{margin:0 0 10px;color:var(--platform-deep);font-size:17px;font-weight:700;letter-spacing:-.02em}
+.platform-session-workspace-participants .platform-list-heading{margin-bottom:12px}
+.platform-session-tutor-attendance-fields{display:grid;grid-template-columns:minmax(150px,.65fr) minmax(220px,1.35fr);align-items:end;gap:4px 16px}
+.platform-session-tutor-attendance-fields .platform-field{min-width:0;margin:8px 0}
+.platform-session-tutor-attendance-fields>button{grid-column:2;justify-self:start;margin:4px 0 10px}
+.platform-session-tutor-summary{margin:0;padding:12px 14px;border-radius:9px;background:#f4f2f6;color:var(--platform-deep);font-size:13px;line-height:1.5}
+.platform-session-comment .platform-field{margin:10px 0 14px}
 .platform-session-last-note{padding:12px 14px;border-left:3px solid var(--platform-forest);border-radius:0 8px 8px 0;background:#f6f2fa;white-space:pre-wrap}
 .platform-session-last-note small{display:block;margin-top:5px;color:var(--platform-muted)}
-.platform-add-attendee{margin-top:16px;padding:15px;border:1px solid var(--platform-line);border-radius:12px;background:#faf8f4}
-.platform-add-attendee h4{display:flex;align-items:center;gap:8px;margin:0 0 10px;color:var(--platform-deep);font-size:14px}
-.platform-add-attendee>div{display:flex;gap:10px;align-items:center}
-.platform-add-attendee select{min-height:44px;flex:1;padding:10px;border:1px solid #ded8e3;border-radius:9px;background:white}
-.platform-add-attendee p{margin:8px 0 0;color:var(--platform-muted);font-size:12px}
-@media(max-width:700px){.platform-session-workspace-detail{max-height:92vh;padding:18px}.platform-session-workspace-meta{grid-template-columns:1fr}.platform-session-tutor-attendance-fields{grid-template-columns:1fr}.platform-add-attendee>div{align-items:stretch;flex-direction:column}}
-.platform-session-workspace-sheet{width:min(680px,100vw);height:100dvh;max-width:100vw;max-height:100dvh;margin:0 0 0 auto;padding:0;border:0;border-left:1px solid var(--platform-line);border-radius:0;background:#fff;color:var(--platform-ink);box-shadow:-18px 0 48px #170d2420;overflow:hidden}
-.platform-session-workspace-detail{display:block;width:100%;height:100%;max-height:none;overflow-y:auto;padding:clamp(20px,4vw,34px);border:0;border-radius:0;background:transparent;box-shadow:none}
-.platform-session-workspace-sheet .platform-session-workspace-detail>.platform-list-heading{position:sticky;top:0;z-index:3;align-items:flex-start;gap:12px;margin:calc(-1 * clamp(20px,4vw,34px)) calc(-1 * clamp(20px,4vw,34px)) 0;padding:clamp(20px,4vw,34px);border-bottom:1px solid var(--platform-line);background:#fff}
-.platform-session-workspace-top-actions{justify-content:flex-end;gap:6px}
-.platform-session-workspace-top-actions button{flex:0 1 auto;white-space:normal}
-.platform-session-workspace-detail .shadcn-tabs{margin:0}
-.platform-session-workspace-detail .shadcn-tabs-list{position:sticky;top:0;z-index:2;display:flex;gap:4px;overflow-x:auto;border-bottom:1px solid var(--platform-line);background:#fff}
-.platform-session-workspace-detail .shadcn-tabs-trigger{min-width:0;min-height:48px;flex:1 0 0;padding:10px 12px;border:0;border-bottom:2px solid transparent;background:transparent;color:var(--platform-muted);font:inherit;font-size:12px;font-weight:650;white-space:normal;cursor:pointer}
-.platform-session-workspace-detail .shadcn-tabs-trigger[aria-selected="true"]{border-bottom-color:var(--platform-forest);color:var(--platform-forest)}
-.platform-session-workspace-detail .shadcn-tabs-trigger:focus-visible,.platform-session-workspace-detail .shadcn-tabs-content:focus-visible{outline:3px solid #8b70cc;outline-offset:2px}
-.platform-session-workspace-detail .shadcn-tabs-content{min-width:0;padding:18px 0;outline:none}
-.platform-session-workspace-panel{display:grid;gap:20px;min-width:0}
-.platform-session-workspace-actions{padding:8px 0;border:0;border-radius:0;background:transparent}
-.platform-session-workspace-meta{grid-template-columns:repeat(2,minmax(0,1fr));gap:0 22px;padding:8px 0}
-.platform-session-workspace-meta p{min-width:0;margin:0;padding:11px 0;border-bottom:1px solid var(--platform-line);overflow-wrap:anywhere}
-.platform-session-workspace-meta strong{color:var(--platform-deep)}
-.platform-session-workspace-participants,.platform-session-comment,.platform-session-tutor-attendance{padding-top:16px;border-top:1px solid var(--platform-line)}
-.platform-session-tutor-summary{margin:0;padding-bottom:12px;border-bottom:1px solid var(--platform-line)}
-.platform-session-attendee-name{display:grid;gap:3px;min-width:0;overflow-wrap:anywhere}
-.platform-session-attendee-name small{color:var(--platform-muted);font-size:11px;font-weight:600}
-.platform-add-attendee{padding:15px 0;border:0;border-top:1px solid var(--platform-line);border-bottom:1px solid var(--platform-line);border-radius:0;background:transparent}
-.platform-session-last-note{padding:10px 0;border-left:0;border-radius:0;background:transparent;white-space:pre-wrap}
+.platform-session-workspace-participants .platform-attendance{display:grid;gap:0;margin-top:12px}
+.platform-session-workspace-participants .platform-attendance li{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto auto;align-items:center;gap:4px 16px;padding:13px 0;border-top:1px solid var(--platform-line)}
+.platform-session-attendee-name{grid-column:1;grid-row:1/3;display:grid;gap:3px;min-width:0;overflow-wrap:anywhere;color:var(--platform-deep);font-size:13px;font-weight:650}
+.platform-session-attendee-name small{color:var(--platform-muted);font-size:11px;font-weight:500}
+.platform-session-workspace-participants .platform-attendance .platform-status{grid-column:2;grid-row:1;justify-self:end}
+.platform-session-workspace-participants .platform-attendance button{grid-column:2;grid-row:2;justify-self:end;min-height:34px;padding:6px 10px;font-size:11px}
+.platform-session-workspace-participants .platform-attendance button:only-child{grid-row:1/3}
+.platform-add-attendee{display:grid;gap:10px;margin-top:18px;padding:18px 0;border:0;border-top:1px solid var(--platform-line);border-bottom:1px solid var(--platform-line);border-radius:0;background:transparent}
+.platform-add-attendee h4{display:flex;align-items:center;gap:8px;margin:0;color:var(--platform-deep);font-size:14px}
+.platform-add-attendee>div{display:flex;align-items:center;gap:10px}
+.platform-add-attendee>div>:first-child{min-width:0;flex:1}
+.platform-add-attendee>div button{min-height:42px;flex:none}
+.platform-add-attendee p{margin:0;color:var(--platform-muted);font-size:11px;line-height:1.5}
 .platform-session-delete-confirm .platform-editor{max-width:540px;margin:auto}
-@media(max-width:760px){.platform-session-workspace-sheet{inset:0;width:100vw;height:100dvh;max-height:100dvh;margin:0;border:0;border-radius:0}.platform-session-workspace-detail{padding:16px}.platform-session-workspace-sheet .platform-session-workspace-detail>.platform-list-heading{margin:-16px -16px 0;padding:16px;flex-direction:column}.platform-session-workspace-top-actions{width:100%;justify-content:flex-start}.platform-session-workspace-top-actions button{flex:1 1 140px}.platform-session-workspace-detail .shadcn-tabs-trigger{font-size:11px;padding-inline:8px}.platform-session-workspace-meta{grid-template-columns:1fr}.platform-session-tutor-attendance-fields{grid-template-columns:1fr}.platform-add-attendee>div{align-items:stretch;flex-direction:column}}
+.platform-report-metrics,.platform-attendance-metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:4px 0 18px}
+.platform-report-metrics>article,.platform-attendance-metrics>article{display:grid;min-width:0;min-height:112px;align-content:space-between;gap:16px;padding:17px 18px;border:1px solid var(--platform-line);border-radius:14px;background:linear-gradient(145deg,#fff 0%,#faf8fc 100%);box-shadow:0 5px 16px #3920480a}
+.platform-report-metrics>article span,.platform-attendance-metrics>article span{color:var(--platform-muted);font-size:12px;font-weight:600;line-height:1.4}
+.platform-report-metrics>article strong,.platform-attendance-metrics>article strong{color:var(--platform-deep);font-size:clamp(25px,3vw,32px);font-weight:750;line-height:1}
+.platform-attendance-metrics>article:nth-child(1) strong{color:var(--platform-forest)}
+.platform-attendance-metrics>article:nth-child(2) strong{color:#b84d37}
+.platform-attendance-metrics>article:nth-child(3) strong{color:#416e9a}
+@media(max-width:540px){.platform-report-metrics,.platform-attendance-metrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.platform-report-metrics>article,.platform-attendance-metrics>article{min-height:98px;padding:13px;border-radius:11px}.platform-report-metrics>article span,.platform-attendance-metrics>article span{font-size:11px}.platform-report-metrics>article strong,.platform-attendance-metrics>article strong{font-size:26px}}
+.platform-notices{position:fixed;top:16px;right:16px;z-index:2000;display:grid;width:min(420px,calc(100vw - 32px));gap:10px;pointer-events:none}
+.platform-notices:empty{display:none}
+.platform-notices>:is(.platform-error,.platform-success){position:relative;width:auto;margin:0;pointer-events:auto;box-shadow:0 14px 38px #21132d24;animation:platform-toast-in .2s ease-out both}
+.platform-error[role=alert],.platform-success[role=status],.ba-panel-error[role=alert],.ba-panel-notice[role=status]{position:fixed;top:16px;right:16px;z-index:2000;width:min(420px,calc(100vw - 32px));margin:0;padding:14px 17px;border-radius:13px;box-shadow:0 14px 38px #21132d24;animation:platform-toast-in .2s ease-out both}
+.platform-error[role=alert],.ba-panel-error[role=alert]{border:1px solid #e4aaaa;border-left:5px solid #bd3d3d;background:#fff5f4;color:#812a2a}
+.platform-success[role=status],.ba-panel-notice[role=status]{border:1px solid #a9cfb1;border-left:5px solid #38804b;background:#f0faf2;color:#245733}
+.platform-notices .platform-error[role=alert],.platform-notices .platform-success[role=status]{position:relative;top:auto;right:auto;width:auto}
+@keyframes platform-toast-in{from{opacity:0;transform:translateY(-7px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:540px){.platform-notices{top:10px;right:10px;width:calc(100vw - 20px)}.platform-error[role=alert],.platform-success[role=status],.ba-panel-error[role=alert],.ba-panel-notice[role=status]{top:10px;right:10px;width:calc(100vw - 20px);padding:12px 14px}}
+@media(max-width:760px){.platform-session-workspace-sheet{width:100vw}.platform-session-workspace-header{padding:20px 20px 0}.platform-session-workspace-detail .shadcn-tabs-list{gap:4px;padding:0 20px}.platform-session-workspace-detail .shadcn-tabs-content{padding:20px 20px 30px}.platform-session-workspace-top-actions{gap:6px;padding:14px 0}.platform-session-workspace-top-actions button{flex:1 1 auto;padding-inline:10px;font-size:11px}.platform-session-workspace-meta{grid-template-columns:1fr 1fr;gap:0 18px}.platform-session-tutor-attendance-fields{grid-template-columns:minmax(0,1fr)}.platform-session-tutor-attendance-fields>button{grid-column:1;justify-self:stretch}.platform-add-attendee>div{align-items:stretch;flex-direction:column}.platform-add-attendee>div button{width:100%}}
+@media(max-width:420px){.platform-session-workspace-header{padding:16px 16px 0}.platform-session-workspace-detail .shadcn-tabs-list{padding:0 16px}.platform-session-workspace-detail .shadcn-tabs-content{padding:18px 16px 26px}.platform-session-workspace-heading{gap:10px}.platform-session-workspace-heading h2{font-size:22px}.platform-session-workspace-top-actions{align-items:stretch}.platform-session-workspace-top-actions button{flex:1 1 100%;justify-content:center}.platform-session-workspace-detail .shadcn-tabs-trigger{flex:1 1 0;padding-inline:4px;font-size:11px;white-space:normal}.platform-session-workspace-meta{grid-template-columns:1fr}.platform-session-workspace-meta .platform-session-workspace-recurrence{grid-column:auto}.platform-session-workspace-participants .platform-attendance li{gap:5px 10px}}
 @media(max-width:760px){.platform-calendar-day{min-height:76px;padding:4px}.platform-calendar-row{gap:3px}.platform-calendar-grid{gap:3px}.platform-calendar-event{padding:4px;font-size:9px}.platform-calendar-controls{flex-wrap:wrap}.platform-calendar-day-summary{align-items:flex-start;flex-direction:column}}
 @media(max-width:480px){.platform-calendar-day{min-height:56px;padding:2px;border-radius:7px}.platform-calendar-weekday{padding:5px 2px;font-size:9px}.platform-calendar-count{min-width:16px;height:16px;font-size:9px}.planner-calendar-events .platform-calendar-event{max-height:18px;padding:2px;font-size:8px}}
 
