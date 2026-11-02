@@ -7,7 +7,7 @@ const model=JSON.parse(readFileSync(new URL('../../docs/data-model.json',import.
 const expectedPrivate=[
   'platform_access_settings','platform_accounts','platform_attendance','platform_audit',
   'platform_donations','platform_due_payments','platform_dues','platform_expenses',
-  'platform_financings','platform_locks','platform_profiles','platform_records','platform_sessions'
+  'platform_financings','platform_locks','platform_planner_tasks','platform_profiles','platform_records','platform_sessions'
 ].sort();
 
 test('physical data model inventories every private platform collection',()=>{

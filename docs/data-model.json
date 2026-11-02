@@ -32,7 +32,7 @@
       "classification": "restricted",
       "retentionCategory": "sessions",
       "access": "server-mediated",
-      "purpose": "Learning/support sessions and scheduling"
+      "purpose": "Learning/support sessions, attendance opening state, and tutor session notes"
     },
     {
       "name": "platform_attendance",
@@ -40,7 +40,7 @@
       "classification": "highly-restricted",
       "retentionCategory": "attendance",
       "access": "server-mediated",
-      "purpose": "Attendance, absence and related state"
+      "purpose": "Per-student attendance state, absence reasons and session notes"
     },
     {
       "name": "platform_records",
@@ -48,7 +48,15 @@
       "classification": "highly-restricted",
       "retentionCategory": "records",
       "access": "server-mediated",
-      "purpose": "Assignments, materials, documents, messages, assessments and justifications"
+      "purpose": "Assignments, materials, documents, messages, assessments and reviewed absence justifications"
+    },
+    {
+      "name": "platform_planner_tasks",
+      "domain": "association-planning",
+      "classification": "restricted",
+      "retentionCategory": "records",
+      "access": "server-mediated",
+      "purpose": "Association planning tasks, assignees, status and dates"
     },
     {
       "name": "platform_dues",

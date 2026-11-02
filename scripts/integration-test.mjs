@@ -85,10 +85,12 @@ try {
   const start=new Date(Date.now()-86400000).toISOString(),end=new Date(Date.now()-82800000).toISOString();
   const session={title:'Sessão de teste',studentIds:['s1','s2'],tutorId:'t1',room:'Teste A',startsAt:start,endsAt:end};
   const created=await expect('admin',{action:'create-session',session});
+  await expect('admin',{action:'open-attendance',sessionId:created.id,version:1});
   await expect('admin',{action:'set-attendance',sessionId:created.id,studentId:'s1',status:'present',version:0});
-  await expect('admin',{action:'set-attendance',sessionId:created.id,studentId:'s2',status:'absent',version:0});
+  await expect('admin',{action:'set-attendance',sessionId:created.id,studentId:'s2',status:'absent',reasonCode:'illness',version:0});
   await expect('admin',{action:'create-session',session},409);
   const otherSession=await expect('admin',{action:'create-session',session:{...session,studentIds:['s3'],tutorId:'t2',room:'Teste B'}});
+  await expect('admin',{action:'open-attendance',sessionId:otherSession.id,version:1});
   await expect('admin',{action:'set-attendance',sessionId:otherSession.id,studentId:'s3',status:'present',version:0});
   for(const [name,ownStudent,otherStudent] of [['student','s1','s2'],['guardian','s1','s2'],['otherStudent','s2','s1'],['otherGuardian','s2','s1']]){
     const result=await expect(name);
@@ -136,7 +138,7 @@ try {
   await expect('tutor',{action:'save-record',record:{...assessment,id:saved.id,version:1,score:16}},409);
   await expect('tutor',{action:'save-record',record:{...assessment,score:22}},400);
   console.log('PASS: record permissions, scale validation and optimistic concurrency.');
-  const presence={action:'set-attendance',sessionId:created.id,studentId:'s1',status:'present',version:1};
+  const presence={action:'set-attendance',sessionId:created.id,studentId:'s1',status:'absent',reasonCode:'unknown',version:1};
   await expect('student',presence,403);await expect('otherTutor',presence,403);await expect('tutor',presence);await expect('tutor',presence,409);
   await expect('guardian',{action:'save-record',record:{kind:'justification',studentId:'s1',title:'Motivo de teste',content:'Texto sintético',sessionId:created.id}});
   await expect('otherGuardian',{action:'save-record',record:{kind:'justification',studentId:'s1',title:'Motivo de teste',content:'Texto sintético',sessionId:created.id}},403);

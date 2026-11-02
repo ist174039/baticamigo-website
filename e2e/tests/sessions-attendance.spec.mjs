@@ -27,6 +27,10 @@ test('session lifecycle: CRUD, conflict prevention, attendance, optimistic concu
  expect(tutorView.status()).toBe(200);
  const tutorSession=(await tutorView.json()).sessions.find(s=>s.id===id);
  expect(tutorSession.studentIds).toContain('e2e-profile-student');
+ const opened=await post(request,tutor,{action:'open-attendance',sessionId:id,version:tutorSession.version});
+ expect(opened.status(),await opened.text()).toBe(200);
+ const note=await post(request,tutor,{action:'save-session-comment',sessionId:id,version:tutorSession.version+1,comment:'Nota sintética da sessão'});
+ expect(note.status(),await note.text()).toBe(200);
  const studentView=await request.get('/api/platform',{headers:{Authorization:'Bearer '+student}});
  expect((await studentView.json()).sessions.find(s=>s.id===id).studentIds).toContain('e2e-profile-student');
  const guardianView=await request.get('/api/platform',{headers:{Authorization:'Bearer '+guardian}});
@@ -43,7 +47,9 @@ test('session lifecycle: CRUD, conflict prevention, attendance, optimistic concu
  const own=(await attendanceRead.json()).attendance.filter(a=>a.sessionId===id);
  expect(own).toHaveLength(1);
  expect(own[0].status).toBe('present');
- const cancelled=await post(request,admin,{action:'update-session',id,version:1,status:'cancelled',session:sessionInput});
+ expect(own[0]).not.toHaveProperty('reason');
+ expect(own[0]).not.toHaveProperty('reasonCode');
+ const cancelled=await post(request,admin,{action:'update-session',id,version:tutorSession.version+2,status:'cancelled',session:sessionInput});
  expect(cancelled.status(),await cancelled.text()).toBe(200);
  const stale=await post(request,admin,{action:'update-session',id,version:1,status:'scheduled',session:sessionInput});
  expect(stale.status()).toBe(409);

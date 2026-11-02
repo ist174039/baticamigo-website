@@ -16,6 +16,10 @@ test('learning records: assignments, materials, legacy documents, assessments, m
  const createdSession=await post({action:'create-session',session});
  expect(createdSession.status(),await createdSession.text()).toBe(200);
  const sessionId=(await createdSession.json()).id;
+ const opened=await post({action:'open-attendance',sessionId,version:1});
+ expect(opened.status(),await opened.text()).toBe(200);
+ const absent=await post({action:'set-attendance',sessionId,studentId,status:'absent',reasonCode:'illness',reason:'Motivo fictício de teste',comment:'Registo sintético',version:0});
+ expect(absent.status(),await absent.text()).toBe(200);
  const records=[
   {kind:'assignment',title:'Trabalho sintético',content:'Exercício de interpretação',dueAt:'2026-12-31',shareWithRoles:['guardian']},
   {kind:'material',title:'Material sintético',content:'Conteúdo pedagógico de teste',shareWithProfileIds:['e2e-profile-guardian']},
@@ -31,6 +35,11 @@ test('learning records: assignments, materials, legacy documents, assessments, m
   expect(res.status(),record.kind+': '+await res.text()).toBe(200);
   created.push({kind:record.kind,id:(await res.json()).id});
  }
+ const justification=created.find(record=>record.kind==='justification');
+ const reviewed=await post({action:'review-justification',recordId:justification.id,version:1,decision:'approved',reviewNote:'Análise sintética'});
+ expect(reviewed.status(),await reviewed.text()).toBe(200);
+ const afterReview=await request.get('/api/platform',{headers:headers(admin)});
+ expect((await afterReview.json()).attendance.find(record=>record.sessionId===sessionId&&record.studentId===studentId).status).toBe('excused');
  for(const [role,token] of [['student',student],['guardian',guardian]]){
   const response=await request.get('/api/platform',{headers:{Authorization:'Bearer '+token}});
   expect(response.status(),role).toBe(200);
