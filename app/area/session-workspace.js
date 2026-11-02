@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CalendarClock, Check, UserRoundPlus } from "lucide-react";
+import { CalendarClock, Check, UserRoundPlus, X } from "lucide-react";
 import { Button } from "@/app/components/ui/button";
 import { NativeSelect } from "@/app/components/ui/native-select";
 import { SearchableSelect } from "@/app/components/ui/searchable-select";
@@ -52,13 +52,13 @@ export default function SessionWorkspace({
       {canComplete && active && <Button type="button" variant="outline" disabled={busy} onClick={() => onComplete(session)}>Terminar sessão</Button>}
     </div>
 
-    <div className="platform-session-workspace-meta">
-      <p><strong>Início:</strong> {dateTime(session.startsAt)}</p>
-      <p><strong>Fim:</strong> {dateTime(session.endsAt)}</p>
-      <p><strong>Explicador:</strong> {profileName(session.tutorId)}</p>
-      <p><strong>Sala:</strong> {session.room || "Por definir"}</p>
-      {session.recurrence && <p><strong>Repetição:</strong> {recurrenceText(session.recurrence)} · ocorrência {session.recurrence.occurrence} de {session.recurrence.total}</p>}
-    </div>
+    <dl className="platform-session-workspace-meta">
+      <div><dt>Início</dt><dd>{dateTime(session.startsAt)}</dd></div>
+      <div><dt>Fim</dt><dd>{dateTime(session.endsAt)}</dd></div>
+      <div><dt>Explicador</dt><dd>{profileName(session.tutorId)}</dd></div>
+      <div><dt>Sala</dt><dd>{session.room || "Por definir"}</dd></div>
+      {session.recurrence && <div className="platform-session-workspace-recurrence"><dt>Repetição</dt><dd>{recurrenceText(session.recurrence)} · ocorrência {session.recurrence.occurrence} de {session.recurrence.total}</dd></div>}
+    </dl>
 
     {canManageAttendance && hasStarted && session.status !== "cancelled" && session.status !== "postponed" && <form className="platform-session-comment" onSubmit={event => onSaveComment(event, session)}>
       <h3>Notas da sessão</h3>
@@ -90,15 +90,17 @@ export default function SessionWorkspace({
 
   return <Sheet open ariaLabel={session.title || "Sessão"} className="platform-dialog platform-context-sheet platform-session-workspace-sheet" onOpenChange={open => { if (!open) onClose(); }}>
     <section className="platform-session-workspace-detail">
-      <div className="platform-list-heading">
-        <div><p className="platform-eyebrow">Sessão · {sessionNames[session.status] || session.status}</p><h2>{session.title}</h2></div>
+      <header className="platform-session-workspace-header">
+        <div className="platform-session-workspace-heading">
+          <div><p className="platform-eyebrow"><span>Sessão</span><span aria-hidden="true">·</span><span className={`platform-session-workspace-status is-${session.status}`}>{sessionNames[session.status] || session.status}</span></p><h2>{session.title}</h2></div>
+          <Button type="button" variant="outline" className="platform-session-workspace-close" aria-label="Fechar detalhes da sessão" onClick={onClose}><X size={17}/></Button>
+        </div>
         <div className="platform-record-actions platform-session-workspace-top-actions">
           {manager && session.status !== "in_progress" && session.status !== "completed" && <Button type="button" variant="outline" onClick={() => onEdit(session)}>Editar sessão</Button>}
           {canDeleteSession && <Button type="button" variant="destructive" disabled={busy} onClick={() => setDeleteScope("single")}>Apagar sessão</Button>}
           {canDeleteSession && hasSeries && <Button type="button" variant="destructive" disabled={busy} onClick={() => setDeleteScope("series")}>Apagar todas as ocorrências</Button>}
-          <Button type="button" variant="outline" onClick={onClose}>Fechar</Button>
         </div>
-      </div>
+      </header>
       <Tabs tabs={[{ value: "info", label: "Informações da sessão", content: infoPanel }, { value: "attendance", label: "Presenças", content: attendancePanel }]} value={activeTab} onValueChange={setActiveTab} ariaLabel="Detalhes da sessão"/>
     </section>
     <Dialog open={!!deleteScope} onOpenChange={open => { if (!open && !busy) setDeleteScope(null); }} ariaLabel={deleteScope === "series" ? "Confirmar eliminação das ocorrências" : "Confirmar eliminação da sessão"} className="platform-dialog platform-session-delete-confirm">
