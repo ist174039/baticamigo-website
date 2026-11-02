@@ -6,6 +6,7 @@ import { Checkbox } from "@/app/components/ui/checkbox";
 import { Input } from "@/app/components/ui/input";
 import { Label } from "@/app/components/ui/label";
 import { NativeSelect } from "@/app/components/ui/native-select";
+import { SearchableSelect } from "@/app/components/ui/searchable-select";
 import { Sheet } from "@/app/components/ui/sheet";
 
 const stepLabels = ["Detalhes", "Participantes", "Revisão"];
@@ -13,11 +14,6 @@ const frequencyLabels = { none: "Não repetir", week: "Durante uma semana", mont
 
 function Field({ label, children }) {
   return <Label className="platform-field"><span>{label}</span>{children}</Label>;
-}
-
-function Choices({ label, name, options, initial = [], required = false }) {
-  const [checked, setChecked] = useState(initial);
-  return <fieldset className="platform-choices"><legend>{label}{required ? " *" : ""}</legend>{options.length ? <div className="platform-choice-list">{options.map((option, index) => <label className="platform-check" key={option.id}><Checkbox name={name} value={option.id} checked={checked.includes(option.id)} required={required && checked.length === 0 && index === 0} onChange={event => setChecked(event.target.checked ? [...checked, option.id] : checked.filter(id => id !== option.id))}/><span>{option.name}</span></label>)}</div> : <p className="platform-hint">Ainda não existem perfis disponíveis para associar.</p>}</fieldset>;
 }
 
 function SessionStepIndicator({ step }) {
@@ -91,10 +87,10 @@ export default function SessionEditor({ open, onOpenChange, editingSession, sess
           </section>
           <section className="platform-session-form-section" data-session-step="2" hidden={isCreating && step !== 2}>
             <h3>Participantes</h3>
-            <Field label="Explicador / organizador"><NativeSelect name="tutorId" required defaultValue={editingSession?.tutorId || ""}><option value="" disabled>Selecionar explicador</option>{tutors.filter(profile => profile.active || profile.id === editingSession?.tutorId).map(profile => <option key={profile.id} value={profile.id}>{profile.name}</option>)}</NativeSelect></Field>
-            <Choices label="Alunos convidados" name="studentIds" required options={students.filter(profile => profile.active || editingSession?.studentIds.includes(profile.id))} initial={editingSession?.studentIds || []}/>
+            <Field label="Explicador / organizador"><SearchableSelect name="tutorId" required ariaLabel="Pesquisar explicadores" placeholder="Pesquisar explicador" defaultValue={editingSession?.tutorId || ""} options={tutors.filter(profile => profile.active || profile.id === editingSession?.tutorId).map(profile => ({value:profile.id,label:profile.name,description:profile.subjects || "Explicador"}))}/></Field>
+            <fieldset className="platform-choices"><legend>Alunos convidados *</legend>{students.length ? <SearchableSelect name="studentIds" multiple required ariaLabel="Pesquisar e selecionar alunos convidados" placeholder="Pesquisar aluno" defaultValue={editingSession?.studentIds || []} options={students.filter(profile => profile.active || editingSession?.studentIds.includes(profile.id)).map(profile => ({value:profile.id,label:profile.name,description:profile.schoolYear || "Aluno",keywords:[profile.ageBand || "",...(profile.subjects || "").split(",")]}))}/> : <p className="platform-hint">Ainda não existem alunos ativos disponíveis.</p>}</fieldset>
             {!editingSession && <section className="platform-session-recurrence"><h3>Repetição</h3><Field label="Repetir"><NativeSelect name="frequency" value={sessionFrequency} onChange={event => setSessionFrequency(event.target.value)}><option value="none">Não repetir</option><option value="week">Durante uma semana</option><option value="month">Durante um mês</option><option value="year">Durante um ano</option></NativeSelect></Field>{sessionFrequency !== "none" && <><fieldset className="platform-weekday-picker"><legend>Repetir nos dias</legend><div>{[{value:1,label:"Segunda"},{value:2,label:"Terça"},{value:3,label:"Quarta"},{value:4,label:"Quinta"},{value:5,label:"Sexta"},{value:6,label:"Sábado"},{value:7,label:"Domingo"}].map(day => <label key={day.value}><Checkbox name="weekdays" value={day.value} checked={selectedSessionWeekdays.includes(day.value)} onChange={event => setSelectedSessionWeekdays(current => event.target.checked ? [...current, day.value].sort((a, b) => a - b) : current.filter(value => value !== day.value))}/><span>{day.label}</span></label>)}</div></fieldset><p className="platform-hint">A sessão será repetida nos dias e durante o período escolhidos.</p></>}</section>}
-            {editingSession && <Field label="Estado da sessão"><NativeSelect name="status" defaultValue={editingSession.status}><option value="scheduled">Agendada</option><option value="cancelled">Cancelada</option></NativeSelect></Field>}
+            {editingSession && <Field label="Estado da sessão"><NativeSelect name="status" defaultValue={editingSession.status}><option value="scheduled">Agendada</option><option value="cancelled">Cancelada</option><option value="postponed">Adiada</option></NativeSelect></Field>}
           </section>
           {!editingSession && <section className="platform-session-form-section platform-session-review" hidden={step !== 3} aria-labelledby="platform-session-review-title"><h3 id="platform-session-review-title">Confirme a sessão</h3>{review && <dl><div><dt>Título</dt><dd>{review.title}</dd></div><div><dt>Data e hora</dt><dd>{review.startsAt.replace("T", " · ")}–{review.endsAt.slice(11)}</dd></div><div><dt>Explicador</dt><dd>{review.tutor}</dd></div><div><dt>Alunos</dt><dd>{review.students.join(", ")}</dd></div>{review.room && <div><dt>Sala ou ligação</dt><dd>{review.room}</dd></div>}<div><dt>Repetição</dt><dd>{review.frequency}{review.weekdays ? ` · ${review.weekdays}` : ""}</dd></div></dl>}</section>}
           <div className="platform-actions">

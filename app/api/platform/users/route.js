@@ -72,24 +72,27 @@ async function requirePlatformAccount(db, uid) {
   return snapshot.data();
 }
 
-async function profileReferences(db, profileId, profile, tx) {
+async function profileReferences(db, profileId, profile, tx, ignoredAccountUid = "") {
   const queries = [
-    collection(db, "accounts").where("profileIds", "array-contains", profileId).limit(1),
+    collection(db, "accounts").where("profileIds", "array-contains", profileId).limit(2),
     collection(db, "profiles").where("guardianIds", "array-contains", profileId).limit(1),
     collection(db, "sessions").where("tutorId", "==", profileId).limit(1),
     collection(db, "sessions").where("studentIds", "array-contains", profileId).limit(1),
     collection(db, "records").where("studentId", "==", profileId).limit(1),
+    collection(db, "records").where("shareWithProfileIds", "array-contains", profileId).limit(1),
     collection(db, "attendance").where("studentId", "==", profileId).limit(1),
     collection(db, "dues").where("memberId", "==", profileId).limit(1),
+    collection(db, "planner_tasks").where("assigneeProfileIds", "array-contains", profileId).limit(1),
   ];
-  const [accounts, dependents, tutorSessions, studentSessions, records, attendance, dues] = await Promise.all(queries.map(query => tx ? tx.get(query) : query.get()));
+  const [accounts, dependents, tutorSessions, studentSessions, records, sharedRecords, attendance, dues, plannerTasks] = await Promise.all(queries.map(query => tx ? tx.get(query) : query.get()));
   return profileDependencyReasons({
-    account: Boolean(profile.accountUid) || !accounts.empty,
+    account: Boolean(profile.accountUid && profile.accountUid !== ignoredAccountUid) || accounts.docs.some(doc => doc.id !== ignoredAccountUid),
     dependents: !dependents.empty,
     sessions: !tutorSessions.empty || !studentSessions.empty,
-    records: !records.empty,
+    records: !records.empty || !sharedRecords.empty,
     attendance: !attendance.empty,
     dues: !dues.empty,
+    plannerTasks: !plannerTasks.empty,
   });
 }
 
@@ -284,13 +287,41 @@ export async function PATCH(request) {
       });
       return json({saved:true,accessProfiles});
     }
+    if(body.action==="update-account-name") {
+      assert(Object.keys(body).every(key=>["action","uid","displayName"].includes(key)),"Campo não permitido.");
+      const uid=String(body.uid||"").trim();
+      assert(uid&&uid.length<=128&&uid!==account.uid,"Selecione uma conta válida.",403);
+      const displayName=String(body.displayName||"").trim();
+      assert(displayName.length>0&&displayName.length<=100,"O nome da conta deve ter entre 1 e 100 caracteres.");
+      const target=await auth.getUser(uid);
+      assert(!isBootstrapAdmin(target.email,true),"O nome da conta administradora principal é gerido pela configuração.",403);
+      const accountRef=collection(db,"accounts").doc(uid);
+      await auth.updateUser(uid,{displayName});
+      try {
+        await db.runTransaction(async tx=>{
+          const lockRef=collection(db,"locks").doc("platform-admins");
+          await tx.get(lockRef);
+          const current=await tx.get(accountRef);
+          assert(current.exists,"A conta não tem acesso configurado.",404);
+          tx.set(accountRef,{...current.data(),displayName});
+          tx.set(lockRef,{updatedAt:Date.now()});
+          audit(tx,db,account,"rename-platform-user",uid);
+        });
+      } catch(error) {
+        try { await auth.updateUser(uid,{displayName:target.displayName||""}); } catch { /* Admin can reconcile if Auth compensation fails. */ }
+        throw error;
+      }
+      return json({saved:true,displayName});
+    }
     const uid = String(body.uid || "").trim();
     assert(uid && uid.length <= 128, "Selecione uma conta válida.");
     assert(uid !== account.uid, "Não pode alterar o seu próprio acesso.", 403);
     const target = await auth.getUser(uid);
 
     if (body.action === "update-access") {
-      assert(Object.keys(body).every((key) => ["action", "uid", "roles", "profileIds", "profilesToCreate", "active"].includes(key)), "Campo não permitido.");
+      assert(Object.keys(body).every((key) => ["action", "uid", "roles", "profileIds", "profilesToCreate", "active", "displayName"].includes(key)), "Campo não permitido.");
+      const displayName = String(body.displayName || target.displayName || "").trim();
+      assert(displayName.length > 0 && displayName.length <= 100, "O nome da conta deve ter entre 1 e 100 caracteres.");
       assert(body.profileIds === undefined || Array.isArray(body.profileIds), "Perfis inválidos.");
       assert(body.profilesToCreate === undefined || (Array.isArray(body.profilesToCreate) && body.profilesToCreate.length <= 10), "Registos de pessoa inválidos.");
       const inputs = (body.profilesToCreate || []).map(profileInput);
@@ -313,7 +344,10 @@ export async function PATCH(request) {
       const value = accountInput({ uid, roles: body.roles, profileIds: requestedIds, active: body.active });
       const bootstrap = bootstrapAdmin(target);
       assert(!bootstrap || value.roles.includes("admin"), "Esta conta é administradora de configuração; conserve a permissão de administrador.", 409);
-      await db.runTransaction(async (tx) => {
+      const accountNameChanged = (target.displayName || "") !== displayName;
+      if (accountNameChanged) await auth.updateUser(uid, { displayName });
+      try {
+        await db.runTransaction(async (tx) => {
         const lockRef = collection(db, "locks").doc("platform-admins");
         await tx.get(lockRef);
         const accountRef = collection(db, "accounts").doc(uid);
@@ -333,13 +367,19 @@ export async function PATCH(request) {
         removedProfiles.forEach((profile, index) => { if (profile.exists && profile.data().accountUid === uid) tx.set(removedRefs[index], { ...profile.data(), accountUid: "" }); });
         linked.forEach((profile) => {
           if (profile.isNew) tx.create(profile.ref, profile.data);
-          else tx.set(profile.ref, { ...profile.data, name: target.displayName || profile.data.name, email: target.email || profile.data.email || "", accountUid: uid });
+          else tx.set(profile.ref, { ...profile.data, email: target.email || profile.data.email || "", accountUid: uid });
         });
-        tx.set(accountRef, { ...value, suspended: previous.data()?.suspended === true });
+        tx.set(accountRef, { ...value, displayName, suspended: previous.data()?.suspended === true });
         tx.set(lockRef, { updatedAt: Date.now() });
         audit(tx, db, account, "update-platform-user-access", uid);
-      });
-      return json({ saved: true });
+        });
+      } catch (error) {
+        if (accountNameChanged) {
+          try { await auth.updateUser(uid, { displayName: target.displayName || "" }); } catch { /* Admin can reconcile if Auth compensation fails. */ }
+        }
+        throw error;
+      }
+      return json({ saved: true, accountNameUpdated: accountNameChanged });
     }
 
     assert(["suspend", "restore"].includes(body.action) && Object.keys(body).every((key) => ["action", "uid"].includes(key)), "Operação inválida.");
@@ -375,7 +415,9 @@ export async function DELETE(request) {
   try {
     const { db, account, auth } = await adminContext(request);
     const body = await readJson(request);
-    assert(Object.keys(body).every((key) => key === "uid"), "Campo não permitido.");
+    assert(Object.keys(body).every((key) => ["uid", "deleteLinkedProfiles"].includes(key)), "Campo não permitido.");
+    assert(body.deleteLinkedProfiles === undefined || typeof body.deleteLinkedProfiles === "boolean", "Opção de eliminação de perfis inválida.");
+    const deleteLinkedProfiles = body.deleteLinkedProfiles === true;
     const uid = String(body.uid || "").trim();
     assert(uid && uid.length <= 128, "Selecione uma conta válida.");
     assert(uid !== account.uid, "Não pode remover a sua própria conta.", 403);
@@ -384,9 +426,10 @@ export async function DELETE(request) {
     const targetRef = collection(db, "accounts").doc(uid);
     const linkedQuery = await collection(db, "profiles").where("accountUid", "==", uid).get();
     await auth.updateUser(uid, { disabled: true });
+    let profilesDeleted = 0;
     try {
       await auth.revokeRefreshTokens(uid);
-      await db.runTransaction(async (tx) => {
+      profilesDeleted = await db.runTransaction(async (tx) => {
         const lockRef = collection(db, "locks").doc("platform-admins");
         await tx.get(lockRef);
         const current = await tx.get(targetRef);
@@ -400,10 +443,21 @@ export async function DELETE(request) {
             || users.some((user) => user.uid !== uid && !user.disabled && isAdmin(null, user));
           assert(remaining, "Não pode remover a última conta administradora ativa.", 409);
         }
-        profiles.forEach((profile, index) => { if (profile.exists && profile.data().accountUid === uid) tx.update(profileRefs[index], { accountUid: "" }); });
+        const profilesToDelete = [];
+        for (let index = 0; index < profiles.length; index += 1) {
+          const profile = profiles[index];
+          if (!profile.exists) continue;
+          if (deleteLinkedProfiles) {
+            const dependencyReasons = await profileReferences(db, ids[index], profile.data(), tx, uid);
+            assert(dependencyReasons.length === 0, `Não é possível apagar o registo ${profile.data().name || ids[index]}: existem dados associados (${dependencyReasons.join(", ")}).`, 409);
+            profilesToDelete.push({ id: ids[index], ref: profileRefs[index], kind: profile.data().kind });
+          } else if (profile.data().accountUid === uid) tx.update(profileRefs[index], { accountUid: "" });
+        }
+        profilesToDelete.forEach(({ ref }) => tx.delete(ref));
         if (current.exists) tx.delete(targetRef);
         tx.set(lockRef, { updatedAt: Date.now() });
-        audit(tx, db, account, "delete-platform-user", uid, { profileIds: ids });
+        audit(tx, db, account, "delete-platform-user", uid, { profileIds: ids, profilesDeleted: profilesToDelete.map(({ id }) => id) });
+        return profilesToDelete.length;
       });
     } catch (error) {
       try { await auth.updateUser(uid, { disabled: target.disabled }); } catch { /* Leave account disabled if compensation fails. */ }
@@ -411,9 +465,9 @@ export async function DELETE(request) {
     }
     try {
       await auth.deleteUser(uid);
-      return json({ deleted: true, profilesPreserved: true });
+      return json({ deleted: true, profilesPreserved: !deleteLinkedProfiles, profilesDeleted });
     } catch {
-      return json({ deleted: true, profilesPreserved: true, authCleanupPending: true });
+      return json({ deleted: true, profilesPreserved: !deleteLinkedProfiles, profilesDeleted, authCleanupPending: true });
     }
   } catch (error) { return failure(error); }
 }
