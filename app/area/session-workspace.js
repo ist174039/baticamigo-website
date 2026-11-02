@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CalendarClock, Check, UserRoundPlus, X } from "lucide-react";
 import { Button } from "@/app/components/ui/button";
 import { NativeSelect } from "@/app/components/ui/native-select";
@@ -19,6 +19,17 @@ export default function SessionWorkspace({
   const [tutorStatus, setTutorStatus] = useState(session?.tutorAttendance?.status || "");
   const [activeTab, setActiveTab] = useState("info");
   const [deleteScope, setDeleteScope] = useState(null);
+  const [now, setNow] = useState(() => Date.now());
+  const sessionId = session?.id;
+  const sessionStartsAt = session?.startsAt;
+  const sessionStatus = session?.status;
+  const startAvailable = !!session && Date.parse(session.startsAt) <= now;
+
+  useEffect(() => {
+    if (!sessionId || sessionStatus !== "scheduled" || startAvailable) return undefined;
+    const timer = setTimeout(() => setNow(Date.now()), Math.max(0, Date.parse(sessionStartsAt) - Date.now()) + 50);
+    return () => clearTimeout(timer);
+  }, [sessionId, sessionStartsAt, sessionStatus, startAvailable]);
 
   if (!session) return null;
   const participants = session.studentIds.map(id => ({
@@ -47,7 +58,7 @@ export default function SessionWorkspace({
 
   const infoPanel = <div className="platform-session-workspace-panel">
     <div className="platform-session-workspace-actions">
-      {canStart && session.status === "scheduled" && <Button type="button" className="platform-primary" disabled={busy} onClick={() => onStart(session)}><CalendarClock size={16}/> Entrar e iniciar sessão</Button>}
+      {canStart && session.status === "scheduled" && <Button type="button" className="platform-primary" disabled={busy || !startAvailable} title={!startAvailable ? `Disponível a partir de ${dateTime(session.startsAt)}` : undefined} onClick={() => onStart(session)}><CalendarClock size={16}/> {startAvailable ? "Entrar e iniciar sessão" : "Iniciar à hora marcada"}</Button>}
       {active && <span className="platform-status is-active"><Check size={14}/> Sessão em curso · presenças abertas</span>}
       {canComplete && active && <Button type="button" variant="outline" disabled={busy} onClick={() => onComplete(session)}>Terminar sessão</Button>}
     </div>
