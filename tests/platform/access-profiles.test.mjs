@@ -23,10 +23,11 @@ test('shared calendar metadata hides unrelated participant and tutor identifiers
   assert.deepEqual(sessionsWithAuthorizedAttendees([shared,authorized]),[authorized]);
 });
 
-test('administrator access profile always retains every platform menu',()=>{
+test('administrator access profile normalizes older menu lists to every platform area',()=>{
   const profiles={...defaultAccessProfiles,admin:['overview']};
-  assert.equal(validateAccessProfiles(profiles),null);
-  assert.deepEqual(defaultAreasForRoles(['admin'],defaultAccessProfiles),areaModules);
+  const normalized=validateAccessProfiles(profiles);
+  assert.deepEqual(normalized.admin,areaModules);
+  assert.deepEqual(defaultAreasForRoles(['admin'],normalized),areaModules);
 });
 
 test('tutors and volunteers receive the justifications area to record planned absences',()=>{
