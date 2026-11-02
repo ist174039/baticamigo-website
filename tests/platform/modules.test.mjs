@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {moduleInput,canReadRecord,canWriteRecord,progressSummary} from '../../lib/platform/modules.mjs';
+import {moduleInput,canReadRecord,canWriteRecord,progressSummary,isAttendanceSessionVisible} from '../../lib/platform/modules.mjs';
 import {profileInput} from '../../lib/platform/domain.mjs';
 import {escapeHtml,safeMediaUrl} from '../../public/shared/safe-content.mjs';
 const student={id:'s1',kind:'student',guardianIds:['g1']};
@@ -52,6 +52,24 @@ test('qualitative evidence stays qualitative; comparisons require matching scale
   assert.deepEqual(summary.subjects[0].evidenceIds,['r1','r2']);
   const mixed=progressSummary(student,[records[0],{...records[1],scaleMax:100}],[],sessions);
   assert.equal(mixed.subjects[0].change,null);
+});
+test('attendance overviews include lifecycle sessions while progress summaries retain completed and legacy history',()=>{
+  const old='2000-01-01T10:00:00.000Z';
+  const oldEnd='2000-01-01T11:00:00.000Z';
+  const history=[
+    {id:'legacy',status:'scheduled',studentIds:['s1'],startsAt:old,endsAt:oldEnd},
+    {id:'started',status:'in_progress',studentIds:['s1'],startsAt:old,endsAt:oldEnd},
+    {id:'done',status:'completed',studentIds:['s1'],startsAt:old,endsAt:oldEnd},
+    {id:'finished-early',status:'completed',studentIds:['s1'],startsAt:'2099-01-01T10:00:00.000Z',endsAt:'2099-01-01T11:00:00.000Z'},
+    {id:'cancelled',status:'cancelled',studentIds:['s1'],startsAt:old,endsAt:oldEnd},
+  ];
+  assert.deepEqual(history.map(isAttendanceSessionVisible),[true,true,true,true,false]);
+  const attendance=[{sessionId:'legacy',studentId:'s1',status:'present'},{sessionId:'done',studentId:'s1',status:'absent'}];
+  const summary=progressSummary(student,[],attendance,history);
+  assert.equal(summary.scheduled,3);
+  assert.equal(summary.registered,2);
+  assert.equal(summary.present,1);
+  assert.equal(summary.missing,1);
 });
 test('member profiles preserve nonfinancial details and reject invalid states',()=>{
   assert.equal(profileInput({kind:'member',name:'Sócio teste',active:true,memberNumber:'42',membershipStatus:'pending'}).membershipStatus,'pending');

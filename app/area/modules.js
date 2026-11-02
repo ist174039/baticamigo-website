@@ -11,7 +11,7 @@ import {Dialog} from '@/app/components/ui/dialog';
 import {Sheet} from '@/app/components/ui/sheet';
 import {Table,TableBody,TableCaption,TableCell,TableHead,TableHeader,TableRow} from '@/app/components/ui/table';
 import {lisbonDateTimeInput} from '../../lib/platform/time.mjs';
-import {progressSummary} from '../../lib/platform/modules.mjs';
+import {progressSummary,isAttendanceSessionVisible} from '../../lib/platform/modules.mjs';
 import {dueStatus} from '../../lib/platform/finance.mjs';
 import {printReport} from '../../lib/platform/print-report.mjs';
 
@@ -115,7 +115,7 @@ function AttendanceOverview({data,people,selectedPerson,manager,busy,onMarkAbsen
   const profileIds=new Set(people.filter(profile=>profile.kind==='student'&&(!selectedPerson||selectedPerson===profile.id)).map(profile=>profile.id));
   const canMark=manager||roles.some(role=>['tutor','volunteer'].includes(role));
   const linked=data.account.profileIds||[data.account.profileId].filter(Boolean);
-  const sessions=data.sessions.filter(session=>session.status==='scheduled'&&session.studentIds.some(id=>profileIds.has(id))).sort((a,b)=>b.startsAt.localeCompare(a.startsAt));
+  const sessions=data.sessions.filter(session=>isAttendanceSessionVisible(session)&&session.studentIds.some(id=>profileIds.has(id))).sort((a,b)=>b.startsAt.localeCompare(a.startsAt));
   const now=Date.now();
   const rows=sessions.flatMap(session=>session.studentIds.filter(studentId=>profileIds.has(studentId)).map(studentId=>({session,studentId,attendance:data.attendance.find(record=>record.sessionId===session.id&&record.studentId===studentId)})));
   const completed=rows.filter(row=>Date.parse(row.session.startsAt)<=now);
