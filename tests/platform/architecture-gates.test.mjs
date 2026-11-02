@@ -17,7 +17,7 @@ test('private platform keeps authorization and domain validation server-side',()
 
 test('critical private mutations emit audit records',()=>{
   const route=read('app/api/platform/route.js');
-  for(const action of ['save-profile','create-session','update-session','create-session-series','add-attendee','set-attendance']) {
+  for(const action of ['save-profile','create-session','update-session','create-session-series','add-attendee','start-session','complete-session','set-tutor-attendance','set-attendance']) {
     assert.ok(route.includes(action),`missing action ${action}`);
   }
   assert.match(route,/audit\(tx,db,account,body\.action/);

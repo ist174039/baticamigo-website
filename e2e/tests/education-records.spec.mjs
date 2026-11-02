@@ -20,6 +20,8 @@ test('learning records: assignments, materials, legacy documents, assessments, m
  expect(opened.status(),await opened.text()).toBe(200);
  const absent=await post({action:'set-attendance',sessionId,studentId,status:'absent',reasonCode:'illness',reason:'Motivo fictício de teste',comment:'Registo sintético',version:0});
  expect(absent.status(),await absent.text()).toBe(200);
+ const completed=await post({action:'complete-session',sessionId,version:2});
+ expect(completed.status(),await completed.text()).toBe(200);
  const records=[
   {kind:'assignment',title:'Trabalho sintético',content:'Exercício de interpretação',dueAt:'2026-12-31',shareWithRoles:['guardian']},
   {kind:'material',title:'Material sintético',content:'Conteúdo pedagógico de teste',shareWithProfileIds:['e2e-profile-guardian']},

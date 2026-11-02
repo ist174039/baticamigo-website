@@ -30,9 +30,11 @@ for(const f of fixtures){
 for(const [id,kind,attrs] of [
   ['e2e-profile-member','member',{name:'Sócio de teste',active:true}],
   ['e2e-profile-student','student',{name:'Aluno sintético',guardianIds:['e2e-profile-guardian'],active:true}],
+  ['e2e-profile-student-extra','student',{name:'Aluno adicional sintético',guardianIds:[],active:true}],
   ['e2e-profile-guardian','guardian',{name:'Encarregado sintético',active:true}],
   ['e2e-profile-tutor','tutor',{name:'Explicador sintético',active:true}]
 ])await db.collection('platform_profiles').doc(id).set({kind,...attrs});
+await db.collection('platform_sessions').doc('e2e-tutor-student-roster').set({title:'Sessão de roster sintética',studentIds:['e2e-profile-student-extra'],tutorId:'e2e-profile-tutor',startsAt:'2027-01-04T10:00:00Z',endsAt:'2027-01-04T11:00:00Z',status:'scheduled',attendanceOpen:false,version:1});
 await db.collection('platform_access_settings').doc('profiles').set({profiles:defaultAccessProfiles});
 
 await db.collection('noticias').doc('e2e-news-public').set({
