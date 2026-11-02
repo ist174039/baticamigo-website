@@ -138,7 +138,7 @@ try {
   await expect('tutor',{action:'save-record',record:{...assessment,id:saved.id,version:1,score:16}},409);
   await expect('tutor',{action:'save-record',record:{...assessment,score:22}},400);
   console.log('PASS: record permissions, scale validation and optimistic concurrency.');
-  const presence={action:'set-attendance',sessionId:created.id,studentId:'s1',status:'present',version:1};
+  const presence={action:'set-attendance',sessionId:created.id,studentId:'s1',status:'absent',reasonCode:'unknown',version:1};
   await expect('student',presence,403);await expect('otherTutor',presence,403);await expect('tutor',presence);await expect('tutor',presence,409);
   await expect('guardian',{action:'save-record',record:{kind:'justification',studentId:'s1',title:'Motivo de teste',content:'Texto sintético',sessionId:created.id}});
   await expect('otherGuardian',{action:'save-record',record:{kind:'justification',studentId:'s1',title:'Motivo de teste',content:'Texto sintético',sessionId:created.id}},403);
