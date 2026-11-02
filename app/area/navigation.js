@@ -1,7 +1,7 @@
 "use client";
 
 import { PrivateShell } from "../components/private/private-shell";
-import { Bell, BookOpenCheck, CalendarDays, ChartNoAxesCombined, CircleCheck, ClipboardCheck, ClipboardList, ContactRound, FileText, KeyRound, LayoutDashboard, Mail, Settings2, TrendingUp, UsersRound, WalletCards } from "lucide-react";
+import { Bell, BookOpenCheck, CalendarDays, ChartNoAxesCombined, CircleCheck, ClipboardCheck, ClipboardList, ContactRound, FileText, KeyRound, LayoutDashboard, ListTodo, Mail, Settings2, TrendingUp, UsersRound, WalletCards } from "lucide-react";
 import {areaGroups} from "../../lib/platform/access.mjs";
 
 const navigationIcons = {
@@ -13,6 +13,7 @@ const navigationIcons = {
   assessment: ClipboardCheck,
   progress: TrendingUp,
   justification: CircleCheck,
+  planner: ListTodo,
   document: FileText,
   message: Mail,
   notifications: Bell,

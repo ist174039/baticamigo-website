@@ -10,9 +10,9 @@ async function token(request,role){
 }
 const headers=idToken=>({Authorization:'Bearer '+idToken});
 const expected={
-  admin:['overview','sessions','profiles','assignment','material','assessment','progress','justification','finance','document','message','notifications','reports'],
-  coordinator:['overview','sessions','profiles','assignment','material','assessment','progress','justification','document','message','notifications','reports'],
-  member:['overview','sessions','profiles','finance','document','message','notifications'],
+  admin:['overview','sessions','profiles','assignment','material','assessment','progress','justification','planner','finance','document','message','notifications','reports'],
+  coordinator:['overview','sessions','profiles','assignment','material','assessment','progress','justification','planner','document','message','notifications','reports'],
+  member:['overview','sessions','profiles','finance','planner','document','message','notifications'],
   student:['overview','sessions','profiles','assignment','material','assessment','progress','justification','document','message','notifications'],
   guardian:['overview','sessions','profiles','assignment','material','assessment','progress','justification','document','message','notifications'],
   tutor:['overview','sessions','profiles','assignment','material','assessment','progress','justification','document','message','notifications']
